@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,6 +62,34 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				// Custom Agro Ikemba colors
+				"agro": {
+					"green": {
+						DEFAULT: "#2D5F2D",
+						"light": "#4A7C4A",
+						"dark": "#1E401E"
+					},
+					"earth": {
+						DEFAULT: "#6E4C1E",
+						"light": "#8A683A",
+						"dark": "#523615"
+					},
+					"gold": {
+						DEFAULT: "#D4AC0D",
+						"light": "#F0C429",
+						"dark": "#B7940B"
+					},
+					"brown": {
+						DEFAULT: "#8B4513",
+						"light": "#A25D2A",
+						"dark": "#6B3A0F"
+					},
+					"beige": {
+						DEFAULT: "#F5F5DC",
+						"light": "#FFFFE0",
+						"dark": "#E0E0C0"
+					}
 				}
 			},
 			borderRadius: {
@@ -84,12 +113,38 @@ export default {
 					to: {
 						height: '0'
 					}
-				}
+				},
+				'fade-in': {
+					from: { 
+						opacity: '0',
+						transform: 'translateY(10px)'
+					},
+					to: { 
+						opacity: '1',
+						transform: 'translateY(0)'
+					}
+				},
+				'fade-out': {
+					from: { 
+						opacity: '1',
+						transform: 'translateY(0)'
+					},
+					to: { 
+						opacity: '0',
+						transform: 'translateY(10px)'
+					}
+				},
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
-			}
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'fade-in': 'fade-in 0.3s ease-out forwards',
+				'fade-out': 'fade-out 0.3s ease-out forwards',
+			},
+			fontFamily: {
+				'poppins': ['Poppins', 'sans-serif'],
+				'inter': ['Inter', 'sans-serif'],
+			},
 		}
 	},
 	plugins: [require("tailwindcss-animate")],

@@ -1,0 +1,51 @@
+
+import { ShoppingCart, Star } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+
+interface ProductCardProps {
+  id: string;
+  name: string;
+  manufacturer: string;
+  category: string;
+  rating: number;
+  image: string;
+  price: string;
+  className?: string;
+}
+
+export default function ProductCard({ id, name, manufacturer, category, rating, image, price, className }: ProductCardProps) {
+  return (
+    <div className={cn("bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300 border border-gray-100", className)}>
+      <div className="h-48 overflow-hidden">
+        <img 
+          src={image} 
+          alt={name} 
+          className="w-full h-full object-cover object-center transition-transform duration-300 hover:scale-105"
+        />
+      </div>
+      <div className="p-5">
+        <div className="flex justify-between items-start mb-2">
+          <div>
+            <p className="text-xs text-gray-500 mb-1">{category}</p>
+            <h3 className="font-semibold text-lg line-clamp-1">{name}</h3>
+          </div>
+          <div className="flex items-center gap-1">
+            <Star className="w-4 h-4 text-agro-gold fill-agro-gold" />
+            <span className="text-sm font-medium">{rating}</span>
+          </div>
+        </div>
+        
+        <p className="text-sm text-gray-600 mb-4">by {manufacturer}</p>
+        
+        <div className="flex justify-between items-center">
+          <span className="text-lg font-bold text-agro-green">{price}</span>
+          <Button size="sm" className="bg-agro-green hover:bg-agro-green-light">
+            <ShoppingCart className="w-4 h-4 mr-1" />
+            Add
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
