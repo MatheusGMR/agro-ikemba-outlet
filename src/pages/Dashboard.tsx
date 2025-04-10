@@ -1,6 +1,5 @@
-
 import { useState } from 'react';
-import { BarChart, User, ShoppingCart, Package, Calendar, ChevronRight, TrendingUp, LayoutGrid, Clock } from 'lucide-react';
+import { BarChart, User, ShoppingCart, Package, Calendar, ChevronRight, TrendingUp, LayoutGrid, Clock, Star } from 'lucide-react';
 import StatCard from '@/components/ui/custom/StatCard';
 import ProductCard from '@/components/ui/custom/ProductCard';
 import { Button } from '@/components/ui/button';
@@ -274,7 +273,6 @@ export default function Dashboard() {
   );
 }
 
-// This is a placeholder for the Bell icon since it's not in your list of imports
 function Bell(props: any) {
   return (
     <svg 
