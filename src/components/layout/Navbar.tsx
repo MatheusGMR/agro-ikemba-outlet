@@ -52,25 +52,25 @@ export default function Navbar() {
         {/* Desktop Nav */}
         <nav className="hidden md:flex items-center gap-6">
           <ul className="flex items-center gap-6">
-            <NavItem href="/">Home</NavItem>
-            <NavItem href="/products">Products</NavItem>
+            <NavItem href="/">Início</NavItem>
+            <NavItem href="/products">Produtos</NavItem>
             <div className="relative group">
               <button className="flex items-center gap-1 text-foreground hover:text-agro-green transition-colors duration-200 py-2">
-                Solutions <ChevronDown className="h-4 w-4" />
+                Soluções <ChevronDown className="h-4 w-4" />
               </button>
               <ul className="absolute hidden group-hover:block bg-white shadow-lg rounded-md p-2 min-w-[180px] z-10 mt-0">
-                <NavItem href="/for-manufacturers" className="px-3">For Manufacturers</NavItem>
-                <NavItem href="/for-distributors" className="px-3">For Distributors</NavItem>
-                <NavItem href="/financial-services" className="px-3">Financial Services</NavItem>
-                <NavItem href="/logistics" className="px-3">Logistics</NavItem>
+                <NavItem href="/for-manufacturers" className="px-3">Para Fabricantes</NavItem>
+                <NavItem href="/for-distributors" className="px-3">Para Distribuidores</NavItem>
+                <NavItem href="/financial-services" className="px-3">Serviços Financeiros</NavItem>
+                <NavItem href="/logistics" className="px-3">Logística</NavItem>
               </ul>
             </div>
-            <NavItem href="/about">About Us</NavItem>
+            <NavItem href="/about">Sobre Nós</NavItem>
           </ul>
           
           <div className="flex items-center gap-2">
-            <Button variant="outline">Log in</Button>
-            <Button className="bg-agro-green hover:bg-agro-green-light">Register</Button>
+            <Button variant="outline">Entrar</Button>
+            <Button className="bg-agro-green hover:bg-agro-green-light">Cadastrar</Button>
           </div>
         </nav>
         
@@ -88,18 +88,18 @@ export default function Navbar() {
         <div className="fixed inset-0 z-50 bg-background md:hidden pt-16">
           <nav className="container-custom py-4">
             <ul className="space-y-4 text-lg">
-              <NavItem href="/">Home</NavItem>
-              <NavItem href="/products">Products</NavItem>
-              <NavItem href="/for-manufacturers">For Manufacturers</NavItem>
-              <NavItem href="/for-distributors">For Distributors</NavItem>
-              <NavItem href="/financial-services">Financial Services</NavItem>
-              <NavItem href="/logistics">Logistics</NavItem>
-              <NavItem href="/about">About Us</NavItem>
+              <NavItem href="/">Início</NavItem>
+              <NavItem href="/products">Produtos</NavItem>
+              <NavItem href="/for-manufacturers">Para Fabricantes</NavItem>
+              <NavItem href="/for-distributors">Para Distribuidores</NavItem>
+              <NavItem href="/financial-services">Serviços Financeiros</NavItem>
+              <NavItem href="/logistics">Logística</NavItem>
+              <NavItem href="/about">Sobre Nós</NavItem>
             </ul>
             
             <div className="mt-8 flex flex-col gap-2">
-              <Button variant="outline" className="w-full">Log in</Button>
-              <Button className="w-full bg-agro-green hover:bg-agro-green-light">Register</Button>
+              <Button variant="outline" className="w-full">Entrar</Button>
+              <Button className="w-full bg-agro-green hover:bg-agro-green-light">Cadastrar</Button>
             </div>
           </nav>
         </div>

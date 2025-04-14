@@ -9,17 +9,17 @@ export default function Hero() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div className="space-y-6 animate-fade-in">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight text-agro-green-dark">
-              Revolutionizing <span className="text-agro-green">Agricultural</span> Input Trading
+              Revolucionando o Comércio de <span className="text-agro-green">Insumos</span> Agrícolas
             </h1>
             <p className="text-lg md:text-xl text-gray-700 max-w-lg">
-              Connecting manufacturers and distributors directly on a single powerful B2B platform for agricultural inputs.
+              Conectando fabricantes e distribuidores diretamente em uma única plataforma B2B poderosa para insumos agrícolas.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
               <Button className="bg-agro-green hover:bg-agro-green-light text-white px-8 py-6 text-lg">
-                Join as Manufacturer
+                Cadastrar como Fabricante
               </Button>
               <Button variant="outline" className="border-agro-earth text-agro-earth hover:bg-agro-earth hover:text-white px-8 py-6 text-lg">
-                Join as Distributor
+                Cadastrar como Distribuidor
               </Button>
             </div>
             <div className="flex items-center gap-8 pt-4">
@@ -29,7 +29,7 @@ export default function Hero() {
                 ))}
               </div>
               <p className="text-gray-700">
-                <span className="font-semibold">150+</span> partners already onboard
+                <span className="font-semibold">150+</span> parceiros já cadastrados
               </p>
             </div>
           </div>
@@ -38,14 +38,14 @@ export default function Hero() {
             <div className="absolute inset-0 bg-gradient-to-r from-agro-green/20 to-transparent z-10 rounded-2xl"></div>
             <img 
               src="https://images.unsplash.com/photo-1615811361523-6bd03d7748e7?q=80&w=1200&auto=format&fit=crop"
-              alt="Agricultural landscape" 
+              alt="Paisagem agrícola" 
               className="w-full h-full object-cover object-center"
             />
             <div className="absolute bottom-4 right-4 bg-white/90 backdrop-blur-sm p-4 rounded-lg shadow-lg max-w-xs z-10">
-              <p className="font-medium text-agro-green">Streamlined Transactions</p>
-              <p className="text-sm text-gray-700">Direct connections means faster deals, better prices, and simplified logistics</p>
+              <p className="font-medium text-agro-green">Transações Simplificadas</p>
+              <p className="text-sm text-gray-700">Conexões diretas significam negócios mais rápidos, melhores preços e logística simplificada</p>
               <Button variant="link" className="text-agro-green p-0 h-auto flex items-center mt-2 font-medium">
-                Learn more <ArrowRight className="ml-1 w-4 h-4" />
+                Saiba mais <ArrowRight className="ml-1 w-4 h-4" />
               </Button>
             </div>
           </div>

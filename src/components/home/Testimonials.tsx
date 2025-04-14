@@ -30,24 +30,24 @@ const Testimonial = ({ quote, author, role, company, rating }: TestimonialProps)
 export default function Testimonials() {
   const testimonials = [
     {
-      quote: "Agro Ikemba has transformed how we source agricultural inputs. We've seen a 30% reduction in procurement costs and significantly improved delivery times.",
+      quote: "O Agro Ikemba transformou a maneira como obtemos insumos agrícolas. Vimos uma redução de 30% nos custos de aquisição e melhoramos significativamente os prazos de entrega.",
       author: "Ricardo Silva",
-      role: "Purchasing Manager",
-      company: "AgriCoop Distributors",
+      role: "Gerente de Compras",
+      company: "AgriCoop Distribuidores",
       rating: 5
     },
     {
-      quote: "As a manufacturer, we've expanded our market reach by 40% since joining the platform. The direct connection to distributors has been invaluable for our business growth.",
+      quote: "Como fabricante, expandimos nosso alcance de mercado em 40% desde que nos juntamos à plataforma. A conexão direta com distribuidores tem sido inestimável para o crescimento do nosso negócio.",
       author: "Maria Gonzalez",
-      role: "Sales Director",
-      company: "EcoAgro Products",
+      role: "Diretora de Vendas",
+      company: "EcoAgro Produtos",
       rating: 5
     },
     {
-      quote: "The platform's logistics integration solved our biggest challenge. Now we can focus on core business activities instead of complicated shipping arrangements.",
+      quote: "A integração logística da plataforma resolveu nosso maior desafio. Agora podemos nos concentrar nas atividades principais do negócio em vez de lidar com arranjos de envio complicados.",
       author: "João Oliveira",
-      role: "Operations Director",
-      company: "Rural Supplies Ltd",
+      role: "Diretor de Operações",
+      company: "Suprimentos Rurais Ltda",
       rating: 4
     }
   ];
@@ -57,10 +57,10 @@ export default function Testimonials() {
       <div className="container-custom">
         <div className="text-center max-w-3xl mx-auto mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-4 text-agro-green-dark">
-            What Our Partners Say
+            O Que Nossos Parceiros Dizem
           </h2>
           <p className="text-lg text-gray-600">
-            Hear from the manufacturers and distributors who have transformed their businesses with Agro Ikemba.
+            Ouça dos fabricantes e distribuidores que transformaram seus negócios com o Agro Ikemba.
           </p>
         </div>
 

@@ -21,33 +21,33 @@ export default function Features() {
   const features = [
     {
       icon: <TrendingUp className="w-6 h-6 text-agro-green" />,
-      title: "Business Growth",
-      description: "Expand your reach to new markets and customers with visibility on a trusted B2B platform."
+      title: "Crescimento de Negócios",
+      description: "Expanda seu alcance para novos mercados e clientes com visibilidade em uma plataforma B2B confiável."
     },
     {
       icon: <BadgePercent className="w-6 h-6 text-agro-green" />,
-      title: "Competitive Pricing",
-      description: "Direct transactions eliminate intermediaries, resulting in better prices for everyone."
+      title: "Preços Competitivos",
+      description: "Transações diretas eliminam intermediários, resultando em melhores preços para todos."
     },
     {
       icon: <Truck className="w-6 h-6 text-agro-green" />,
-      title: "Integrated Logistics",
-      description: "Access optimized shipping solutions, warehouse options, and delivery tracking."
+      title: "Logística Integrada",
+      description: "Acesse soluções de transporte otimizadas, opções de armazenamento e rastreamento de entregas."
     },
     {
       icon: <ShieldCheck className="w-6 h-6 text-agro-green" />,
-      title: "Secure Transactions",
-      description: "Our platform ensures payment security, quality assurance, and regulatory compliance."
+      title: "Transações Seguras",
+      description: "Nossa plataforma garante segurança de pagamento, garantia de qualidade e conformidade regulatória."
     },
     {
       icon: <Clock className="w-6 h-6 text-agro-green" />,
-      title: "Time Efficiency",
-      description: "Streamlined processes reduce the time from order to delivery, saving you valuable time."
+      title: "Eficiência de Tempo",
+      description: "Processos otimizados reduzem o tempo do pedido à entrega, economizando seu tempo valioso."
     },
     {
       icon: <Check className="w-6 h-6 text-agro-green" />,
-      title: "Quality Assurance",
-      description: "Verified suppliers and product quality control ensures you get what you expect."
+      title: "Garantia de Qualidade",
+      description: "Fornecedores verificados e controle de qualidade de produtos garantem que você receba o esperado."
     },
   ];
 
@@ -56,10 +56,10 @@ export default function Features() {
       <div className="container-custom">
         <div className="text-center max-w-3xl mx-auto mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-4 text-agro-green-dark">
-            Transforming Agricultural Input Trading
+            Transformando o Comércio de Insumos Agrícolas
           </h2>
           <p className="text-lg text-gray-600">
-            Our comprehensive B2B platform connects manufacturers and distributors with powerful tools to streamline operations and grow your business.
+            Nossa plataforma B2B abrangente conecta fabricantes e distribuidores com ferramentas poderosas para otimizar operações e fazer crescer seu negócio.
           </p>
         </div>
 
