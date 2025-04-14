@@ -1,4 +1,3 @@
-
 import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -9,7 +8,7 @@ export default function Hero() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div className="space-y-6 animate-fade-in">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight text-agro-green-dark">
-              Revolucionando o Comércio de <span className="text-agro-green">Insumos</span> Agrícolas
+              Revolução no Mercado de <span className="text-agro-green">Insumos</span>
             </h1>
             <p className="text-lg md:text-xl text-gray-700 max-w-lg">
               Conectando fabricantes e distribuidores diretamente em uma única plataforma B2B poderosa para insumos agrícolas.
