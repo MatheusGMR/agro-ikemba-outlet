@@ -21,7 +21,7 @@ export default function CallToAction() {
                 <Link to="/register">Cadastre-se Agora</Link>
               </Button>
               <Button variant="outline" className="border-white text-white hover:bg-white hover:text-agro-green px-8 py-6 text-lg">
-                Agende uma Demonstração
+                Fale agora
               </Button>
             </div>
           </div>
