@@ -1,5 +1,4 @@
-
-import { Star, StarHalf } from 'lucide-react';
+import { Star, StarHalf, ShoppingCart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -24,13 +23,17 @@ const renderStars = (rating: number) => {
       {[...Array(fullStars)].map((_, i) => (
         <Star 
           key={`full-${i}`} 
-          className="w-4 h-4 text-[#F97316] fill-[#FEC6A1]" 
+          className="w-4 h-4" 
+          color="#d97904" 
+          fill="#543921" 
         />
       ))}
       
       {hasHalfStar && (
         <StarHalf 
-          className="w-4 h-4 text-[#F97316] fill-[#FEC6A1]" 
+          className="w-4 h-4" 
+          color="#d97904" 
+          fill="#543921" 
         />
       )}
       
@@ -71,7 +74,10 @@ export default function ProductCard({ id, name, manufacturer, category, rating, 
         <div className="flex justify-between items-center">
           <span className="text-lg font-bold text-agro-green">{price}</span>
           <Button size="sm" className="bg-agro-green hover:bg-agro-green-light">
-            <ShoppingCart className="w-4 h-4 mr-1" />
+            <ShoppingCart 
+              className="w-4 h-4 mr-1" 
+              color="#543921" 
+            />
             Add
           </Button>
         </div>
