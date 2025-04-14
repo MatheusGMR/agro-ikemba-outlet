@@ -5,8 +5,9 @@ export default function Hero() {
       <div className="container-custom relative z-10 py-16 md:py-24 lg:py-32">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div className="space-y-6 animate-fade-in">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight text-agro-green-dark">
-              Revolução no Mercado de <span className="text-agro-green">Insumos</span>
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
+              <span className="text-black">Revolucionando o</span>{" "}
+              <span className="text-agro-green">Mercado de Insumos</span>
             </h1>
             <p className="text-lg md:text-xl text-gray-700 max-w-lg">
               Conectando fabricantes e distribuidores diretamente em uma única plataforma B2B poderosa para insumos agrícolas.
