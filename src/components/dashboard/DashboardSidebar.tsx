@@ -1,19 +1,11 @@
-
 import { Calendar, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import ProductCard from '@/components/ui/custom/ProductCard';
+import type { Product } from '@/types/dashboard';
 
 interface DashboardSidebarProps {
-  products: Array<{
-    id: string;
-    name: string;
-    manufacturer: string;
-    category: string;
-    rating: number;
-    image: string;
-    price: string;
-  }>;
+  products: Product[];
 }
 
 export function DashboardSidebar({ products }: DashboardSidebarProps) {

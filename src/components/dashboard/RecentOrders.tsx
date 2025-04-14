@@ -1,15 +1,7 @@
-
 import { ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-
-interface Order {
-  id: string;
-  product: string;
-  date: string;
-  status: 'pending' | 'processing' | 'delivered';
-  amount: string;
-}
+import type { Order } from '@/types/dashboard';
 
 interface RecentOrdersProps {
   orders: Order[];
