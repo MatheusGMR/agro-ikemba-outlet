@@ -8,16 +8,16 @@
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 154 10% 10%;
+    --foreground: 142 70% 20%;
 
     --card: 0 0% 100%;
-    --card-foreground: 154 10% 10%;
+    --card-foreground: 142 70% 20%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 154 10% 10%;
+    --popover-foreground: 142 70% 20%;
 
-    --primary: 142 70% 29%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 142 70% 29%; // Green primary color
+    --primary-foreground: 0 0% 100%; // White text
 
     --secondary: 142 55% 90%;
     --secondary-foreground: 142 70% 29%;
@@ -36,28 +36,19 @@
     --ring: 142 70% 29%;
 
     --radius: 0.5rem;
-
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 154 10% 30%;
-    --sidebar-primary: 142 70% 29%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 142 10% 96%;
-    --sidebar-accent-foreground: 154 10% 30%;
-    --sidebar-border: 154 10% 90%;
-    --sidebar-ring: 142 70% 29%;
   }
 
   .dark {
-    --background: 154 15% 6%;
+    --background: 142 15% 10%; // Dark background
     --foreground: 0 0% 95%;
 
-    --card: 154 15% 8%;
+    --card: 142 15% 15%;
     --card-foreground: 0 0% 95%;
 
-    --popover: 154 15% 6%;
+    --popover: 142 15% 10%;
     --popover-foreground: 0 0% 95%;
 
-    --primary: 142 70% 40%;
+    --primary: 142 70% 40%; // Slightly lighter green for dark mode
     --primary-foreground: 0 0% 100%;
 
     --secondary: 142 30% 15%;
@@ -75,15 +66,6 @@
     --border: 154 15% 15%;
     --input: 154 15% 15%;
     --ring: 142 70% 40%;
-
-    --sidebar-background: 154 15% 8%;
-    --sidebar-foreground: 0 0% 95%;
-    --sidebar-primary: 142 70% 40%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 154 15% 15%;
-    --sidebar-accent-foreground: 0 0% 95%;
-    --sidebar-border: 154 15% 15%;
-    --sidebar-ring: 142 70% 40%;
   }
 }
 
@@ -111,6 +93,6 @@
   }
 
   .btn-secondary {
-    @apply bg-agro-accent text-agro-green hover:bg-agro-accent-light transition-colors duration-300;
+    @apply bg-agro-white text-agro-green hover:bg-gray-100 transition-colors duration-300;
   }
 }

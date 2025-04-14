@@ -25,64 +25,39 @@ export default {
 				background: 'hsl(var(--background))',
 				foreground: 'hsl(var(--foreground))',
 				primary: {
-					DEFAULT: 'hsl(var(--primary))',
-					foreground: 'hsl(var(--primary-foreground))'
+					DEFAULT: '#17a249',
+					foreground: '#FFFFFF'
 				},
 				secondary: {
-					DEFAULT: 'hsl(var(--secondary))',
-					foreground: 'hsl(var(--secondary-foreground))'
+					DEFAULT: '#f0f0f0',
+					foreground: '#17a249'
 				},
 				destructive: {
-					DEFAULT: 'hsl(var(--destructive))',
-					foreground: 'hsl(var(--destructive-foreground))'
+					DEFAULT: '#E53E3E',
+					foreground: '#FFFFFF'
 				},
 				muted: {
-					DEFAULT: 'hsl(var(--muted))',
-					foreground: 'hsl(var(--muted-foreground))'
+					DEFAULT: '#F7FAFC',
+					foreground: '#718096'
 				},
 				accent: {
-					DEFAULT: 'hsl(var(--accent))',
-					foreground: 'hsl(var(--accent-foreground))'
+					DEFAULT: '#EDF2F7',
+					foreground: '#17a249'
 				},
-				popover: {
-					DEFAULT: 'hsl(var(--popover))',
-					foreground: 'hsl(var(--popover-foreground))'
-				},
-				card: {
-					DEFAULT: 'hsl(var(--card))',
-					foreground: 'hsl(var(--card-foreground))'
-				},
-				sidebar: {
-					DEFAULT: 'hsl(var(--sidebar-background))',
-					foreground: 'hsl(var(--sidebar-foreground))',
-					primary: 'hsl(var(--sidebar-primary))',
-					'primary-foreground': 'hsl(var(--sidebar-primary-foreground))',
-					accent: 'hsl(var(--sidebar-accent))',
-					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
-					border: 'hsl(var(--sidebar-border))',
-					ring: 'hsl(var(--sidebar-ring))'
-				},
-				// Custom Agro Ikemba modern colors
 				"agro": {
 					"green": {
-						DEFAULT: "#10B981", // Vibrant emerald green
-						"light": "#6EE7B7", // Light mint green
-						"dark": "#059669"   // Deeper emerald green
+						DEFAULT: "#17a249",
+						"light": "#4ADE80",
+						"dark": "#15803D"
 					},
-					"accent": {
-						DEFAULT: "#F9FAFB", // Almost white with slight green tint
-						"light": "#FFFFFF", // Pure white
-						"dark": "#F3F4F6"   // Very light gray
+					"black": {
+						DEFAULT: "#000000",
+						"light": "#1A1A1A",
+						"dark": "#0A0A0A"
 					},
-					"brown": {
-						DEFAULT: "#92400E", // Carefully selected brown
-						"light": "#B45309", // Lighter brown
-						"dark": "#78350F"   // Darker brown, used sparingly
-					},
-					"neutral": {
-						DEFAULT: "#F3F4F6", // Light gray for backgrounds
-						"light": "#FFFFFF", // White
-						"dark": "#E5E7EB"   // Slightly darker gray
+					"white": {
+						DEFAULT: "#FFFFFF",
+						"off": "#F9FAFB"
 					}
 				}
 			},
