@@ -1,4 +1,3 @@
-
 import { Check, TrendingUp, BadgePercent, Truck, ShieldCheck, Clock } from 'lucide-react';
 
 interface FeatureCardProps {
@@ -32,7 +31,7 @@ export default function Features() {
     {
       icon: <Truck className="w-6 h-6 text-agro-green" />,
       title: "Logística Integrada",
-      description: "Acesse soluções de transporte otimizadas, opções de armazenamento e rastreamento de entregas."
+      description: "Tenha a disposição uma vasta rede de armazens parceiros que garantem a segurança até o periodo de uso dos produtos"
     },
     {
       icon: <ShieldCheck className="w-6 h-6 text-agro-green" />,
