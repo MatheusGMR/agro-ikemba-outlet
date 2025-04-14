@@ -1,6 +1,8 @@
 
 import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
+
 export default function Hero() {
   return <section className="relative bg-gradient-to-b from-agro-beige to-white overflow-hidden">
       <div className="container-custom relative z-10 py-16 md:py-24 lg:py-32">
@@ -17,11 +19,11 @@ export default function Hero() {
               Somos uma plataforma que simplifica o acesso a produtos post patent com modelo operacional de baixo custo, garantindo as melhores condições comerciais do mercado.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
-              <Button className="bg-agro-green hover:bg-agro-green-light text-white px-8 py-6 text-lg">
-                Cadastrar como Fabricante
+              <Button className="bg-agro-green hover:bg-agro-green-light text-white px-8 py-6 text-lg" asChild>
+                <Link to="/register">Cadastrar como Fabricante</Link>
               </Button>
-              <Button variant="outline" className="border-agro-earth text-agro-earth hover:bg-agro-earth hover:text-white px-8 py-6 text-lg">
-                Cadastrar como Distribuidor
+              <Button variant="outline" className="border-agro-earth text-agro-earth hover:bg-agro-earth hover:text-white px-8 py-6 text-lg" asChild>
+                <Link to="/register">Cadastrar como Distribuidor</Link>
               </Button>
             </div>
             <div className="flex items-center gap-8 pt-4">

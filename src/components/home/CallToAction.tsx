@@ -1,5 +1,6 @@
 
 import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
 
 export default function CallToAction() {
   return (
@@ -16,8 +17,8 @@ export default function CallToAction() {
               insumos agrícolas.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button className="bg-white text-agro-green hover:bg-agro-gold hover:text-white px-8 py-6 text-lg">
-                Cadastre-se Agora
+              <Button className="bg-white text-agro-green hover:bg-agro-gold hover:text-white px-8 py-6 text-lg" asChild>
+                <Link to="/register">Cadastre-se Agora</Link>
               </Button>
               <Button variant="outline" className="border-white text-white hover:bg-white hover:text-agro-green px-8 py-6 text-lg">
                 Agende uma Demonstração

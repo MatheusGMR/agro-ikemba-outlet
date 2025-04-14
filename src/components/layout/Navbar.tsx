@@ -27,6 +27,7 @@ const NavItem = ({ href, children, className }: NavItemProps) => (
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const user = JSON.parse(localStorage.getItem('user') || 'null');
   
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -52,7 +53,7 @@ export default function Navbar() {
         {/* Desktop Nav */}
         <nav className="hidden md:flex items-center gap-6">
           <ul className="flex items-center gap-6">
-            <NavItem href="/">Início</NavItem>
+            <NavItem href={user?.verified ? "/products" : "/"}>Início</NavItem>
             <NavItem href="/products">Produtos</NavItem>
             <div className="relative group">
               <button className="flex items-center gap-1 text-foreground hover:text-agro-green transition-colors duration-200 py-2">
@@ -69,8 +70,27 @@ export default function Navbar() {
           </ul>
           
           <div className="flex items-center gap-2">
-            <Button variant="outline">Entrar</Button>
-            <Button className="bg-agro-green hover:bg-agro-green-light">Cadastrar</Button>
+            {user?.verified ? (
+              <div className="flex items-center gap-2">
+                <span className="text-sm">Olá, {user.name.split(' ')[0]}</span>
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    localStorage.removeItem('user');
+                    window.location.href = '/';
+                  }}
+                >
+                  Sair
+                </Button>
+              </div>
+            ) : (
+              <>
+                <Button variant="outline">Entrar</Button>
+                <Button className="bg-agro-green hover:bg-agro-green-light" asChild>
+                  <Link to="/register">Cadastrar</Link>
+                </Button>
+              </>
+            )}
           </div>
         </nav>
         
@@ -88,7 +108,7 @@ export default function Navbar() {
         <div className="fixed inset-0 z-50 bg-background md:hidden pt-16">
           <nav className="container-custom py-4">
             <ul className="space-y-4 text-lg">
-              <NavItem href="/">Início</NavItem>
+              <NavItem href={user?.verified ? "/products" : "/"}>Início</NavItem>
               <NavItem href="/products">Produtos</NavItem>
               <NavItem href="/for-manufacturers">Para Fabricantes</NavItem>
               <NavItem href="/for-distributors">Para Distribuidores</NavItem>
@@ -98,8 +118,28 @@ export default function Navbar() {
             </ul>
             
             <div className="mt-8 flex flex-col gap-2">
-              <Button variant="outline" className="w-full">Entrar</Button>
-              <Button className="w-full bg-agro-green hover:bg-agro-green-light">Cadastrar</Button>
+              {user?.verified ? (
+                <>
+                  <span className="text-sm mb-2">Olá, {user.name.split(' ')[0]}</span>
+                  <Button 
+                    variant="outline" 
+                    className="w-full"
+                    onClick={() => {
+                      localStorage.removeItem('user');
+                      window.location.href = '/';
+                    }}
+                  >
+                    Sair
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button variant="outline" className="w-full">Entrar</Button>
+                  <Button className="w-full bg-agro-green hover:bg-agro-green-light" asChild>
+                    <Link to="/register">Cadastrar</Link>
+                  </Button>
+                </>
+              )}
             </div>
           </nav>
         </div>
