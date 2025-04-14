@@ -1,5 +1,5 @@
 
-import { ShoppingCart, Star } from 'lucide-react';
+import { Star, StarHalf } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -13,6 +13,36 @@ interface ProductCardProps {
   price: string;
   className?: string;
 }
+
+const renderStars = (rating: number) => {
+  const fullStars = Math.floor(rating);
+  const hasHalfStar = rating % 1 >= 0.5;
+  const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+
+  return (
+    <div className="flex items-center gap-1">
+      {[...Array(fullStars)].map((_, i) => (
+        <Star 
+          key={`full-${i}`} 
+          className="w-4 h-4 text-[#F97316] fill-[#FEC6A1]" 
+        />
+      ))}
+      
+      {hasHalfStar && (
+        <StarHalf 
+          className="w-4 h-4 text-[#F97316] fill-[#FEC6A1]" 
+        />
+      )}
+      
+      {[...Array(emptyStars)].map((_, i) => (
+        <Star 
+          key={`empty-${i}`} 
+          className="w-4 h-4 text-gray-300" 
+        />
+      ))}
+    </div>
+  );
+};
 
 export default function ProductCard({ id, name, manufacturer, category, rating, image, price, className }: ProductCardProps) {
   return (
@@ -31,8 +61,8 @@ export default function ProductCard({ id, name, manufacturer, category, rating, 
             <h3 className="font-semibold text-lg line-clamp-1">{name}</h3>
           </div>
           <div className="flex items-center gap-1">
-            <Star className="w-4 h-4 text-agro-gold fill-agro-gold" />
-            <span className="text-sm font-medium">{rating}</span>
+            {renderStars(rating)}
+            <span className="text-sm font-medium ml-1">{rating}</span>
           </div>
         </div>
         
