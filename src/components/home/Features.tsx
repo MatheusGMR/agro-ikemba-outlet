@@ -1,4 +1,4 @@
-import { Check, TrendingUp, BadgePercent, Truck, ShieldCheck, Clock } from 'lucide-react';
+import { Warehouse, BadgePercent, Truck, ShieldCheck, Clock, Check } from 'lucide-react';
 
 interface FeatureCardProps {
   icon: React.ReactNode;
@@ -19,7 +19,7 @@ const FeatureCard = ({ icon, title, description }: FeatureCardProps) => (
 export default function Features() {
   const features = [
     {
-      icon: <TrendingUp className="w-6 h-6 text-agro-green" />,
+      icon: <Warehouse className="w-6 h-6 text-agro-green" />,
       title: "Armazenagem de Insumos",
       description: "Tenha a disposição uma vasta rede de armazens parceiros que garantem a segurança até o periodo de uso dos produtos"
     },
