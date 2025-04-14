@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -63,32 +62,27 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				// Custom Agro Ikemba colors
+				// Custom Agro Ikemba modern colors
 				"agro": {
 					"green": {
-						DEFAULT: "#2D5F2D",
-						"light": "#4A7C4A",
-						"dark": "#1E401E"
+						DEFAULT: "#10B981", // Vibrant emerald green
+						"light": "#6EE7B7", // Light mint green
+						"dark": "#059669"   // Deeper emerald green
 					},
-					"earth": {
-						DEFAULT: "#6E4C1E",
-						"light": "#8A683A",
-						"dark": "#523615"
-					},
-					"gold": {
-						DEFAULT: "#D4AC0D",
-						"light": "#F0C429",
-						"dark": "#B7940B"
+					"accent": {
+						DEFAULT: "#F9FAFB", // Almost white with slight green tint
+						"light": "#FFFFFF", // Pure white
+						"dark": "#F3F4F6"   // Very light gray
 					},
 					"brown": {
-						DEFAULT: "#8B4513",
-						"light": "#A25D2A",
-						"dark": "#6B3A0F"
+						DEFAULT: "#92400E", // Carefully selected brown
+						"light": "#B45309", // Lighter brown
+						"dark": "#78350F"   // Darker brown, used sparingly
 					},
-					"beige": {
-						DEFAULT: "#F5F5DC",
-						"light": "#FFFFE0",
-						"dark": "#E0E0C0"
+					"neutral": {
+						DEFAULT: "#F3F4F6", // Light gray for backgrounds
+						"light": "#FFFFFF", // White
+						"dark": "#E5E7EB"   // Slightly darker gray
 					}
 				}
 			},

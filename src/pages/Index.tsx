@@ -17,17 +17,17 @@ const Index = () => {
         <Hero />
         
         {/* Quick Access Section */}
-        <div className="bg-muted py-8">
+        <div className="bg-agro-neutral py-8">
           <div className="container-custom">
             <h2 className="text-2xl font-bold text-center mb-6">Acesso Rápido</h2>
             <div className="flex flex-wrap justify-center gap-4">
-              <Button asChild size="lg" className="bg-agro-green hover:bg-agro-green-light">
+              <Button asChild size="lg" className="bg-agro-green hover:bg-agro-green-dark">
                 <Link to="/products">Catálogo de Produtos</Link>
               </Button>
-              <Button asChild variant="outline" size="lg">
+              <Button asChild variant="outline" size="lg" className="border-agro-green text-agro-green hover:bg-agro-green hover:text-white">
                 <Link to="/product/1">Exemplo de Produto</Link>
               </Button>
-              <Button asChild variant="outline" size="lg">
+              <Button asChild variant="outline" size="lg" className="border-agro-green text-agro-green hover:bg-agro-green hover:text-white">
                 <Link to="/checkout">Processo de Compra</Link>
               </Button>
             </div>
