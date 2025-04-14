@@ -20,8 +20,8 @@ export default function Features() {
   const features = [
     {
       icon: <TrendingUp className="w-6 h-6 text-agro-green" />,
-      title: "Crescimento de Negócios",
-      description: "Expanda seu alcance para novos mercados e clientes com visibilidade em uma plataforma B2B confiável."
+      title: "Armazenagem de Insumos",
+      description: "Tenha a disposição uma vasta rede de armazens parceiros que garantem a segurança até o periodo de uso dos produtos"
     },
     {
       icon: <BadgePercent className="w-6 h-6 text-agro-green" />,
