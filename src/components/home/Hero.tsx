@@ -1,3 +1,4 @@
+
 import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 export default function Hero() {
@@ -11,6 +12,9 @@ export default function Hero() {
             </h1>
             <p className="text-lg md:text-xl text-gray-700 max-w-lg">
               Conectando fabricantes e distribuidores diretamente em uma única plataforma B2B poderosa para insumos agrícolas.
+            </p>
+            <p className="text-lg md:text-xl font-medium text-agro-earth">
+              Somos uma plataforma que simplifica o acesso a produtos post patent com modelo operacional de baixo custo, garantindo as melhores condições comerciais do mercado.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
               <Button className="bg-agro-green hover:bg-agro-green-light text-white px-8 py-6 text-lg">
