@@ -27,9 +27,6 @@ export default function Hero() {
               </Button>
             </div>
             <div className="flex items-center gap-8 pt-4">
-              <div className="flex -space-x-2">
-                {[...Array(4)].map((_, i) => <div key={i} className={`w-10 h-10 rounded-full border-2 border-white bg-agro-${i % 2 === 0 ? 'green' : 'earth'}-${i < 2 ? 'light' : 'dark'}`}></div>)}
-              </div>
               <p className="text-gray-700">
                 <span className="font-semibold">150+</span> parceiros já cadastrados
               </p>
