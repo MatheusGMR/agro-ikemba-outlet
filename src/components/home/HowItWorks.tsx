@@ -48,10 +48,13 @@ export default function HowItWorks() {
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {steps.map((step, index) => (
-              <div key={index} className="flex flex-col items-center text-center relative">
-                {/* Icon circle */}
-                <div className="w-24 h-24 rounded-full bg-white border-2 border-gray-100 flex items-center justify-center mb-6 relative z-10">
-                  <div className="w-16 h-16 rounded-full bg-agro-green/10 flex items-center justify-center">
+              <div 
+                key={index} 
+                className="flex flex-col items-center text-center relative transition-all duration-300 hover:transform hover:-translate-y-2 hover:shadow-lg rounded-xl p-6"
+              >
+                {/* Icon circle with hover effect */}
+                <div className="w-24 h-24 rounded-full bg-white border-2 border-gray-100 flex items-center justify-center mb-6 relative z-10 transition-all duration-300 hover:border-agro-green group">
+                  <div className="w-16 h-16 rounded-full bg-agro-green/10 flex items-center justify-center transition-all duration-300 group-hover:bg-agro-green/20">
                     {step.icon}
                   </div>
                 </div>
@@ -59,7 +62,9 @@ export default function HowItWorks() {
                 <div className="absolute top-0 right-0 md:right-4 w-8 h-8 bg-agro-green text-white rounded-full flex items-center justify-center font-bold z-20">
                   {step.number}
                 </div>
-                <h3 className="text-xl font-bold mb-3">{step.title}</h3>
+                <h3 className="text-xl font-bold mb-3 transition-colors duration-300 group-hover:text-agro-green">
+                  {step.title}
+                </h3>
                 <p className="text-gray-600">{step.description}</p>
               </div>
             ))}
