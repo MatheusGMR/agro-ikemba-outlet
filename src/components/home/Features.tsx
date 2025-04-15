@@ -1,9 +1,11 @@
 import { Warehouse, BadgePercent, Truck, ShieldCheck, Clock, Check } from 'lucide-react';
+
 interface FeatureCardProps {
   icon: React.ReactNode;
   title: string;
   description: string;
 }
+
 const FeatureCard = ({
   icon,
   title,
@@ -15,6 +17,7 @@ const FeatureCard = ({
     <h3 className="text-xl font-semibold text-agro-green-dark mb-2">{title}</h3>
     <p className="text-gray-600">{description}</p>
   </div>;
+
 export default function Features() {
   const mainFeatures = [{
     icon: <Warehouse className="w-6 h-6 text-agro-green" />,
@@ -29,6 +32,7 @@ export default function Features() {
     title: "Logística Integrada",
     description: "Tenha a disposição uma vasta rede de armazens parceiros que garantem a segurança até o periodo de uso dos produtos"
   }];
+
   const whyChooseUs = [{
     icon: <ShieldCheck className="w-6 h-6 text-agro-green" />,
     title: "Transações Seguras",
@@ -42,6 +46,7 @@ export default function Features() {
     title: "Garantia de Qualidade",
     description: "Fornecedores verificados e controle de qualidade de produtos garantem que você receba o esperado."
   }];
+
   return <section className="py-20 bg-gray-50">
       <div className="container-custom">
         <div className="text-center max-w-3xl mx-auto mb-16">
@@ -59,7 +64,7 @@ export default function Features() {
 
         <div className="text-center max-w-3xl mx-auto mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-4 text-zinc-700">
-            Porque Agro Ikemba é sua melhor opção em genéricos?
+            Porque <span className="text-agro-green">Agro Ikemba</span> é sua melhor opção em genéricos?
           </h2>
         </div>
 
