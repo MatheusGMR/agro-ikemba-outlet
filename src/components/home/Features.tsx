@@ -1,3 +1,4 @@
+
 import { Warehouse, BadgePercent, Truck, ShieldCheck, Clock, Check } from 'lucide-react';
 
 interface FeatureCardProps {
@@ -17,7 +18,7 @@ const FeatureCard = ({ icon, title, description }: FeatureCardProps) => (
 );
 
 export default function Features() {
-  const features = [
+  const mainFeatures = [
     {
       icon: <Warehouse className="w-6 h-6 text-agro-green" />,
       title: "Armazenagem de Insumos",
@@ -33,6 +34,9 @@ export default function Features() {
       title: "Logística Integrada",
       description: "Tenha a disposição uma vasta rede de armazens parceiros que garantem a segurança até o periodo de uso dos produtos"
     },
+  ];
+
+  const whyChooseUs = [
     {
       icon: <ShieldCheck className="w-6 h-6 text-agro-green" />,
       title: "Transações Seguras",
@@ -62,8 +66,25 @@ export default function Features() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {features.map((feature, index) => (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
+          {mainFeatures.map((feature, index) => (
+            <FeatureCard
+              key={index}
+              icon={feature.icon}
+              title={feature.title}
+              description={feature.description}
+            />
+          ))}
+        </div>
+
+        <div className="text-center max-w-3xl mx-auto mb-16">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-agro-green-dark">
+            Porque Agro Ikemba é sua melhor opção em genéricos?
+          </h2>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {whyChooseUs.map((feature, index) => (
             <FeatureCard
               key={index}
               icon={feature.icon}
