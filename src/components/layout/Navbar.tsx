@@ -37,7 +37,7 @@ export default function Navbar() {
               <img 
                 alt="Agro Ikemba" 
                 src="/lovable-uploads/6aea75d9-eade-440b-8bf4-099785748206.png" 
-                className="h-16 w-auto object-contain" 
+                className="h-32 w-auto object-contain" 
               />
             </div>
           </Link>
