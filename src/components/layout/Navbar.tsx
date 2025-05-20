@@ -52,23 +52,6 @@ export default function Navbar() {
         
         {/* Desktop Nav */}
         <nav className="hidden md:flex items-center gap-6">
-          <ul className="flex items-center gap-6">
-            <NavItem href={user?.verified ? "/products" : "/"}>Início</NavItem>
-            <NavItem href="/products">Produtos</NavItem>
-            <div className="relative group">
-              <button className="flex items-center gap-1 text-foreground hover:text-agro-green transition-colors duration-200 py-2">
-                Soluções <ChevronDown className="h-4 w-4" />
-              </button>
-              <ul className="absolute hidden group-hover:block bg-white shadow-lg rounded-md p-2 min-w-[180px] z-10 mt-0">
-                <NavItem href="/for-manufacturers" className="px-3">Para Fabricantes</NavItem>
-                <NavItem href="/for-distributors" className="px-3">Para Distribuidores</NavItem>
-                <NavItem href="/financial-services" className="px-3">Serviços Financeiros</NavItem>
-                <NavItem href="/logistics" className="px-3">Logística</NavItem>
-              </ul>
-            </div>
-            <NavItem href="/about">Sobre Nós</NavItem>
-          </ul>
-          
           <div className="flex items-center gap-2">
             {user?.verified ? (
               <div className="flex items-center gap-2">
