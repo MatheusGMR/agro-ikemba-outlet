@@ -39,13 +39,7 @@ export default function Navbar() {
         <div className="flex items-center gap-2">
           <Link to="/" className="flex items-center gap-2">
             <div className="flex items-center gap-1">
-              <div className="h-8 w-8 rounded-full bg-agro-green flex items-center justify-center">
-                <span className="text-white font-bold text-sm">AI</span>
-              </div>
-              <span className="font-poppins font-bold text-xl hidden sm:inline-block">
-                <span className="text-agro-green">Agro</span>
-                <span className="text-agro-earth">Ikemba</span>
-              </span>
+              <img src="/lovable-uploads/cc866595-a7de-4eca-b055-09f1bb8beb61.png" alt="Agro Ikemba" className="h-10" />
             </div>
           </Link>
         </div>
