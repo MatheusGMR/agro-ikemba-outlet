@@ -27,8 +27,8 @@ export default function Navbar() {
       <div className="container-custom flex h-16 items-center justify-between">
         <div className="flex items-center gap-2">
           <Link to="/" className="flex items-center gap-2">
-            <div className="flex items-center gap-1 mx-0 py-[15px] px-[39px] rounded-none">
-              <img alt="Agro Ikemba" src="/lovable-uploads/6aea75d9-eade-440b-8bf4-099785748206.png" className="h-10 object-fill" />
+            <div className="flex items-center gap-1 py-[15px] px-[39px] mx-0 rounded-full">
+              <img alt="Agro Ikemba" src="/lovable-uploads/6aea75d9-eade-440b-8bf4-099785748206.png" className="h-10 object-scale-down" />
             </div>
           </Link>
         </div>
