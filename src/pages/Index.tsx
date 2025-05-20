@@ -6,8 +6,6 @@ import Features from '@/components/home/Features';
 import HowItWorks from '@/components/home/HowItWorks';
 import Testimonials from '@/components/home/Testimonials';
 import CallToAction from '@/components/home/CallToAction';
-import { Button } from '@/components/ui/button';
-import { Link } from 'react-router-dom';
 
 const Index = () => {
   return (
@@ -15,25 +13,6 @@ const Index = () => {
       <Navbar />
       <main className="flex-1">
         <Hero />
-        
-        {/* Quick Access Section */}
-        <div className="bg-agro-neutral py-8">
-          <div className="container-custom">
-            <h2 className="text-2xl font-bold text-center mb-6">Acesso Rápido</h2>
-            <div className="flex flex-wrap justify-center gap-4">
-              <Button asChild size="lg" className="bg-agro-green hover:bg-agro-green-dark">
-                <Link to="/products">Catálogo de Produtos</Link>
-              </Button>
-              <Button asChild variant="outline" size="lg" className="border-agro-green text-agro-green hover:bg-agro-green hover:text-white">
-                <Link to="/product/1">Exemplo de Produto</Link>
-              </Button>
-              <Button asChild variant="outline" size="lg" className="border-agro-green text-agro-green hover:bg-agro-green hover:text-white">
-                <Link to="/checkout">Processo de Compra</Link>
-              </Button>
-            </div>
-          </div>
-        </div>
-        
         <Features />
         <HowItWorks />
         <Testimonials />
