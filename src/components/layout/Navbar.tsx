@@ -1,13 +1,16 @@
+
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, X, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+
 interface NavItemProps {
   href: string;
   children: React.ReactNode;
   className?: string;
 }
+
 const NavItem = ({
   href,
   children,
@@ -17,18 +20,25 @@ const NavItem = ({
       {children}
     </Link>
   </li>;
+
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const user = JSON.parse(localStorage.getItem('user') || 'null');
+  
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
+  
   return <header className="sticky top-0 z-40 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container-custom flex h-16 items-center justify-between">
         <div className="flex items-center gap-2">
           <Link to="/" className="flex items-center gap-2">
-            <div className="flex items-center gap-1 py-[15px] px-[39px] mx-0 rounded-full">
-              <img alt="Agro Ikemba" src="/lovable-uploads/6aea75d9-eade-440b-8bf4-099785748206.png" className="h-10 object-scale-down" />
+            <div className="flex items-center gap-1 py-2 px-0">
+              <img 
+                alt="Agro Ikemba" 
+                src="/lovable-uploads/6aea75d9-eade-440b-8bf4-099785748206.png" 
+                className="h-16 w-auto object-contain" 
+              />
             </div>
           </Link>
         </div>
