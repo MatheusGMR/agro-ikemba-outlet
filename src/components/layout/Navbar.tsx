@@ -1,45 +1,34 @@
-
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, X, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-
 interface NavItemProps {
   href: string;
   children: React.ReactNode;
   className?: string;
 }
-
-const NavItem = ({ href, children, className }: NavItemProps) => (
-  <li>
-    <Link
-      to={href}
-      className={cn(
-        'text-foreground hover:text-agro-green transition-colors duration-200 py-2 block',
-        className
-      )}
-    >
+const NavItem = ({
+  href,
+  children,
+  className
+}: NavItemProps) => <li>
+    <Link to={href} className={cn('text-foreground hover:text-agro-green transition-colors duration-200 py-2 block', className)}>
       {children}
     </Link>
-  </li>
-);
-
+  </li>;
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const user = JSON.parse(localStorage.getItem('user') || 'null');
-  
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
-  
-  return (
-    <header className="sticky top-0 z-40 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+  return <header className="sticky top-0 z-40 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container-custom flex h-16 items-center justify-between">
         <div className="flex items-center gap-2">
           <Link to="/" className="flex items-center gap-2">
-            <div className="flex items-center gap-1">
-              <img src="/lovable-uploads/cc866595-a7de-4eca-b055-09f1bb8beb61.png" alt="Agro Ikemba" className="h-10" />
+            <div className="flex items-center gap-1 mx-0 py-[15px] px-[39px] rounded-none">
+              <img alt="Agro Ikemba" src="/lovable-uploads/6aea75d9-eade-440b-8bf4-099785748206.png" className="h-10 object-fill" />
             </div>
           </Link>
         </div>
@@ -47,42 +36,31 @@ export default function Navbar() {
         {/* Desktop Nav */}
         <nav className="hidden md:flex items-center gap-6">
           <div className="flex items-center gap-2">
-            {user?.verified ? (
-              <div className="flex items-center gap-2">
+            {user?.verified ? <div className="flex items-center gap-2">
                 <span className="text-sm">Olá, {user.name.split(' ')[0]}</span>
-                <Button 
-                  variant="outline" 
-                  onClick={() => {
-                    localStorage.removeItem('user');
-                    window.location.href = '/';
-                  }}
-                >
+                <Button variant="outline" onClick={() => {
+              localStorage.removeItem('user');
+              window.location.href = '/';
+            }}>
                   Sair
                 </Button>
-              </div>
-            ) : (
-              <>
+              </div> : <>
                 <Button variant="outline">Entrar</Button>
                 <Button className="bg-agro-green hover:bg-agro-green-light" asChild>
                   <Link to="/register">Cadastrar</Link>
                 </Button>
-              </>
-            )}
+              </>}
           </div>
         </nav>
         
         {/* Mobile menu button */}
-        <button 
-          className="block md:hidden p-2"
-          onClick={toggleMenu}
-        >
+        <button className="block md:hidden p-2" onClick={toggleMenu}>
           {isMenuOpen ? <X /> : <Menu />}
         </button>
       </div>
       
       {/* Mobile menu */}
-      {isMenuOpen && (
-        <div className="fixed inset-0 z-50 bg-background md:hidden pt-16">
+      {isMenuOpen && <div className="fixed inset-0 z-50 bg-background md:hidden pt-16">
           <nav className="container-custom py-4">
             <ul className="space-y-4 text-lg">
               <NavItem href={user?.verified ? "/products" : "/"}>Início</NavItem>
@@ -95,32 +73,22 @@ export default function Navbar() {
             </ul>
             
             <div className="mt-8 flex flex-col gap-2">
-              {user?.verified ? (
-                <>
+              {user?.verified ? <>
                   <span className="text-sm mb-2">Olá, {user.name.split(' ')[0]}</span>
-                  <Button 
-                    variant="outline" 
-                    className="w-full"
-                    onClick={() => {
-                      localStorage.removeItem('user');
-                      window.location.href = '/';
-                    }}
-                  >
+                  <Button variant="outline" className="w-full" onClick={() => {
+              localStorage.removeItem('user');
+              window.location.href = '/';
+            }}>
                     Sair
                   </Button>
-                </>
-              ) : (
-                <>
+                </> : <>
                   <Button variant="outline" className="w-full">Entrar</Button>
                   <Button className="w-full bg-agro-green hover:bg-agro-green-light" asChild>
                     <Link to="/register">Cadastrar</Link>
                   </Button>
-                </>
-              )}
+                </>}
             </div>
           </nav>
-        </div>
-      )}
-    </header>
-  );
+        </div>}
+    </header>;
 }
