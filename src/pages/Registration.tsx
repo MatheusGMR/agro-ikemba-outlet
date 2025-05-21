@@ -1,6 +1,9 @@
+
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import RegistrationForm from '@/components/auth/RegistrationForm';
+import { Toaster } from 'sonner';
+
 export default function Registration() {
   return <div className="flex flex-col min-h-screen">
       <Navbar />
@@ -8,7 +11,7 @@ export default function Registration() {
         <div className="container mx-auto px-4 max-w-md">
           <div className="bg-white rounded-lg shadow-md p-8">
             <h1 className="text-3xl font-bold text-center mb-8">
-              <span className="text-black">Crie seu </span>
+              <span className="text-black">Crie seu </span>
               <span className="text-agro-green">cadastro</span>
             </h1>
             <RegistrationForm />
@@ -16,5 +19,6 @@ export default function Registration() {
         </div>
       </main>
       <Footer />
+      <Toaster position="top-center" />
     </div>;
 }
