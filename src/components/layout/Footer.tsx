@@ -1,10 +1,7 @@
-
 import { Link } from 'react-router-dom';
 import { Mail, MapPin, Phone } from 'lucide-react';
-
 export default function Footer() {
-  return (
-    <footer className="bg-agro-green-dark text-white">
+  return <footer className="bg-agro-green-dark text-white">
       <div className="container-custom py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Company info */}
@@ -29,7 +26,7 @@ export default function Footer() {
               </div>
               <div className="flex items-center gap-3">
                 <Phone className="w-5 h-5 text-agro-gold" />
-                <span>+55 11 1234-5678</span>
+                <span>+55 11 98623-0007</span>
               </div>
               <div className="flex items-center gap-3">
                 <Mail className="w-5 h-5 text-agro-gold" />
@@ -39,7 +36,7 @@ export default function Footer() {
           </div>
 
           {/* Quick links */}
-          <div>
+          <div className="Remove\n">
             <h3 className="font-poppins text-lg font-medium mb-4">Links Rápidos</h3>
             <ul className="space-y-2">
               <li><Link to="/" className="hover:text-agro-gold transition-colors">Início</Link></li>
@@ -68,15 +65,8 @@ export default function Footer() {
             <h3 className="font-poppins text-lg font-medium mb-4">Mantenha-se Atualizado</h3>
             <p className="text-gray-300 mb-4">Inscreva-se em nossa newsletter para receber as últimas atualizações.</p>
             <form className="space-y-2">
-              <input 
-                type="email" 
-                placeholder="Seu endereço de e-mail"
-                className="w-full px-4 py-2 rounded-md bg-agro-green-light text-white placeholder-gray-300 border border-agro-green focus:outline-none focus:ring-2 focus:ring-agro-gold" 
-              />
-              <button 
-                type="submit"
-                className="w-full bg-agro-gold text-agro-green-dark font-medium px-4 py-2 rounded-md hover:bg-agro-gold-light transition-colors"
-              >
+              <input type="email" placeholder="Seu endereço de e-mail" className="w-full px-4 py-2 rounded-md bg-agro-green-light text-white placeholder-gray-300 border border-agro-green focus:outline-none focus:ring-2 focus:ring-agro-gold" />
+              <button type="submit" className="w-full bg-agro-gold text-agro-green-dark font-medium px-4 py-2 rounded-md hover:bg-agro-gold-light transition-colors">
                 Inscrever-se
               </button>
             </form>
@@ -95,6 +85,5 @@ export default function Footer() {
           </div>
         </div>
       </div>
-    </footer>
-  );
+    </footer>;
 }
