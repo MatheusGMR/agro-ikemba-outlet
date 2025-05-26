@@ -28,7 +28,7 @@ export default function Hero() {
             </div>
             <div className="flex items-center gap-8 pt-4">
               <p className="text-gray-700">
-                <span className="font-semibold">150+</span> parceiros já cadastrados
+                <span className="font-semibold">Comprando aqui economize +20%</span> com produtos genéricos
               </p>
             </div>
           </div>
