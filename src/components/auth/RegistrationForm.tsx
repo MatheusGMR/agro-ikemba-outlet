@@ -4,10 +4,11 @@ import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import { Mail, User, Lock, Check, Clock } from 'lucide-react';
+import { Mail, User, Lock, Check, Clock, Users, MessageSquare } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { formSchema } from '@/lib/validations/auth';
 import {
@@ -23,6 +24,7 @@ type FormValues = z.infer<typeof formSchema>;
 export default function RegistrationForm() {
   const navigate = useNavigate();
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -31,26 +33,59 @@ export default function RegistrationForm() {
       email: '',
       password: '',
       confirmPassword: '',
+      tipo: '',
+      conheceu: '',
     }
   });
 
-  const onSubmit = (data: FormValues) => {
-    // Mostrar o diálogo de confirmação
-    setShowConfirmation(true);
+  const onSubmit = async (data: FormValues) => {
+    setIsSubmitting(true);
     
-    // Armazenar dados do usuário
-    localStorage.setItem('user', JSON.stringify({
-      name: data.name,
-      email: data.email,
-      verified: true
-    }));
-    
-    // Definir um temporizador para fechar o diálogo após 5 segundos
-    setTimeout(() => {
-      setShowConfirmation(false);
-      toast.success('Cadastro realizado com sucesso!');
-      navigate('/products');
-    }, 5000);
+    try {
+      // Preparar dados para envio por email
+      const emailData = {
+        to: 'matheus@agroikemba.com.br',
+        subject: 'Nova solicitação de cadastro - Agro Ikemba',
+        message: `
+          Nova solicitação de cadastro recebida:
+          
+          Nome: ${data.name}
+          Email: ${data.email}
+          Tipo: ${data.tipo}
+          Como conheceu: ${data.conheceu || 'Não informado'}
+          Data: ${new Date().toLocaleString('pt-BR')}
+        `
+      };
+
+      // Simular envio de email (em um ambiente real, isso seria feito via backend)
+      console.log('Dados enviados para aprovação:', emailData);
+      
+      // Armazenar dados do usuário localmente
+      localStorage.setItem('user', JSON.stringify({
+        name: data.name,
+        email: data.email,
+        tipo: data.tipo,
+        conheceu: data.conheceu,
+        verified: false,
+        submittedAt: new Date().toISOString()
+      }));
+      
+      // Mostrar o diálogo de confirmação
+      setShowConfirmation(true);
+      
+      // Definir um temporizador para fechar o diálogo após 5 segundos
+      setTimeout(() => {
+        setShowConfirmation(false);
+        toast.success('Solicitação de cadastro enviada com sucesso!');
+        navigate('/products');
+      }, 5000);
+      
+    } catch (error) {
+      console.error('Erro ao enviar solicitação:', error);
+      toast.error('Erro ao enviar solicitação. Tente novamente.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -93,6 +128,63 @@ export default function RegistrationForm() {
                       className="pl-10" 
                       {...field} 
                     />
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="tipo"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Você é: *</FormLabel>
+                <FormControl>
+                  <div className="relative">
+                    <Users className="absolute left-3 top-3 h-4 w-4 text-gray-400 z-10" />
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <SelectTrigger className="pl-10">
+                        <SelectValue placeholder="Selecione uma opção" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Distribuidor">Distribuidor</SelectItem>
+                        <SelectItem value="Cooperativa">Cooperativa</SelectItem>
+                        <SelectItem value="Fabricante">Fabricante</SelectItem>
+                        <SelectItem value="Agricultor">Agricultor</SelectItem>
+                        <SelectItem value="Outro">Outro</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="conheceu"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Como conheceu a Agro Ikemba?</FormLabel>
+                <FormControl>
+                  <div className="relative">
+                    <MessageSquare className="absolute left-3 top-3 h-4 w-4 text-gray-400 z-10" />
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <SelectTrigger className="pl-10">
+                        <SelectValue placeholder="Selecione uma opção" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Linkedin">Linkedin</SelectItem>
+                        <SelectItem value="Instagram">Instagram</SelectItem>
+                        <SelectItem value="Indicação">Indicação</SelectItem>
+                        <SelectItem value="Google">Busca na Internet</SelectItem>
+                        <SelectItem value="Evento">Evento</SelectItem>
+                        <SelectItem value="Outro">Outro</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </FormControl>
                 <FormMessage />
@@ -147,8 +239,9 @@ export default function RegistrationForm() {
           <Button 
             type="submit" 
             className="w-full bg-agro-green hover:bg-agro-green-light text-white"
+            disabled={isSubmitting}
           >
-            Cadastrar
+            {isSubmitting ? 'Enviando...' : 'Solicitar Aprovação'}
           </Button>
         </form>
       </Form>
@@ -157,16 +250,16 @@ export default function RegistrationForm() {
       <Dialog open={showConfirmation} onOpenChange={setShowConfirmation}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-center">Cadastro Enviado</DialogTitle>
+            <DialogTitle className="text-center">Solicitação Enviada</DialogTitle>
             <DialogDescription className="text-center pt-4">
               <div className="flex flex-col items-center gap-4">
                 <div className="rounded-full bg-agro-green/10 p-3">
                   <Clock className="h-6 w-6 text-agro-green" />
                 </div>
                 <div className="text-center">
-                  Seu acesso será analisado em poucas horas. 
+                  Sua solicitação de cadastro foi enviada para análise. 
                   <p className="mt-1 text-gray-500">
-                    Entraremos em contato pelo seu e-mail cadastrado.
+                    Entraremos em contato pelo seu e-mail cadastrado em poucas horas.
                   </p>
                 </div>
               </div>
