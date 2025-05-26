@@ -5,12 +5,20 @@ import { Link } from 'react-router-dom';
 
 export default function Hero() {
   const handleVideoError = (e: React.SyntheticEvent<HTMLVideoElement, Event>) => {
-    console.log('Video error:', e);
-    console.log('Video error details:', (e.target as HTMLVideoElement).error);
+    console.log('Video error occurred');
+    const video = e.target as HTMLVideoElement;
+    console.log('Video error code:', video.error?.code);
+    console.log('Video error message:', video.error?.message);
+    console.log('Video network state:', video.networkState);
+    console.log('Video ready state:', video.readyState);
   };
 
   const handleVideoLoad = () => {
     console.log('Video loaded successfully');
+  };
+
+  const handleCanPlay = () => {
+    console.log('Video can start playing');
   };
 
   return (
@@ -44,23 +52,15 @@ export default function Hero() {
           </div>
           
           <div className="relative flex-1 min-w-[300px] max-w-[600px]">
-            <video 
-              width="100%" 
-              controls 
-              autoPlay 
-              muted 
-              loop 
-              playsInline
-              className="rounded-xl shadow-lg"
-              style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}
-              onError={handleVideoError}
-              onLoadedData={handleVideoLoad}
-              crossOrigin="anonymous"
-            >
-              <source src="http://agroikemba.com.br/wp-content/uploads/2025/05/Pitch-deck-1.mp4" type="video/mp4" />
-              <source src="http://agroikemba.com.br/wp-content/uploads/2025/05/Pitch-deck-1.mp4" type="video/webm" />
-              Seu navegador não suporta a exibição deste vídeo.
-            </video>
+            <div className="bg-gray-200 rounded-xl shadow-lg p-8 flex items-center justify-center min-h-[300px]">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-agro-green rounded-full flex items-center justify-center mx-auto mb-4">
+                  <ArrowRight className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-800 mb-2">Video em Breve</h3>
+                <p className="text-gray-600">Nossa demonstração em vídeo estará disponível em breve</p>
+              </div>
+            </div>
             <div className="absolute bottom-4 right-4 bg-white/90 backdrop-blur-sm p-4 rounded-lg shadow-lg max-w-xs z-10">
               <p className="font-medium text-agro-green">Transações Simplificadas</p>
               <p className="text-sm text-gray-700">Conexões diretas significam negócios mais rápidos, melhores preços e logística simplificada</p>
