@@ -38,7 +38,7 @@ export default function Hero() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
               <Button className="bg-agro-green hover:bg-agro-green-light text-white px-8 py-6 text-lg" asChild>
-                <Link to="/register">Pré-cadastre-se</Link>
+                <Link to="/register">Pedir cadastro</Link>
               </Button>
               <Button variant="outline" className="border-agro-earth text-agro-earth hover:bg-agro-earth hover:text-white px-8 py-6 text-lg">
                 Saiba mais
