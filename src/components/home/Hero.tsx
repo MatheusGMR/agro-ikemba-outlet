@@ -36,6 +36,7 @@ export default function Hero() {
           
           <div className="relative flex-1 min-w-[300px] max-w-[600px]">
             <video 
+              src="http://agroikemba.com.br/wp-content/uploads/2025/05/Pitch-deck-1.mp4"
               width="100%" 
               controls 
               autoPlay 
@@ -45,7 +46,6 @@ export default function Hero() {
               className="rounded-xl shadow-lg"
               style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}
             >
-              <source src="http://agroikemba.com.br/wp-content/uploads/2025/05/Pitch-deck-1.mp4" type="video/mp4" />
               Seu navegador não suporta a exibição deste vídeo.
             </video>
             <div className="absolute bottom-4 right-4 bg-white/90 backdrop-blur-sm p-4 rounded-lg shadow-lg max-w-xs z-10">
