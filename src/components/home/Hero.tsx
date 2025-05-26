@@ -1,3 +1,4 @@
+
 import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
@@ -36,7 +37,7 @@ export default function Hero() {
           <div className="relative lg:h-[500px] rounded-2xl overflow-hidden shadow-2xl animate-fade-in">
             <div className="absolute inset-0 bg-gradient-to-r from-agro-green/20 to-transparent z-10 rounded-2xl"></div>
             <video 
-              src="http://agroikemba.com.br/wp-content/uploads/2025/05/Add-a-heading-3.mp4"
+              src="http://agroikemba.com.br/wp-content/uploads/2025/05/Pitch-deck-1.mp4"
               autoPlay
               muted
               loop
