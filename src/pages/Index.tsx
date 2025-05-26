@@ -6,6 +6,7 @@ import Features from '@/components/home/Features';
 import HowItWorks from '@/components/home/HowItWorks';
 import Testimonials from '@/components/home/Testimonials';
 import CallToAction from '@/components/home/CallToAction';
+import WhatsAppButton from '@/components/ui/WhatsAppButton';
 
 const Index = () => {
   return (
@@ -19,6 +20,7 @@ const Index = () => {
         <CallToAction />
       </main>
       <Footer />
+      <WhatsAppButton phoneNumber="+55 43 984064141" />
     </div>
   );
 };
