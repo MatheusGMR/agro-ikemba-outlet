@@ -52,15 +52,22 @@ export default function Hero() {
           </div>
           
           <div className="relative flex-1 min-w-[300px] max-w-[600px]">
-            <div className="bg-gray-200 rounded-xl shadow-lg p-8 flex items-center justify-center min-h-[300px]">
-              <div className="text-center">
-                <div className="w-16 h-16 bg-agro-green rounded-full flex items-center justify-center mx-auto mb-4">
-                  <ArrowRight className="w-8 h-8 text-white" />
-                </div>
-                <h3 className="text-xl font-semibold text-gray-800 mb-2">Video em Breve</h3>
-                <p className="text-gray-600">Nossa demonstração em vídeo estará disponível em breve</p>
-              </div>
-            </div>
+            <video 
+              width="100%" 
+              controls 
+              autoPlay 
+              muted 
+              loop 
+              playsInline
+              className="rounded-xl shadow-lg"
+              style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}
+              onError={handleVideoError}
+              onLoadedData={handleVideoLoad}
+              onCanPlay={handleCanPlay}
+            >
+              <source src="http://agroikemba.com.br/wp-content/uploads/2025/05/Pitch-deck-1.mp4" type="video/mp4" />
+              Seu navegador não suporta a exibição deste vídeo.
+            </video>
             <div className="absolute bottom-4 right-4 bg-white/90 backdrop-blur-sm p-4 rounded-lg shadow-lg max-w-xs z-10">
               <p className="font-medium text-agro-green">Transações Simplificadas</p>
               <p className="text-sm text-gray-700">Conexões diretas significam negócios mais rápidos, melhores preços e logística simplificada</p>
