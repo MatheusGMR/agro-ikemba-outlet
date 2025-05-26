@@ -68,13 +68,6 @@ export default function Hero() {
               <source src="http://agroikemba.com.br/wp-content/uploads/2025/05/Pitch-deck-1.mp4" type="video/mp4" />
               Seu navegador não suporta a exibição deste vídeo.
             </video>
-            <div className="absolute bottom-4 right-4 bg-white/90 backdrop-blur-sm p-4 rounded-lg shadow-lg max-w-xs z-10">
-              <p className="font-medium text-agro-green">Transações Simplificadas</p>
-              <p className="text-sm text-gray-700">Conexões diretas significam negócios mais rápidos, melhores preços e logística simplificada</p>
-              <Button variant="link" className="text-agro-green p-0 h-auto flex items-center mt-2 font-medium">
-                Saiba mais <ArrowRight className="ml-1 w-4 h-4" />
-              </Button>
-            </div>
           </div>
         </div>
       </div>
