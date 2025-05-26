@@ -1,5 +1,4 @@
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -8,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
+
 const preRegistrationSchema = z.object({
   nome: z.string().min(1, 'Nome é obrigatório'),
   email: z.string().email('Email inválido'),
@@ -16,9 +16,19 @@ const preRegistrationSchema = z.object({
   tipo: z.string().min(1, 'Tipo é obrigatório'),
   conheceu: z.string().optional()
 });
+
 type PreRegistrationFormValues = z.infer<typeof preRegistrationSchema>;
+
 export default function PreRegistration() {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [scrollY, setScrollY] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => setScrollY(window.scrollY);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   const form = useForm<PreRegistrationFormValues>({
     resolver: zodResolver(preRegistrationSchema),
     defaultValues: {
@@ -30,6 +40,7 @@ export default function PreRegistration() {
       conheceu: ''
     }
   });
+
   const onSubmit = async (data: PreRegistrationFormValues) => {
     setIsSubmitting(true);
     try {
@@ -50,9 +61,25 @@ export default function PreRegistration() {
       setIsSubmitting(false);
     }
   };
-  return <section id="pre-cadastro" className="py-20 bg-gray-50">
-      <div className="container-custom">
-        <div className="text-center mb-12">
+
+  return (
+    <section id="pre-cadastro" className="py-20 bg-gray-50 relative overflow-hidden">
+      <div 
+        className="absolute inset-0 opacity-5"
+        style={{
+          transform: `translateY(${scrollY * 0.25}px)`,
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23075e54' fill-opacity='0.1'%3E%3Cpath d='M50 50c0 5.523-4.477 10-10 10s-10-4.477-10-10 4.477-10 10-10 10 4.477 10 10zm10 0c0-11.046-8.954-20-20-20s-20 8.954-20 20 8.954 20 20 20 20-8.954 20-20z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+          transition: 'transform 0.1s ease-out'
+        }}
+      />
+      <div className="container-custom relative z-10">
+        <div 
+          className="text-center mb-12"
+          style={{
+            transform: `translateY(${scrollY * 0.03}px)`,
+            transition: 'transform 0.1s ease-out'
+          }}
+        >
           <h2 className="text-3xl md:text-4xl font-bold mb-6">
             Pronto para transformar sua compra de produtos pós patente?
           </h2>
@@ -62,7 +89,13 @@ export default function PreRegistration() {
           </p>
         </div>
         
-        <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-8">
+        <div 
+          className="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-8"
+          style={{
+            transform: `translateY(${scrollY * 0.01}px)`,
+            transition: 'transform 0.1s ease-out'
+          }}
+        >
           <div className="text-center mb-8">
             <h3 className="text-2xl font-bold mb-4">Solicitar acesso antecipado</h3>
             <p className="text-gray-600">
@@ -169,5 +202,6 @@ export default function PreRegistration() {
           </p>
         </div>
       </div>
-    </section>;
+    </section>
+  );
 }
