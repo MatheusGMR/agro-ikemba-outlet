@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -113,14 +114,14 @@ export default function PreRegistration() {
 
               <FormField control={form.control} name="tipo" render={({
               field
-            }) => <FormItem className="bg-white">
+            }) => <FormItem>
                     <FormLabel>Você é:*</FormLabel>
                     <FormControl>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <SelectTrigger>
                           <SelectValue placeholder="Selecione uma opção" />
                         </SelectTrigger>
-                        <SelectContent className="Altere o fundo para branco\n">
+                        <SelectContent>
                           <SelectItem value="Distribuidor">Distribuidor</SelectItem>
                           <SelectItem value="Cooperativa">Cooperativa</SelectItem>
                           <SelectItem value="Fabricante">Fabricante</SelectItem>
