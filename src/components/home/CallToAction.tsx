@@ -24,24 +24,21 @@ export default function CallToAction() {
       <div 
         className="absolute inset-0 opacity-10"
         style={{
-          transform: `translateY(${scrollY * 0.2}px)`,
+          transform: `translateY(${scrollY * 0.1}px)`,
           backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='white' fill-opacity='0.1'%3E%3Cpath d='M20 20c0 11.046-8.954 20-20 20s-20-8.954-20-20 8.954-20 20-20 20 8.954 20 20zm10 0c0-16.569-13.431-30-30-30s-30 13.431-30 30 13.431 30 30 30 30-13.431 30-30z'/%3E%3C/g%3E%3C/svg%3E")`,
-          transition: 'transform 0.1s ease-out'
         }}
       />
       <div className="container-custom relative z-10">
         <div className="grid grid-cols-1 gap-1 items-center">
           <div
             style={{
-              transform: `translateY(${scrollY * 0.05}px)`,
-              transition: 'transform 0.1s ease-out'
+              transform: `translateY(${scrollY * 0.02}px)`,
             }}
           >
             <div className="flex flex-col sm:flex-row gap-4">
               <Button className="bg-white text-agro-green hover:bg-agro-green hover:text-white px-8 py-6 text-lg" asChild>
-                
+                <Link to="/register">Comece agora</Link>
               </Button>
-              
             </div>
           </div>
           
@@ -51,8 +48,7 @@ export default function CallToAction() {
                 key={index}
                 className="bg-agro-green-dark rounded-lg p-6 px-[23px]"
                 style={{
-                  transform: `translateY(${scrollY * 0.02 * (index + 1)}px)`,
-                  transition: 'transform 0.1s ease-out'
+                  transform: `translateY(${scrollY * 0.01 * (index + 1)}px)`,
                 }}
               >
                 <div className="text-3xl font-bold mb-2 text-agro-gold">{stat.value}</div>

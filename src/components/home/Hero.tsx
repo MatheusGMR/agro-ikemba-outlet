@@ -37,8 +37,7 @@ export default function Hero() {
           <div 
             className="space-y-6 animate-fade-in"
             style={{
-              transform: `translateY(${scrollY * 0.1}px)`,
-              transition: 'transform 0.1s ease-out'
+              transform: `translateY(${scrollY * 0.05}px)`,
             }}
           >
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
@@ -69,8 +68,7 @@ export default function Hero() {
           <div 
             className="relative flex-1 min-w-[300px] max-w-[600px]"
             style={{
-              transform: `translateY(${scrollY * -0.05}px)`,
-              transition: 'transform 0.1s ease-out'
+              transform: `translateY(${scrollY * -0.02}px)`,
             }}
           >
             <video 
@@ -97,15 +95,13 @@ export default function Hero() {
       <div 
         className="hidden md:block absolute -right-32 -top-32 w-96 h-96 bg-agro-gold/10 rounded-full blur-3xl"
         style={{
-          transform: `translateY(${scrollY * 0.15}px)`,
-          transition: 'transform 0.1s ease-out'
+          transform: `translateY(${scrollY * 0.08}px)`,
         }}
       ></div>
       <div 
         className="hidden md:block absolute -left-32 top-1/2 w-64 h-64 bg-agro-green/10 rounded-full blur-3xl"
         style={{
-          transform: `translateY(${scrollY * -0.1}px)`,
-          transition: 'transform 0.1s ease-out'
+          transform: `translateY(${scrollY * -0.05}px)`,
         }}
       ></div>
     </section>

@@ -67,17 +67,15 @@ export default function PreRegistration() {
       <div 
         className="absolute inset-0 opacity-5"
         style={{
-          transform: `translateY(${scrollY * 0.25}px)`,
+          transform: `translateY(${scrollY * 0.12}px)`,
           backgroundImage: `url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23075e54' fill-opacity='0.1'%3E%3Cpath d='M50 50c0 5.523-4.477 10-10 10s-10-4.477-10-10 4.477-10 10-10 10 4.477 10 10zm10 0c0-11.046-8.954-20-20-20s-20 8.954-20 20 8.954 20 20 20 20-8.954 20-20z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-          transition: 'transform 0.1s ease-out'
         }}
       />
       <div className="container-custom relative z-10">
         <div 
           className="text-center mb-12"
           style={{
-            transform: `translateY(${scrollY * 0.03}px)`,
-            transition: 'transform 0.1s ease-out'
+            transform: `translateY(${scrollY * 0.015}px)`,
           }}
         >
           <h2 className="text-3xl md:text-4xl font-bold mb-6">
@@ -92,8 +90,7 @@ export default function PreRegistration() {
         <div 
           className="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-8"
           style={{
-            transform: `translateY(${scrollY * 0.01}px)`,
-            transition: 'transform 0.1s ease-out'
+            transform: `translateY(${scrollY * 0.005}px)`,
           }}
         >
           <div className="text-center mb-8">
