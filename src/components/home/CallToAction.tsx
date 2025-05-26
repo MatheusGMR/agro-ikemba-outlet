@@ -17,7 +17,7 @@ export default function CallToAction() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Button className="bg-white text-agro-green hover:bg-agro-gold hover:text-white px-8 py-6 text-lg" asChild>
-                <Link to="/register">Pré-cadastre-se</Link>
+                <Link to="/register">Pedir cadastro</Link>
               </Button>
               <Button variant="outline" className="border-white text-white hover:bg-white hover:text-agro-green px-8 py-6 text-lg">
                 Fale agora
