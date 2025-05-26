@@ -1,10 +1,7 @@
-
 import { Link } from 'react-router-dom';
 import { Mail, MapPin, Phone } from 'lucide-react';
-
 export default function Footer() {
-  return (
-    <footer className="bg-agro-green-dark text-white">
+  return <footer className="bg-agro-green-dark text-white">
       <div className="container-custom py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Company info */}
@@ -28,7 +25,7 @@ export default function Footer() {
               </div>
               <div className="flex items-center gap-3">
                 <Phone className="w-5 h-5 text-agro-gold" />
-                <span>+55 11 98623-0007</span>
+                <span>+55 43 98406-4141</span>
               </div>
               <div className="flex items-center gap-3">
                 <Mail className="w-5 h-5 text-agro-gold" />
@@ -62,6 +59,5 @@ export default function Footer() {
           </div>
         </div>
       </div>
-    </footer>
-  );
+    </footer>;
 }
