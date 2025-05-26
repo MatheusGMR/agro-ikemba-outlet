@@ -34,19 +34,19 @@ export default function Hero() {
               Conectando fabricantes e distribuidores diretamente em uma única plataforma B2B poderosa para insumos agrícolas.
             </p>
             <p className="text-lg md:text-xl font-medium text-agro-earth">
-              Somos uma plataforma que simplifica o acesso a produtos post patent com modelo operacional de baixo custo, garantindo as melhores condições comerciais do mercado.
+              Somos um outlet que simplifica o acesso a produtos post patent com modelo operacional de baixo custo, garantindo as melhores condições comerciais do mercado.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
               <Button className="bg-agro-green hover:bg-agro-green-light text-white px-8 py-6 text-lg" asChild>
-                <Link to="/register">Cadastrar como Fabricante</Link>
+                <Link to="/register">Pré-cadastre-se</Link>
               </Button>
-              <Button variant="outline" className="border-agro-earth text-agro-earth hover:bg-agro-earth hover:text-white px-8 py-6 text-lg" asChild>
-                <Link to="/register">Cadastrar como Distribuidor</Link>
+              <Button variant="outline" className="border-agro-earth text-agro-earth hover:bg-agro-earth hover:text-white px-8 py-6 text-lg">
+                Saiba mais
               </Button>
             </div>
             <div className="flex items-center gap-8 pt-4">
               <p className="text-gray-700">
-                <span className="font-semibold">Comprando aqui economize +20%</span> com produtos genéricos
+                <span className="font-semibold">Economize +25% na compra de seus genéricos aqui</span>
               </p>
             </div>
           </div>

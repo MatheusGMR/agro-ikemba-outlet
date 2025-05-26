@@ -1,3 +1,4 @@
+
 import { Warehouse, BadgePercent, Truck, ShieldCheck, Clock, Check } from 'lucide-react';
 
 interface FeatureCardProps {
@@ -22,39 +23,39 @@ export default function Features() {
   const mainFeatures = [{
     icon: <Warehouse className="w-6 h-6 text-agro-green" />,
     title: "Armazenagem de Insumos",
-    description: "Tenha a disposição uma vasta rede de armazens parceiros que garantem a segurança até o periodo de uso dos produtos"
+    description: "Tenha a disposição uma vasta rede de +150 armazens parceiros que garantem a segurança até o periodo de uso dos produtos"
   }, {
     icon: <BadgePercent className="w-6 h-6 text-agro-green" />,
     title: "Preços Competitivos",
-    description: "Transações diretas eliminam intermediários, resultando em melhores preços para todos."
+    description: "Transações mais simples, resultando em melhores preços para todos, +20% de ganho financeiro."
   }, {
     icon: <Truck className="w-6 h-6 text-agro-green" />,
     title: "Logística Integrada",
-    description: "Tenha a disposição uma vasta rede de armazens parceiros que garantem a segurança até o periodo de uso dos produtos"
+    description: "Tenha a disposição uma vasta rede de +50 Operadores e Transportadoras que garantem a segurança até o periodo de uso dos produtos"
   }];
 
   const whyChooseUs = [{
     icon: <ShieldCheck className="w-6 h-6 text-agro-green" />,
-    title: "Transações Seguras",
-    description: "Nossa plataforma garante segurança de pagamento, garantia de qualidade e conformidade regulatória."
+    title: "Melhor preço",
+    description: "Temos um modelo de operação de baixo custo, 20% menor que o mercado, como resultado damos ao comprador os melhores preços."
   }, {
     icon: <Clock className="w-6 h-6 text-agro-green" />,
     title: "Eficiência de Tempo",
-    description: "Processos otimizados reduzem o tempo do pedido à entrega, economizando seu tempo valioso."
+    description: "Processos otimizados reduzem até 25% o tempo do pedido à entrega, economizando seu tempo valioso."
   }, {
     icon: <Check className="w-6 h-6 text-agro-green" />,
     title: "Garantia de Qualidade",
-    description: "Fornecedores verificados e controle de qualidade de produtos garantem que você receba o esperado."
+    description: "Fornecedores 100% verificados e controle de qualidade de produtos garantem que você receba o esperado."
   }];
 
   return <section className="py-20 bg-gray-50">
       <div className="container-custom">
         <div className="text-center max-w-3xl mx-auto mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-4 text-agro-green-dark">
-            Transformando o Comércio de Insumos Agrícolas
+            Transformando o comércio de insumos agrícolas
           </h2>
           <p className="text-lg text-gray-600">
-            Nossa plataforma B2B abrangente conecta fabricantes e distribuidores com ferramentas poderosas para otimizar operações e fazer crescer seu negócio.
+            Nossa plataforma B2B abrangente conecta fabricantes e importadores ao mercado, com processo simples e ágil para vender genéricos com preços imbatíveis.
           </p>
         </div>
 

@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { User, Search, ShoppingCart, Truck } from 'lucide-react';
 
@@ -6,25 +7,25 @@ const steps = [
     icon: <User className="w-8 h-8 text-agro-green" />,
     number: "1",
     title: "Cadastre-se",
-    description: "Crie sua conta como distribuidor ou indústria em poucos minutos e acesse condições comerciais exclusivas"
+    description: "Crie sua conta como distribuidor, cooperativa, redistribuidor, ou agricultor, e em poucos minutos acesse condições comerciais exclusivas"
   },
   {
     icon: <Search className="w-8 h-8 text-agro-green" />,
     number: "2",
     title: "Encontre Produtos",
-    description: "Acesse nosso catálogo completo de insumos agrícolas com preços diferenciados"
+    description: "Acesse nosso catálogo completo de insumos agrícolas com preços e condições comerciais diferenciados"
   },
   {
     icon: <ShoppingCart className="w-8 h-8 text-agro-green" />,
     number: "3",
     title: "Faça seu Pedido",
-    description: "Selecione os produtos, quantidades e aproveite nossas linhas de crédito exclusivas"
+    description: "Selecione os produtos, quantidades e aproveite preços 20% abaixo do mercado"
   },
   {
     icon: <Truck className="w-8 h-8 text-agro-green" />,
     number: "4",
     title: "Receba",
-    description: "Conte com nossa rede logística integrada de transportadoras e armazéns parceiros"
+    description: "Conte com nossa rede logística integrada com +50 transportadoras e armazéns parceiros"
   }
 ];
 

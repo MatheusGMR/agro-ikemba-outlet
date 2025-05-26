@@ -1,7 +1,10 @@
+
 import { Link } from 'react-router-dom';
 import { Mail, MapPin, Phone } from 'lucide-react';
+
 export default function Footer() {
-  return <footer className="bg-agro-green-dark text-white">
+  return (
+    <footer className="bg-agro-green-dark text-white">
       <div className="container-custom py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Company info */}
@@ -16,13 +19,12 @@ export default function Footer() {
               </span>
             </div>
             <p className="text-gray-300 mb-6 max-w-xs">
-              Conectando fabricantes de insumos agrícolas diretamente com canais de distribuição.
-              Simplificando e otimizando todo o processo de compra e venda.
+              Simplificando e otimizando todo o processo de compra e venda de genéricos.
             </p>
             <div className="space-y-3">
               <div className="flex items-start gap-3">
                 <MapPin className="w-5 h-5 text-agro-gold mt-0.5" />
-                <span>Av. Agrícola 123, São Paulo, Brasil</span>
+                <span>Rua Flamingos, 1651 - Centro, Arapongas, Paraná, Brasil</span>
               </div>
               <div className="flex items-center gap-3">
                 <Phone className="w-5 h-5 text-agro-gold" />
@@ -36,7 +38,7 @@ export default function Footer() {
           </div>
 
           {/* Quick links */}
-          <div className="Remove\n">
+          <div>
             <h3 className="font-poppins text-lg font-medium mb-4">Links Rápidos</h3>
             <ul className="space-y-2">
               <li><Link to="/" className="hover:text-agro-gold transition-colors">Início</Link></li>
@@ -85,5 +87,6 @@ export default function Footer() {
           </div>
         </div>
       </div>
-    </footer>;
+    </footer>
+  );
 }
