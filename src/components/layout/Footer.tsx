@@ -4,7 +4,7 @@ import { Mail, MapPin, Phone } from 'lucide-react';
 
 export default function Footer() {
   return (
-    <footer className="bg-white text-gray-800 border-t border-gray-200">
+    <footer className="bg-gray-800 text-white">
       <div className="container-custom py-16">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Company info and contact */}
@@ -16,29 +16,29 @@ export default function Footer() {
                 className="h-16 w-auto object-contain" 
               />
             </div>
-            <p className="text-gray-600 mb-6 max-w-xs">
+            <p className="text-gray-300 mb-6 max-w-xs">
               Simplificando e otimizando todo o processo de compra e venda de genéricos.
             </p>
             <div className="space-y-3">
               <div className="flex items-start gap-3">
                 <MapPin className="w-5 h-5 text-agro-green mt-0.5" />
-                <span className="text-gray-700">Rua Flamingos, 1651 - Centro, Arapongas, Paraná, Brasil</span>
+                <span className="text-gray-300">Rua Flamingos, 1651 - Centro, Arapongas, Paraná, Brasil</span>
               </div>
               <div className="flex items-center gap-3">
                 <Phone className="w-5 h-5 text-agro-green" />
-                <span className="text-gray-700">+55 43 98406-4141</span>
+                <span className="text-gray-300">+55 43 98406-4141</span>
               </div>
               <div className="flex items-center gap-3">
                 <Mail className="w-5 h-5 text-agro-green" />
-                <span className="text-gray-700">contato@agroikemba.com</span>
+                <span className="text-gray-300">contato@agroikemba.com</span>
               </div>
             </div>
           </div>
 
           {/* Quick Links */}
           <div>
-            <h4 className="font-poppins text-lg font-medium mb-4 text-gray-800">Links Rápidos</h4>
-            <ul className="space-y-2 text-gray-600">
+            <h4 className="font-poppins text-lg font-medium mb-4 text-white">Links Rápidos</h4>
+            <ul className="space-y-2 text-gray-300">
               <li><Link to="/" className="hover:text-agro-green transition-colors">Início</Link></li>
               <li><Link to="/products" className="hover:text-agro-green transition-colors">Produtos</Link></li>
               <li><Link to="/dashboard" className="hover:text-agro-green transition-colors">Dashboard</Link></li>
@@ -52,13 +52,13 @@ export default function Footer() {
 
           {/* Newsletter */}
           <div>
-            <h4 className="font-poppins text-lg font-medium mb-4 text-gray-800">Mantenha-se Atualizado</h4>
-            <p className="text-gray-600 mb-4">Inscreva-se em nossa newsletter para receber as últimas atualizações.</p>
+            <h4 className="font-poppins text-lg font-medium mb-4 text-white">Mantenha-se Atualizado</h4>
+            <p className="text-gray-300 mb-4">Inscreva-se em nossa newsletter para receber as últimas atualizações.</p>
             <form className="space-y-2 mb-6">
               <input 
                 type="email" 
                 placeholder="Seu endereço de e-mail" 
-                className="w-full px-4 py-2 rounded-md bg-white text-gray-800 placeholder-gray-400 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-agro-green" 
+                className="w-full px-4 py-2 rounded-md bg-gray-700 text-white placeholder-gray-400 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-agro-green" 
               />
               <button 
                 type="submit" 
@@ -68,24 +68,24 @@ export default function Footer() {
               </button>
             </form>
             <div className="flex gap-4">
-              <a href="#" className="hover:text-agro-green transition-colors text-gray-600">
+              <a href="#" className="hover:text-agro-green transition-colors text-gray-300">
                 <i className="fab fa-linkedin text-xl"></i>
               </a>
-              <a href="#" className="hover:text-agro-green transition-colors text-gray-600">
+              <a href="#" className="hover:text-agro-green transition-colors text-gray-300">
                 <i className="fab fa-facebook text-xl"></i>
               </a>
-              <a href="#" className="hover:text-agro-green transition-colors text-gray-600">
+              <a href="#" className="hover:text-agro-green transition-colors text-gray-300">
                 <i className="fab fa-twitter text-xl"></i>
               </a>
-              <a href="#" className="hover:text-agro-green transition-colors text-gray-600">
+              <a href="#" className="hover:text-agro-green transition-colors text-gray-300">
                 <i className="fab fa-instagram text-xl"></i>
               </a>
             </div>
           </div>
         </div>
 
-        <div className="border-t border-gray-200 mt-12 pt-6 text-center">
-          <p className="text-gray-600">© {new Date().getFullYear()} Agro Ikemba. Todos os direitos reservados.</p>
+        <div className="border-t border-gray-600 mt-12 pt-6 text-center">
+          <p className="text-gray-300">© {new Date().getFullYear()} Agro Ikemba. Todos os direitos reservados.</p>
         </div>
       </div>
     </footer>
