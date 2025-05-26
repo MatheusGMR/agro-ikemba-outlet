@@ -6,7 +6,7 @@ export default function Footer() {
   return (
     <footer className="bg-agro-green-dark text-white">
       <div className="container-custom py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Company info */}
           <div>
             <div className="flex items-center gap-1 mb-4">
@@ -35,31 +35,6 @@ export default function Footer() {
                 <span>contato@agroikemba.com</span>
               </div>
             </div>
-          </div>
-
-          {/* Quick links */}
-          <div>
-            <h3 className="font-poppins text-lg font-medium mb-4">Links Rápidos</h3>
-            <ul className="space-y-2">
-              <li><Link to="/" className="hover:text-agro-gold transition-colors">Início</Link></li>
-              <li><Link to="/products" className="hover:text-agro-gold transition-colors">Produtos</Link></li>
-              <li><Link to="/about" className="hover:text-agro-gold transition-colors">Sobre Nós</Link></li>
-              <li><Link to="/contact" className="hover:text-agro-gold transition-colors">Contato</Link></li>
-              <li><Link to="/terms" className="hover:text-agro-gold transition-colors">Termos de Serviço</Link></li>
-              <li><Link to="/privacy" className="hover:text-agro-gold transition-colors">Política de Privacidade</Link></li>
-            </ul>
-          </div>
-
-          {/* Solutions */}
-          <div>
-            <h3 className="font-poppins text-lg font-medium mb-4">Soluções</h3>
-            <ul className="space-y-2">
-              <li><Link to="/for-manufacturers" className="hover:text-agro-gold transition-colors">Para Fabricantes</Link></li>
-              <li><Link to="/for-distributors" className="hover:text-agro-gold transition-colors">Para Distribuidores</Link></li>
-              <li><Link to="/financial-services" className="hover:text-agro-gold transition-colors">Serviços Financeiros</Link></li>
-              <li><Link to="/logistics" className="hover:text-agro-gold transition-colors">Logística</Link></li>
-              <li><Link to="/storage" className="hover:text-agro-gold transition-colors">Soluções de Armazenamento</Link></li>
-            </ul>
           </div>
 
           {/* Newsletter */}
