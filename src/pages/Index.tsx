@@ -18,7 +18,7 @@ const Index = () => {
         <CallToAction />
       </main>
       <Footer />
-      <WhatsAppButton phoneNumber="+55 43 984064141" />
+      <WhatsAppButton phoneNumber="+55 43 98406-4141" />
     </div>
   );
 };
