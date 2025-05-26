@@ -11,8 +11,8 @@ export default function Footer() {
                 <span className="text-agro-green-dark font-bold text-sm">AI</span>
               </div>
               <span className="font-poppins font-bold text-xl">
-                <span className="text-white">Agro</span>
-                <span className="text-agro-gold">Ikemba</span>
+                
+                
               </span>
             </div>
             <p className="text-gray-300 mb-6 max-w-xs">
@@ -28,8 +28,8 @@ export default function Footer() {
                 <span>+55 43 98406-4141</span>
               </div>
               <div className="flex items-center gap-3">
-                <Mail className="w-5 h-5 text-agro-gold" />
-                <span>contato@agroikemba.com</span>
+                
+                
               </div>
             </div>
           </div>
