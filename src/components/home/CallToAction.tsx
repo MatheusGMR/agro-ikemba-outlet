@@ -1,9 +1,11 @@
+
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
+
 export default function CallToAction() {
   return <section className="py-20 bg-agro-green text-white">
       <div className="container-custom">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-1 items-center">
+        <div className="grid grid-cols-1 gap-1 items-center">
           <div>
             
             
