@@ -34,15 +34,12 @@ export default function Hero() {
             </div>
           </div>
           
-          <div className="relative lg:h-[500px] rounded-2xl overflow-hidden shadow-2xl animate-fade-in">
-            <div className="absolute inset-0 bg-gradient-to-r from-agro-green/20 to-transparent z-10 rounded-2xl"></div>
-            <video 
-              src="http://agroikemba.com.br/wp-content/uploads/2025/05/Pitch-deck-1.mp4"
-              autoPlay
-              muted
-              loop
-              playsInline
-              className="w-full h-full object-cover object-center"
+    <div class="hero-video" style="flex: 1; min-width: 300px; max-width: 600px;">
+      <video width="100%" controls autoplay muted loop playsinline style="border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+        <source src="http://agroikemba.com.br/wp-content/uploads/2025/05/Pitch-deck-1.mp4" type="video/mp4">
+        Seu navegador não suporta a exibição deste vídeo.
+      </video>
+    </div>
             >
               Your browser does not support the video tag.
             </video>
