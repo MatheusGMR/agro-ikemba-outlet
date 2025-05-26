@@ -16,7 +16,7 @@ export default function CallToAction() {
               transações simplificadas e serviços integrados adaptados para a melhora compra de seus genéricos.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button className="bg-white text-agro-green hover:bg-agro-gold hover:text-white px-8 py-6 text-lg" asChild>
+              <Button className="bg-white text-agro-green hover:bg-agro-green hover:text-white px-8 py-6 text-lg" asChild>
                 <Link to="/register">Pedir cadastro</Link>
               </Button>
               <Button variant="outline" className="border-white text-white hover:bg-white hover:text-agro-green px-8 py-6 text-lg">
