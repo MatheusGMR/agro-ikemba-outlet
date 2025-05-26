@@ -5,6 +5,7 @@ import Hero from '@/components/home/Hero';
 import Features from '@/components/home/Features';
 import HowItWorks from '@/components/home/HowItWorks';
 import CallToAction from '@/components/home/CallToAction';
+import PreRegistration from '@/components/home/PreRegistration';
 import WhatsAppButton from '@/components/ui/WhatsAppButton';
 
 const Index = () => {
@@ -16,6 +17,7 @@ const Index = () => {
         <Features />
         <HowItWorks />
         <CallToAction />
+        <PreRegistration />
       </main>
       <Footer />
       <WhatsAppButton phoneNumber="+55 43 98406-4141" />
