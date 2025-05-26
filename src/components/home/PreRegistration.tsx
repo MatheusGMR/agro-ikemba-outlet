@@ -113,7 +113,7 @@ export default function PreRegistration() {
 
               <FormField control={form.control} name="tipo" render={({
               field
-            }) => <FormItem>
+            }) => <FormItem className="bg-white">
                     <FormLabel>Você é:*</FormLabel>
                     <FormControl>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
