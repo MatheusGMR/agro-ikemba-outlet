@@ -1,10 +1,10 @@
-
 import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 
 export default function Hero() {
-  return <section className="relative bg-gradient-to-b from-agro-beige to-white overflow-hidden">
+  return (
+    <section className="relative bg-gradient-to-b from-agro-beige to-white overflow-hidden">
       <div className="container-custom relative z-10 py-16 md:py-24 lg:py-32">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div className="space-y-6 animate-fade-in">
@@ -35,7 +35,16 @@ export default function Hero() {
           
           <div className="relative lg:h-[500px] rounded-2xl overflow-hidden shadow-2xl animate-fade-in">
             <div className="absolute inset-0 bg-gradient-to-r from-agro-green/20 to-transparent z-10 rounded-2xl"></div>
-            <img src="https://images.unsplash.com/photo-1615811361523-6bd03d7748e7?q=80&w=1200&auto=format&fit=crop" alt="Paisagem agrícola" className="w-full h-full object-cover object-center" />
+            <video 
+              src="http://agroikemba.com.br/wp-content/uploads/2025/05/Add-a-heading-3.mp4"
+              autoPlay
+              muted
+              loop
+              playsInline
+              className="w-full h-full object-cover object-center"
+            >
+              Your browser does not support the video tag.
+            </video>
             <div className="absolute bottom-4 right-4 bg-white/90 backdrop-blur-sm p-4 rounded-lg shadow-lg max-w-xs z-10">
               <p className="font-medium text-agro-green">Transações Simplificadas</p>
               <p className="text-sm text-gray-700">Conexões diretas significam negócios mais rápidos, melhores preços e logística simplificada</p>
@@ -50,5 +59,6 @@ export default function Hero() {
       {/* Background decorations */}
       <div className="hidden md:block absolute -right-32 -top-32 w-96 h-96 bg-agro-gold/10 rounded-full blur-3xl"></div>
       <div className="hidden md:block absolute -left-32 top-1/2 w-64 h-64 bg-agro-green/10 rounded-full blur-3xl"></div>
-    </section>;
+    </section>
+  );
 }
