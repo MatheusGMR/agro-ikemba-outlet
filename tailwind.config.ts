@@ -59,21 +59,6 @@ export default {
 					"white": {
 						DEFAULT: "#FFFFFF",
 						"off": "#F9FAFB"
-					},
-					"beige": {
-						DEFAULT: "#F5F5DC",
-						"light": "#FAFAF0",
-						"dark": "#E5E5CE"
-					},
-					"earth": {
-						DEFAULT: "#8B4513",
-						"light": "#A0522D",
-						"dark": "#654321"
-					},
-					"gold": {
-						DEFAULT: "#FFD700",
-						"light": "#FFED4E",
-						"dark": "#B8860B"
 					}
 				}
 			},
