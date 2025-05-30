@@ -9,8 +9,11 @@ export default function Hero() {
     const video = e.target as HTMLVideoElement;
     console.log('Video error code:', video.error?.code);
     console.log('Video error message:', video.error?.message);
-    console.log('Video network state:', video.networkState);
-    console.log('Video ready state:', video.readyState);
+    // Hide video container on error
+    const videoContainer = video.parentElement;
+    if (videoContainer) {
+      videoContainer.style.display = 'none';
+    }
   };
 
   const handleVideoLoad = () => {
@@ -25,6 +28,7 @@ export default function Hero() {
     <section className="relative bg-gradient-to-b from-agro-beige to-white overflow-hidden">
       <div className="container-custom relative z-10 py-16 md:py-24 lg:py-32">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          {/* Content loads first for immediate FCP */}
           <div className="space-y-6 animate-fade-in">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
               <span className="text-black">Revolucionando o</span>{" "}
@@ -51,22 +55,33 @@ export default function Hero() {
             </div>
           </div>
           
+          {/* Video loads after content with poster for immediate visual */}
           <div className="relative flex-1 min-w-[300px] max-w-[600px]">
             <video 
               width="100%" 
               controls 
-              autoPlay 
               muted 
               loop 
               playsInline
-              className="rounded-xl shadow-lg"
+              loading="lazy"
+              poster="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAwIiBoZWlnaHQ9IjQwMCIgdmlld0JveD0iMCAwIDYwMCA0MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI2MDAiIGhlaWdodD0iNDAwIiBmaWxsPSIjRjVGNURDIi8+Cjx0ZXh0IHg9IjMwMCIgeT0iMjAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjMTdhMjQ5IiBmb250LXNpemU9IjI0IiBmb250LWZhbWlseT0iQXJpYWwiPkFncm8gSWtlbWJhIFZpZGVvPC90ZXh0Pgo8L3N2Zz4="
+              className="rounded-xl shadow-lg bg-agro-beige"
               style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}
               onError={handleVideoError}
               onLoadedData={handleVideoLoad}
               onCanPlay={handleCanPlay}
             >
               <source src="http://agroikemba.com.br/wp-content/uploads/2025/05/Pitch-deck-1.mp4" type="video/mp4" />
-              Seu navegador não suporta a exibição deste vídeo.
+              {/* Fallback content for when video fails */}
+              <div className="w-full h-full bg-agro-beige rounded-xl flex items-center justify-center">
+                <div className="text-center p-8">
+                  <div className="w-16 h-16 bg-agro-green rounded-full flex items-center justify-center mx-auto mb-4">
+                    <ArrowRight className="w-8 h-8 text-white" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-agro-green mb-2">Agro Ikemba</h3>
+                  <p className="text-gray-600">Revolucionando o mercado de insumos agrícolas</p>
+                </div>
+              </div>
             </video>
           </div>
         </div>
