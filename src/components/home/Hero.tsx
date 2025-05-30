@@ -85,10 +85,6 @@ export default function Hero() {
           </div>
         </div>
       </div>
-      
-      {/* Background decorations */}
-      <div className="hidden md:block absolute -right-32 -top-32 w-96 h-96 bg-green-100 rounded-full blur-3xl"></div>
-      <div className="hidden md:block absolute -left-32 top-1/2 w-64 h-64 bg-green-50 rounded-full blur-3xl"></div>
     </section>
   );
 }
