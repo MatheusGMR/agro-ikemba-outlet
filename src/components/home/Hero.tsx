@@ -63,7 +63,7 @@ export default function Hero() {
               muted 
               loop 
               playsInline
-              poster="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAwIiBoZWlnaHQ9IjQwMCIgdmlld0JveD0iMCAwIDYwMCA0MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI2MDAiIGhlaWdodD0iNDAwIiBmaWxsPSIjRjVGNURDIi8+Cjx0ZXh0IHg9IjMwMCIgeT0iMjAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjMTdhMjQ5IiBmb250LXNpemU9IjI0IiBmb250LWZhbWlseT0iQXJpYWwiPkFncm8gSWtlbWJhIFZpZGVvPC90ZXh0Pgo8L3N2Zz4="
+              poster="/lovable-uploads/6aea75d9-eade-440b-8bf4-099785748206.png"
               className="rounded-xl shadow-lg bg-agro-beige"
               style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}
               onError={handleVideoError}
