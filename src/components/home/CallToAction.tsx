@@ -35,7 +35,7 @@ export default function CallToAction() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             {stats.map((stat, index) => (
               <div key={index} className="bg-agro-green-dark rounded-lg p-6 px-[23px]">
-                <div className="text-3xl font-bold mb-2 text-yellow-500">{stat.value}</div>
+                <div className="text-3xl font-bold mb-2 text-agro-gold">{stat.value}</div>
                 <p className="text-gray-200">{stat.label}</p>
               </div>
             ))}

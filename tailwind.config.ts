@@ -59,7 +59,10 @@ export default {
 					"white": {
 						DEFAULT: "#FFFFFF",
 						"off": "#F9FAFB"
-					}
+					},
+					"beige": "#F5F1E8",
+					"earth": "#8B4513",
+					"gold": "#FFD700"
 				}
 			},
 			borderRadius: {

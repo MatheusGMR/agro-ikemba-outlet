@@ -15,7 +15,7 @@ const Testimonial = ({ quote, author, role, company, rating }: TestimonialProps)
       {[...Array(5)].map((_, i) => (
         <Star 
           key={i} 
-          className={`w-5 h-5 ${i < rating ? 'text-yellow-500 fill-yellow-500' : 'text-gray-300'}`}
+          className={`w-5 h-5 ${i < rating ? 'text-agro-gold fill-agro-gold' : 'text-gray-300'}`}
         />
       ))}
     </div>
@@ -53,7 +53,7 @@ export default function Testimonials() {
   ];
 
   return (
-    <section className="py-20 bg-orange-50/30">
+    <section className="py-20 bg-agro-beige/30">
       <div className="container-custom">
         <div className="text-center max-w-3xl mx-auto mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-4 text-agro-green-dark">
