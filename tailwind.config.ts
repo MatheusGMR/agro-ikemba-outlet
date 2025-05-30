@@ -50,19 +50,7 @@ export default {
 						DEFAULT: "#17a249",
 						"light": "#4ADE80",
 						"dark": "#15803D"
-					},
-					"black": {
-						DEFAULT: "#000000",
-						"light": "#1A1A1A",
-						"dark": "#0A0A0A"
-					},
-					"white": {
-						DEFAULT: "#FFFFFF",
-						"off": "#F9FAFB"
-					},
-					"beige": "#F5F1E8",
-					"earth": "#8B4513",
-					"gold": "#FFD700"
+					}
 				}
 			},
 			borderRadius: {

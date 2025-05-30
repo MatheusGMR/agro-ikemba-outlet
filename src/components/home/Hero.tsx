@@ -25,7 +25,7 @@ export default function Hero() {
   };
 
   return (
-    <section className="relative bg-gradient-to-b from-agro-beige to-white overflow-hidden">
+    <section className="relative bg-gradient-to-b from-gray-50 to-white overflow-hidden">
       <div className="container-custom relative z-10 py-16 md:py-24 lg:py-32">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           {/* Content loads first for immediate FCP */}
@@ -37,14 +37,14 @@ export default function Hero() {
             <p className="text-lg md:text-xl text-gray-700 max-w-lg">
               Conectando fabricantes e distribuidores diretamente em uma única plataforma B2B poderosa para insumos agrícolas.
             </p>
-            <p className="text-lg md:text-xl font-medium text-agro-earth">
+            <p className="text-lg md:text-xl font-medium text-gray-800">
               Somos um outlet que simplifica o acesso a produtos post patent com modelo operacional de baixo custo, garantindo as melhores condições comerciais do mercado.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
               <Button className="bg-agro-green hover:bg-agro-green-light text-white px-8 py-6 text-lg" asChild>
                 <Link to="/register">Pedir cadastro</Link>
               </Button>
-              <Button variant="outline" className="border-agro-earth text-agro-earth hover:bg-agro-earth hover:text-white px-8 py-6 text-lg">
+              <Button variant="outline" className="border-gray-800 text-gray-800 hover:bg-gray-800 hover:text-white px-8 py-6 text-lg">
                 Saiba mais
               </Button>
             </div>
@@ -64,7 +64,7 @@ export default function Hero() {
               loop 
               playsInline
               poster="/lovable-uploads/6aea75d9-eade-440b-8bf4-099785748206.png"
-              className="rounded-xl shadow-lg bg-agro-beige"
+              className="rounded-xl shadow-lg bg-gray-50"
               style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}
               onError={handleVideoError}
               onLoadedData={handleVideoLoad}
@@ -72,7 +72,7 @@ export default function Hero() {
             >
               <source src="https://agroikemba.com.br/wp-content/uploads/2025/05/Pitch-deck-1.mp4" type="video/mp4" />
               {/* Fallback content for when video fails */}
-              <div className="w-full h-full bg-agro-beige rounded-xl flex items-center justify-center">
+              <div className="w-full h-full bg-gray-50 rounded-xl flex items-center justify-center">
                 <div className="text-center p-8">
                   <div className="w-16 h-16 bg-agro-green rounded-full flex items-center justify-center mx-auto mb-4">
                     <ArrowRight className="w-8 h-8 text-white" />
@@ -87,8 +87,8 @@ export default function Hero() {
       </div>
       
       {/* Background decorations */}
-      <div className="hidden md:block absolute -right-32 -top-32 w-96 h-96 bg-agro-gold/10 rounded-full blur-3xl"></div>
-      <div className="hidden md:block absolute -left-32 top-1/2 w-64 h-64 bg-agro-green/10 rounded-full blur-3xl"></div>
+      <div className="hidden md:block absolute -right-32 -top-32 w-96 h-96 bg-green-100 rounded-full blur-3xl"></div>
+      <div className="hidden md:block absolute -left-32 top-1/2 w-64 h-64 bg-green-50 rounded-full blur-3xl"></div>
     </section>
   );
 }

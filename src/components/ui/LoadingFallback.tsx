@@ -3,7 +3,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export const LoadingFallback = () => {
   return (
-    <div className="min-h-screen bg-agro-beige">
+    <div className="min-h-screen bg-gray-50">
       {/* Header skeleton */}
       <div className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4">
         <Skeleton className="h-8 w-32" />
