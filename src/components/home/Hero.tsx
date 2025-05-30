@@ -25,7 +25,7 @@ export default function Hero() {
   };
 
   return (
-    <section className="relative bg-gradient-to-b from-gray-50 to-white overflow-hidden">
+    <section className="relative bg-white overflow-hidden">
       <div className="container-custom relative z-10 py-16 md:py-24 lg:py-32">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           {/* Content loads first for immediate FCP */}
@@ -85,6 +85,9 @@ export default function Hero() {
           </div>
         </div>
       </div>
+      
+      {/* Background decoration - only left side */}
+      <div className="hidden md:block absolute -left-32 top-1/2 w-64 h-64 bg-green-50 rounded-full blur-3xl"></div>
     </section>
   );
 }
