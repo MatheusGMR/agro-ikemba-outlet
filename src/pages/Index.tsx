@@ -11,6 +11,8 @@ import WhatsAppButton from '@/components/ui/WhatsAppButton';
 import { LoadingFallback } from '@/components/ui/LoadingFallback';
 
 const Index = () => {
+  console.log('Index page rendering');
+  
   return (
     <div className="flex flex-col min-h-screen">
       <Suspense fallback={<LoadingFallback />}>
