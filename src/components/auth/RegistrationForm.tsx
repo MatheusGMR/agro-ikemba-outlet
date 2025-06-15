@@ -165,7 +165,12 @@ export default function RegistrationForm() {
                 <FormMessage />
                 {watchEmail && !isCorporateEmail(watchEmail) && (
                   <p className="text-sm text-amber-600">
-                    Como você está usando um email não corporativo, será necessário informar o CNPJ da empresa.
+                    Como você está usando um email pessoal (Gmail, Hotmail, etc.), será necessário informar o CNPJ da empresa.
+                  </p>
+                )}
+                {watchEmail && isCorporateEmail(watchEmail) && (
+                  <p className="text-sm text-green-600">
+                    Email corporativo identificado. CNPJ não é necessário.
                   </p>
                 )}
               </FormItem>
@@ -194,6 +199,9 @@ export default function RegistrationForm() {
                     </div>
                   </FormControl>
                   <FormMessage />
+                  <p className="text-sm text-gray-500">
+                    Necessário apenas para emails pessoais (Gmail, Hotmail, etc.)
+                  </p>
                 </FormItem>
               )}
             />
