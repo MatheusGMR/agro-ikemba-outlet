@@ -22,13 +22,11 @@ export const formSchema = z.object({
   message: "Senhas não coincidem",
   path: ["confirmPassword"],
 }).refine((data) => {
-  // CNPJ is required ONLY for non-corporate emails (gmail, hotmail, etc.)
   if (!isCorporateEmail(data.email)) {
     return data.cnpj && cnpjRegex.test(data.cnpj);
   }
-  // For corporate emails, CNPJ is not required
   return true;
 }, {
-  message: "CNPJ é obrigatório para emails não corporativos (Gmail, Hotmail, Outlook, etc.) e deve seguir o formato XX.XXX.XXX/XXXX-XX",
+  message: "CNPJ é obrigatório para emails não corporativos e deve seguir o formato XX.XXX.XXX/XXXX-XX",
   path: ["cnpj"],
 });
