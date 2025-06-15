@@ -1,6 +1,5 @@
-
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Search, Filter, ShoppingCart, Bell, ChevronDown, GridIcon, List, Star, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,6 +10,7 @@ import { Pagination, PaginationContent, PaginationItem, PaginationLink, Paginati
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { Label } from '@/components/ui/label';
+import { useToast } from '@/hooks/use-toast';
 
 // Mock data for products
 const MOCK_PRODUCTS = [
@@ -143,6 +143,8 @@ const FORMULATIONS = [
 ];
 
 const ProductCatalog = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilters, setShowFilters] = useState(true);
@@ -154,6 +156,31 @@ const ProductCatalog = () => {
     formulations: [] as string[],
     inStock: false,
   });
+
+  // Check user permissions on component mount
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('user') || 'null');
+    
+    if (!user) {
+      toast({
+        title: "Acesso negado",
+        description: "Você precisa estar logado para acessar o catálogo de produtos.",
+        variant: "destructive"
+      });
+      navigate('/');
+      return;
+    }
+
+    if (!user.verified) {
+      toast({
+        title: "Acesso pendente",
+        description: "Seu acesso ainda não foi aprovado pelo administrador. Você será redirecionado para a página inicial.",
+        variant: "destructive"
+      });
+      navigate('/');
+      return;
+    }
+  }, [navigate, toast]);
 
   // Apply filters and search
   useEffect(() => {
@@ -253,6 +280,13 @@ const ProductCatalog = () => {
     });
     setSortBy('relevance');
   };
+
+  const user = JSON.parse(localStorage.getItem('user') || 'null');
+  
+  // Don't render the page content if user is not verified
+  if (!user || !user.verified) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen flex flex-col">

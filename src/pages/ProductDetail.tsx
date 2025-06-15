@@ -1,12 +1,12 @@
-
-import { useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { ChevronRight, Download, Heart, ShoppingCart, Star, Truck, Info, Plus, Minus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
+import { useToast } from '@/hooks/use-toast';
 
 // Mock product data
 const PRODUCT = {
@@ -106,10 +106,37 @@ const RELATED_PRODUCTS = [
 
 const ProductDetail = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const { toast } = useToast();
   const [selectedImage, setSelectedImage] = useState(PRODUCT.mainImage);
   const [selectedPackage, setSelectedPackage] = useState(PRODUCT.packaging[0]);
   const [quantity, setQuantity] = useState(1);
   const [isFavorite, setIsFavorite] = useState(false);
+  
+  // Check user permissions on component mount
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('user') || 'null');
+    
+    if (!user) {
+      toast({
+        title: "Acesso negado",
+        description: "Você precisa estar logado para acessar os detalhes do produto.",
+        variant: "destructive"
+      });
+      navigate('/');
+      return;
+    }
+
+    if (!user.verified) {
+      toast({
+        title: "Acesso pendente",
+        description: "Seu acesso ainda não foi aprovado pelo administrador. Você será redirecionado para a página inicial.",
+        variant: "destructive"
+      });
+      navigate('/');
+      return;
+    }
+  }, [navigate, toast]);
   
   const increaseQuantity = () => {
     setQuantity(prev => prev + 1);
@@ -122,6 +149,13 @@ const ProductDetail = () => {
   };
   
   const totalPrice = selectedPackage.price * quantity;
+  
+  const user = JSON.parse(localStorage.getItem('user') || 'null');
+  
+  // Don't render the page content if user is not verified
+  if (!user || !user.verified) {
+    return null;
+  }
   
   return (
     <div className="min-h-screen flex flex-col">

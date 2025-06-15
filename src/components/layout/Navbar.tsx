@@ -24,7 +24,7 @@ const NavItem = ({
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const user = JSON.parse(localStorage.getItem('user') || 'null');
-  const isAdmin = user?.email === 'admin@agroikemba.com'; // Simples verificação de admin
+  const isAdmin = user?.email === 'admin@agroikemba.com';
   
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -82,12 +82,16 @@ export default function Navbar() {
       {isMenuOpen && <div className="fixed inset-0 z-50 bg-background md:hidden pt-16">
           <nav className="container-custom py-4">
             <ul className="space-y-4 text-lg">
-              <NavItem href={user?.verified ? "/products" : "/"}>Início</NavItem>
-              <NavItem href="/products">Produtos</NavItem>
-              <NavItem href="/for-manufacturers">Para Fabricantes</NavItem>
-              <NavItem href="/for-distributors">Para Distribuidores</NavItem>
-              <NavItem href="/financial-services">Serviços Financeiros</NavItem>
-              <NavItem href="/logistics">Logística</NavItem>
+              <NavItem href="/">Início</NavItem>
+              {user?.verified && (
+                <>
+                  <NavItem href="/products">Produtos</NavItem>
+                  <NavItem href="/for-manufacturers">Para Fabricantes</NavItem>
+                  <NavItem href="/for-distributors">Para Distribuidores</NavItem>
+                  <NavItem href="/financial-services">Serviços Financeiros</NavItem>
+                  <NavItem href="/logistics">Logística</NavItem>
+                </>
+              )}
               <NavItem href="/about">Sobre Nós</NavItem>
               {isAdmin && (
                 <NavItem href="/admin">Administração</NavItem>
