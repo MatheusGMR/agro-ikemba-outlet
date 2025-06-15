@@ -36,12 +36,6 @@
     --ring: 142 70% 29%;
 
     --radius: 0.5rem;
-
-    /* Custom Agro Ikemba colors */
-    --agro-green: 142 70% 29%;
-    --agro-green-light: 142 70% 35%;
-    --agro-green-dark: 142 70% 25%;
-    --agro-white: 0 0% 100%;
   }
 
   .dark {
@@ -116,56 +110,5 @@
       opacity: 1;
       transform: translateY(0);
     }
-  }
-}
-
-/* Add custom Agro Ikemba color utilities */
-@layer utilities {
-  .text-agro-green {
-    color: hsl(var(--agro-green));
-  }
-  
-  .text-agro-green-light {
-    color: hsl(var(--agro-green-light));
-  }
-  
-  .text-agro-green-dark {
-    color: hsl(var(--agro-green-dark));
-  }
-  
-  .bg-agro-green {
-    background-color: hsl(var(--agro-green));
-  }
-  
-  .bg-agro-green-light {
-    background-color: hsl(var(--agro-green-light));
-  }
-  
-  .bg-agro-green-dark {
-    background-color: hsl(var(--agro-green-dark));
-  }
-  
-  .bg-agro-white {
-    background-color: hsl(var(--agro-white));
-  }
-  
-  .border-agro-green {
-    border-color: hsl(var(--agro-green));
-  }
-  
-  .hover\:bg-agro-green:hover {
-    background-color: hsl(var(--agro-green));
-  }
-  
-  .hover\:bg-agro-green-light:hover {
-    background-color: hsl(var(--agro-green-light));
-  }
-  
-  .hover\:bg-agro-green-dark:hover {
-    background-color: hsl(var(--agro-green-dark));
-  }
-  
-  .hover\:text-agro-green:hover {
-    color: hsl(var(--agro-green));
   }
 }
