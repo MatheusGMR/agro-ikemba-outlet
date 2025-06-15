@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import { Mail, User, Lock, Check, Clock, Users, MessageSquare, Building } from 'lucide-react';
+import { Mail, User, Lock, Check, Clock, Users, MessageSquare } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -20,28 +21,10 @@ import {
 
 type FormValues = z.infer<typeof formSchema>;
 
-const corporateEmailDomains = ['gmail.com', 'hotmail.com', 'outlook.com', 'yahoo.com', 'live.com', 'icloud.com'];
-
-const isCorporateEmail = (email: string) => {
-  const domain = email.split('@')[1]?.toLowerCase();
-  return domain && !corporateEmailDomains.includes(domain);
-};
-
-const formatCNPJ = (value: string) => {
-  const cleanValue = value.replace(/\D/g, '');
-  return cleanValue
-    .replace(/^(\d{2})(\d)/, '$1.$2')
-    .replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3')
-    .replace(/\.(\d{3})(\d)/, '.$1/$2')
-    .replace(/(\d{4})(\d)/, '$1-$2')
-    .slice(0, 18);
-};
-
 export default function RegistrationForm() {
   const navigate = useNavigate();
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showCNPJ, setShowCNPJ] = useState(false);
   
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -52,21 +35,8 @@ export default function RegistrationForm() {
       confirmPassword: '',
       tipo: '',
       conheceu: '',
-      cnpj: '',
     }
   });
-
-  const watchEmail = form.watch('email');
-
-  useEffect(() => {
-    if (watchEmail) {
-      const needsCNPJ = !isCorporateEmail(watchEmail);
-      setShowCNPJ(needsCNPJ);
-      if (!needsCNPJ) {
-        form.setValue('cnpj', '');
-      }
-    }
-  }, [watchEmail, form]);
 
   const onSubmit = async (data: FormValues) => {
     setIsSubmitting(true);
@@ -83,7 +53,6 @@ export default function RegistrationForm() {
           Email: ${data.email}
           Tipo: ${data.tipo}
           Como conheceu: ${data.conheceu || 'Não informado'}
-          CNPJ: ${data.cnpj || 'Email corporativo'}
           Data: ${new Date().toLocaleString('pt-BR')}
         `
       };
@@ -97,7 +66,6 @@ export default function RegistrationForm() {
         email: data.email,
         tipo: data.tipo,
         conheceu: data.conheceu,
-        cnpj: data.cnpj,
         verified: false,
         submittedAt: new Date().toISOString()
       }));
@@ -163,41 +131,9 @@ export default function RegistrationForm() {
                   </div>
                 </FormControl>
                 <FormMessage />
-                {watchEmail && !isCorporateEmail(watchEmail) && (
-                  <p className="text-sm text-amber-600">
-                    Como você está usando um email não corporativo, será necessário informar o CNPJ da empresa.
-                  </p>
-                )}
               </FormItem>
             )}
           />
-
-          {showCNPJ && (
-            <FormField
-              control={form.control}
-              name="cnpj"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>CNPJ da Empresa *</FormLabel>
-                  <FormControl>
-                    <div className="relative">
-                      <Building className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                      <Input 
-                        placeholder="XX.XXX.XXX/XXXX-XX"
-                        className="pl-10" 
-                        {...field}
-                        onChange={(e) => {
-                          const formatted = formatCNPJ(e.target.value);
-                          field.onChange(formatted);
-                        }}
-                      />
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          )}
 
           <FormField
             control={form.control}
