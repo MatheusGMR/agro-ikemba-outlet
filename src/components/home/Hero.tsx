@@ -28,10 +28,8 @@ export default function Hero() {
               <span className="text-black">Revolucionando o</span>{" "}
               <span className="text-agro-green">Mercado de Insumos</span>
             </h1>
-            <p className="text-lg md:text-xl text-gray-700 max-w-lg">Conexão de fabricantes e distribuidores diretamente em uma única plataforma B2B para insumos agrícolas</p>
-            <p className="text-lg md:text-xl font-medium text-gray-800">
-              Somos um outlet que simplifica o acesso a produtos post patent com modelo operacional de baixo custo, garantindo as melhores condições comerciais do mercado.
-            </p>
+            
+            <p className="text-lg md:text-xl font-medium text-gray-800">Nascida na revenda, somos um outlet que simplifica o acesso a produtos post patent com modelo operacional de baixo custo, garantindo as melhores condições comerciais do mercado.</p>
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
               <Button className="bg-agro-green hover:bg-agro-green-light text-white px-8 py-6 text-lg" asChild>
                 <Link to="/register">Pedir cadastro</Link>
