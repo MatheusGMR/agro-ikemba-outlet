@@ -36,11 +36,6 @@
     --ring: 142 70% 29%;
 
     --radius: 0.5rem;
-
-    /* Agro Ikemba Custom Colors */
-    --agro-green: #075e54;
-    --agro-green-light: #128c7e;
-    --agro-white: #ffffff;
   }
 
   .dark {
@@ -71,11 +66,6 @@
     --border: 154 15% 15%;
     --input: 154 15% 15%;
     --ring: 142 70% 40%;
-
-    /* Agro Ikemba Dark Mode Colors */
-    --agro-green: #128c7e;
-    --agro-green-light: #25d366;
-    --agro-white: #1f2937;
   }
 }
 
@@ -99,11 +89,11 @@
   }
 
   .btn-primary {
-    @apply bg-agro-green text-white hover:bg-agro-green-light transition-colors duration-300;
+    @apply bg-primary text-primary-foreground hover:bg-primary/90 transition-colors duration-300;
   }
 
   .btn-secondary {
-    @apply bg-agro-white text-agro-green hover:bg-gray-100 transition-colors duration-300;
+    @apply bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors duration-300;
   }
 
   /* Fix for missing animate-fade-in animation */
@@ -120,39 +110,5 @@
       opacity: 1;
       transform: translateY(0);
     }
-  }
-}
-
-@layer utilities {
-  /* Agro Ikemba Color Utilities */
-  .bg-agro-green {
-    background-color: var(--agro-green);
-  }
-  .bg-agro-green-light {
-    background-color: var(--agro-green-light);
-  }
-  .bg-agro-white {
-    background-color: var(--agro-white);
-  }
-  .text-agro-green {
-    color: var(--agro-green);
-  }
-  .text-agro-green-light {
-    color: var(--agro-green-light);
-  }
-  .text-agro-white {
-    color: var(--agro-white);
-  }
-  .border-agro-green {
-    border-color: var(--agro-green);
-  }
-  .hover\:bg-agro-green:hover {
-    background-color: var(--agro-green);
-  }
-  .hover\:bg-agro-green-light:hover {
-    background-color: var(--agro-green-light);
-  }
-  .hover\:text-agro-green:hover {
-    color: var(--agro-green);
   }
 }
