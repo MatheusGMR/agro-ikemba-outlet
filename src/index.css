@@ -40,7 +40,6 @@
     /* Agro Ikemba Custom Colors */
     --agro-green: #075e54;
     --agro-green-light: #128c7e;
-    --agro-green-dark: #054a42;
     --agro-white: #ffffff;
   }
 
@@ -76,7 +75,6 @@
     /* Agro Ikemba Dark Mode Colors */
     --agro-green: #128c7e;
     --agro-green-light: #25d366;
-    --agro-green-dark: #075e54;
     --agro-white: #1f2937;
   }
 }
@@ -101,7 +99,7 @@
   }
 
   .btn-primary {
-    @apply bg-agro-green text-white hover:bg-agro-green-dark transition-colors duration-300;
+    @apply bg-agro-green text-white hover:bg-agro-green-light transition-colors duration-300;
   }
 
   .btn-secondary {
@@ -133,9 +131,6 @@
   .bg-agro-green-light {
     background-color: var(--agro-green-light);
   }
-  .bg-agro-green-dark {
-    background-color: var(--agro-green-dark);
-  }
   .bg-agro-white {
     background-color: var(--agro-white);
   }
@@ -144,9 +139,6 @@
   }
   .text-agro-green-light {
     color: var(--agro-green-light);
-  }
-  .text-agro-green-dark {
-    color: var(--agro-green-dark);
   }
   .text-agro-white {
     color: var(--agro-white);
@@ -159,9 +151,6 @@
   }
   .hover\:bg-agro-green-light:hover {
     background-color: var(--agro-green-light);
-  }
-  .hover\:bg-agro-green-dark:hover {
-    background-color: var(--agro-green-dark);
   }
   .hover\:text-agro-green:hover {
     color: var(--agro-green);
