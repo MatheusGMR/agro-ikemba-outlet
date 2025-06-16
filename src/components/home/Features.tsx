@@ -13,39 +13,39 @@ const FeatureCard = ({
   description
 }: FeatureCardProps) => (
   <div className="bg-white rounded-xl p-6 shadow-md border border-gray-100 hover:shadow-lg transition-all duration-300">
-    <div className="w-12 h-12 bg-agro-green/10 rounded-full flex items-center justify-center mb-4">
+    <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
       {icon}
     </div>
-    <h3 className="text-xl font-semibold text-agro-green-dark mb-2">{title}</h3>
+    <h3 className="text-xl font-semibold text-brand-green-dark mb-2">{title}</h3>
     <p className="text-gray-600">{description}</p>
   </div>
 );
 
 export default function Features() {
   const mainFeatures = [{
-    icon: <Warehouse className="w-6 h-6 text-agro-green" />,
+    icon: <Warehouse className="w-6 h-6 text-primary" />,
     title: "Armazenagem de Insumos",
     description: "Tenha a disposição uma vasta rede de +150 armazens parceiros que garantem a segurança até o periodo de uso dos produtos"
   }, {
-    icon: <BadgePercent className="w-6 h-6 text-agro-green" />,
+    icon: <BadgePercent className="w-6 h-6 text-primary" />,
     title: "Preços Competitivos",
     description: "Transações mais simples, resultando em melhores preços para todos, +20% de ganho financeiro."
   }, {
-    icon: <Truck className="w-6 h-6 text-agro-green" />,
+    icon: <Truck className="w-6 h-6 text-primary" />,
     title: "Logística Integrada",
     description: "Tenha a disposição uma vasta rede de +50 Operadores e Transportadoras que garantem a segurança até o periodo de uso dos produtos"
   }];
 
   const whyChooseUs = [{
-    icon: <ShieldCheck className="w-6 h-6 text-agro-green" />,
+    icon: <ShieldCheck className="w-6 h-6 text-primary" />,
     title: "Melhor preço",
     description: "Temos um modelo de operação de baixo custo, 20% menor que o mercado, como resultado damos ao comprador os melhores preços."
   }, {
-    icon: <Clock className="w-6 h-6 text-agro-green" />,
+    icon: <Clock className="w-6 h-6 text-primary" />,
     title: "Eficiência de Tempo",
     description: "Processos otimizados reduzem até 25% o tempo do pedido à entrega, economizando seu tempo valioso."
   }, {
-    icon: <Check className="w-6 h-6 text-agro-green" />,
+    icon: <Check className="w-6 h-6 text-primary" />,
     title: "Garantia de Qualidade",
     description: "Fornecedores 100% verificados e controle de qualidade de produtos garantem que você receba o esperado."
   }];
@@ -59,7 +59,7 @@ export default function Features() {
       />
       <div className="container-custom relative z-10">
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-agro-green-dark">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-brand-green-dark">
             Transformando o comércio de insumos agrícolas
           </h2>
           <p className="text-lg text-gray-600">
@@ -80,7 +80,7 @@ export default function Features() {
 
         <div className="text-center max-w-3xl mx-auto mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-4 text-zinc-700">
-            Porque <span className="text-agro-green">Agro Ikemba</span> é sua melhor opção em genéricos?
+            Porque <span className="text-primary">Agro Ikemba</span> é sua melhor opção em genéricos?
           </h2>
         </div>
 

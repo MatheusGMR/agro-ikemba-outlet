@@ -26,12 +26,12 @@ export default {
 				background: 'hsl(var(--background))',
 				foreground: 'hsl(var(--foreground))',
 				primary: {
-					DEFAULT: '#17a249',
+					DEFAULT: '#14a249',
 					foreground: '#FFFFFF'
 				},
 				secondary: {
-					DEFAULT: '#f0f0f0',
-					foreground: '#17a249'
+					DEFAULT: '#ebf0f1',
+					foreground: '#000000'
 				},
 				destructive: {
 					DEFAULT: '#E53E3E',
@@ -43,14 +43,18 @@ export default {
 				},
 				accent: {
 					DEFAULT: '#EDF2F7',
-					foreground: '#17a249'
+					foreground: '#14a249'
 				},
-				"agro": {
+				// Cores do brandbook Agro Ikemba
+				"brand": {
 					"green": {
-						DEFAULT: "#17a249",
-						"light": "#4ADE80",
-						"dark": "#15803D"
-					}
+						DEFAULT: "#14a249",
+						"dark": "#115629"
+					},
+					"gray": {
+						DEFAULT: "#ebf0f1"
+					},
+					"black": "#000000"
 				}
 			},
 			borderRadius: {

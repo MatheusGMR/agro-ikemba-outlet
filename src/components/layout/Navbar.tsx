@@ -16,7 +16,7 @@ const NavItem = ({
   children,
   className
 }: NavItemProps) => <li>
-    <Link to={href} className={cn('text-foreground hover:text-agro-green transition-colors duration-200 py-2 block', className)}>
+    <Link to={href} className={cn('text-foreground hover:text-primary transition-colors duration-200 py-2 block', className)}>
       {children}
     </Link>
   </li>;
@@ -65,7 +65,7 @@ export default function Navbar() {
                 </Button>
               </div> : <>
                 <Button variant="outline">Entrar</Button>
-                <Button className="bg-agro-green hover:bg-agro-green-light" asChild>
+                <Button className="bg-primary hover:bg-primary/90" asChild>
                   <Link to="/register">Cadastrar</Link>
                 </Button>
               </>}
@@ -117,7 +117,7 @@ export default function Navbar() {
                   </Button>
                 </> : <>
                   <Button variant="outline" className="w-full">Entrar</Button>
-                  <Button className="w-full bg-agro-green hover:bg-agro-green-light" asChild>
+                  <Button className="w-full bg-primary hover:bg-primary/90" asChild>
                     <Link to="/register">Cadastrar</Link>
                   </Button>
                 </>}
