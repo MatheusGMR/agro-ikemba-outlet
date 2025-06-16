@@ -58,23 +58,45 @@ export default function Hero() {
             </div>
           </div>
           
-          {/* Video section with fallback content */}
+          {/* Video section with improved error handling */}
           <div className="relative flex-1 min-w-[300px] max-w-[600px]">
-            <div className="w-full h-64 md:h-80 bg-gray-50 rounded-xl flex items-center justify-center shadow-lg" style={{
-              boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
-            }}>
-              <div className="text-center p-8">
-                <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
-                  <ArrowRight className="w-8 h-8 text-white" />
+            {!videoError ? (
+              <video 
+                width="100%" 
+                controls 
+                muted 
+                loop 
+                playsInline 
+                poster="/lovable-uploads/6aea75d9-eade-440b-8bf4-099785748206.png"
+                className="rounded-xl shadow-lg bg-gray-50" 
+                style={{
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+                }}
+                onError={handleVideoError} 
+                onLoadedData={handleVideoLoad} 
+                onCanPlay={handleCanPlay}
+              >
+                <source src="https://agroikemba.com.br/wp-content/uploads/2025/05/Pitch-deck-1.mp4" type="video/mp4" />
+                Seu navegador não suporta o elemento de vídeo.
+              </video>
+            ) : (
+              /* Fallback content when video fails */
+              <div className="w-full h-64 md:h-80 bg-gray-50 rounded-xl flex items-center justify-center shadow-lg" style={{
+                boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+              }}>
+                <div className="text-center p-8">
+                  <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
+                    <ArrowRight className="w-8 h-8 text-white" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-primary mb-2">Agro Ikemba</h3>
+                  <p className="text-gray-600 mb-4">Revolucionando o mercado de insumos agrícolas</p>
+                  <p className="text-sm text-gray-500">Vídeo temporariamente indisponível</p>
+                  <Button variant="outline" className="mt-4" asChild>
+                    <Link to="/register">Conheça nossa proposta</Link>
+                  </Button>
                 </div>
-                <h3 className="text-xl font-semibold text-primary mb-2">Agro Ikemba</h3>
-                <p className="text-gray-600 mb-4">Revolucionando o mercado de insumos agrícolas</p>
-                <p className="text-sm text-gray-500">Vídeo de apresentação em breve</p>
-                <Button variant="outline" className="mt-4" asChild>
-                  <Link to="/register">Conheça nossa proposta</Link>
-                </Button>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </div>
