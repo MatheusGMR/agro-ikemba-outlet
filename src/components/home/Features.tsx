@@ -1,4 +1,3 @@
-
 import { Warehouse, BadgePercent, Truck, ShieldCheck, Clock, Check } from 'lucide-react';
 
 interface FeatureCardProps {
@@ -78,7 +77,7 @@ export default function Features() {
           ))}
         </div>
 
-        <div className="text-center max-w-3xl mx-auto mb-16">
+        <div id="why-choose-us" className="text-center max-w-3xl mx-auto mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-4 text-zinc-700">
             Porque <span className="text-primary">Agro Ikemba</span> é sua melhor opção em genéricos?
           </h2>

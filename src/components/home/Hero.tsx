@@ -27,6 +27,13 @@ export default function Hero() {
     console.log('Video can start playing');
   };
 
+  const handleSaibaMais = () => {
+    const section = document.getElementById('why-choose-us');
+    if (section) {
+      section.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <section className="relative bg-white overflow-hidden">
       <div className="container-custom relative z-10 py-16 md:py-24 lg:py-32">
@@ -46,7 +53,11 @@ export default function Hero() {
               <Button className="bg-primary hover:bg-primary/90 text-white px-8 py-6 text-lg" asChild>
                 <Link to="/register">Pedir cadastro</Link>
               </Button>
-              <Button variant="outline" className="border-gray-800 text-gray-800 hover:bg-gray-800 hover:text-white px-8 py-6 text-lg">
+              <Button 
+                variant="outline" 
+                className="border-gray-800 text-gray-800 hover:bg-gray-800 hover:text-white px-8 py-6 text-lg"
+                onClick={handleSaibaMais}
+              >
                 Saiba mais
               </Button>
             </div>
