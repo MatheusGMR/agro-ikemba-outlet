@@ -1,4 +1,5 @@
 import { Warehouse, BadgePercent, Truck, ShieldCheck, Clock, Check, Leaf, Bug, Shield as FungicideIcon } from 'lucide-react';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 
 interface FeatureCardProps {
   icon: React.ReactNode;
@@ -146,16 +147,30 @@ export default function Features() {
             />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
-            {genericProducts.map((product, index) => (
-              <ProductCard 
-                key={index}
-                name={product.name}
-                activeIngredient={product.activeIngredient}
-                type={product.type}
-                icon={product.icon}
-              />
-            ))}
+          {/* Carousel for Products */}
+          <div className="relative px-12">
+            <Carousel 
+              opts={{
+                align: "start",
+                loop: true,
+              }}
+              className="w-full"
+            >
+              <CarouselContent className="-ml-2 md:-ml-4">
+                {genericProducts.map((product, index) => (
+                  <CarouselItem key={index} className="pl-2 md:pl-4 basis-1/1 sm:basis-1/2 lg:basis-1/3">
+                    <ProductCard 
+                      name={product.name}
+                      activeIngredient={product.activeIngredient}
+                      type={product.type}
+                      icon={product.icon}
+                    />
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className="left-0" />
+              <CarouselNext className="right-0" />
+            </Carousel>
           </div>
         </div>
 
