@@ -19,12 +19,14 @@ export default function Hero() {
     console.log('Video network state:', video.networkState);
     console.log('Video ready state:', video.readyState);
     console.log('Video current src:', video.currentSrc);
+    console.log('Video sources available:', video.querySelectorAll('source'));
     setVideoError(true);
     setIsLoading(false);
   };
 
   const handleVideoLoad = () => {
     console.log('Video loaded successfully');
+    console.log('Video source used:', document.querySelector('video')?.currentSrc);
     setVideoLoaded(true);
     setIsLoading(false);
   };
@@ -129,7 +131,7 @@ export default function Hero() {
                   <h3 className="text-xl font-semibold text-primary mb-2">Agro Ikemba</h3>
                   <p className="text-gray-600 mb-4">Revolucionando o mercado de insumos agrícolas</p>
                   <p className="text-sm text-gray-500 mb-4">
-                    Para assistir ao nosso vídeo de apresentação, faça o upload do arquivo pitch-deck.mp4
+                    Para assistir ao nosso vídeo de apresentação, faça o upload do arquivo pitch-deck.mp4 para a pasta public_html/
                   </p>
                   <Button variant="outline" className="mt-4" asChild>
                     <Link to="/register">Conheça nossa proposta</Link>
