@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -10,19 +10,45 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { userService } from '@/services/userService';
 
+const corporateEmailDomains = ['gmail.com', 'hotmail.com', 'outlook.com', 'yahoo.com', 'live.com', 'icloud.com'];
+
+const isCorporateEmail = (email: string) => {
+  const domain = email.split('@')[1]?.toLowerCase();
+  return domain && !corporateEmailDomains.includes(domain);
+};
+
+const cnpjRegex = /^\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}$/;
+
+const formatCNPJ = (value: string) => {
+  const cleanValue = value.replace(/\D/g, '');
+  return cleanValue.replace(/^(\d{2})(\d)/, '$1.$2').replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3').replace(/\.(\d{3})(\d)/, '.$1/$2').replace(/(\d{4})(\d)/, '$1-$2').slice(0, 18);
+};
+
 const preRegistrationSchema = z.object({
   nome: z.string().min(1, 'Nome é obrigatório'),
   email: z.string().email('Email inválido'),
   telefone: z.string().min(1, 'Telefone é obrigatório'),
   empresa: z.string().min(1, 'Empresa é obrigatória'),
   tipo: z.string().min(1, 'Tipo é obrigatório'),
-  conheceu: z.string().optional()
+  conheceu: z.string().optional(),
+  cnpj: z.string().optional()
+}).refine((data) => {
+  // CNPJ is required ONLY for non-corporate emails (gmail, hotmail, etc.)
+  if (!isCorporateEmail(data.email)) {
+    return data.cnpj && cnpjRegex.test(data.cnpj);
+  }
+  // For corporate emails, CNPJ is not required
+  return true;
+}, {
+  message: "CNPJ é obrigatório para emails não corporativos (Gmail, Hotmail, Outlook, etc.) e deve seguir o formato XX.XXX.XXX/XXXX-XX",
+  path: ["cnpj"],
 });
 
 type PreRegistrationFormValues = z.infer<typeof preRegistrationSchema>;
 
 export default function PreRegistration() {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showCNPJ, setShowCNPJ] = useState(false);
 
   const form = useForm<PreRegistrationFormValues>({
     resolver: zodResolver(preRegistrationSchema),
@@ -32,9 +58,22 @@ export default function PreRegistration() {
       telefone: '',
       empresa: '',
       tipo: '',
-      conheceu: ''
+      conheceu: '',
+      cnpj: ''
     }
   });
+
+  const watchEmail = form.watch('email');
+
+  useEffect(() => {
+    if (watchEmail) {
+      const needsCNPJ = !isCorporateEmail(watchEmail);
+      setShowCNPJ(needsCNPJ);
+      if (!needsCNPJ) {
+        form.setValue('cnpj', '');
+      }
+    }
+  }, [watchEmail, form]);
 
   const onSubmit = async (data: PreRegistrationFormValues) => {
     setIsSubmitting(true);
@@ -61,7 +100,7 @@ export default function PreRegistration() {
         email: data.email,
         tipo: data.tipo,
         conheceu: data.conheceu,
-        cnpj: `Empresa: ${data.empresa} | Tel: ${data.telefone}`
+        cnpj: data.cnpj || `Empresa: ${data.empresa} | Tel: ${data.telefone}`
       });
 
       if (!success || userError) {
@@ -151,6 +190,16 @@ export default function PreRegistration() {
                     <Input type="email" placeholder="seu@email.com" {...field} />
                   </FormControl>
                   <FormMessage />
+                  {watchEmail && !isCorporateEmail(watchEmail) && (
+                    <p className="text-sm text-amber-600">
+                      Como você está usando um email pessoal (Gmail, Hotmail, etc.), será necessário informar o CNPJ da empresa.
+                    </p>
+                  )}
+                  {watchEmail && isCorporateEmail(watchEmail) && (
+                    <p className="text-sm text-green-600">
+                      Email corporativo identificado. CNPJ não é necessário.
+                    </p>
+                  )}
                 </FormItem>
               )} />
 
@@ -173,6 +222,29 @@ export default function PreRegistration() {
                   <FormMessage />
                 </FormItem>
               )} />
+
+              {showCNPJ && (
+                <FormField control={form.control} name="cnpj" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>CNPJ da Empresa *</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="XX.XXX.XXX/XXXX-XX"
+                        {...field}
+                        onChange={(e) => {
+                          const formatted = formatCNPJ(e.target.value);
+                          field.onChange(formatted);
+                        }}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                    <p className="text-sm text-gray-500">
+                      Necessário apenas para emails pessoais (Gmail, Hotmail, etc.)
+                    </p>
+                  </FormItem>
+                )}
+                />
+              )}
 
               <FormField control={form.control} name="tipo" render={({ field }) => (
                 <FormItem>
