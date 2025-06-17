@@ -16,6 +16,9 @@ export default function Hero() {
     const video = e.target as HTMLVideoElement;
     console.log('Video error code:', video.error?.code);
     console.log('Video error message:', video.error?.message);
+    console.log('Video network state:', video.networkState);
+    console.log('Video ready state:', video.readyState);
+    console.log('Video current src:', video.currentSrc);
     setVideoError(true);
     setIsLoading(false);
   };
@@ -29,6 +32,10 @@ export default function Hero() {
   const handleCanPlay = () => {
     console.log('Video can start playing');
     setIsLoading(false);
+  };
+
+  const handleLoadStart = () => {
+    console.log('Video started loading');
   };
 
   const handleSaibaMais = () => {
@@ -73,7 +80,7 @@ export default function Hero() {
             </div>
           </div>
           
-          {/* Video section using external URL */}
+          {/* Video section using local file */}
           <div className="relative flex-1 min-w-[300px] max-w-[600px]">
             {!videoError ? (
               <div className="relative">
@@ -101,7 +108,11 @@ export default function Hero() {
                   onError={handleVideoError} 
                   onLoadedData={handleVideoLoad} 
                   onCanPlay={handleCanPlay}
+                  onLoadStart={handleLoadStart}
                 >
+                  {/* Primary source - local MP4 */}
+                  <source src="/pitch-deck.mp4" type="video/mp4" />
+                  {/* Fallback source - external URL */}
                   <source src="https://agroikemba.com.br/wp-content/uploads/2025/05/Pitch-deck-1.mp4" type="video/mp4" />
                   Seu navegador não suporta o elemento de vídeo.
                 </video>
@@ -117,7 +128,9 @@ export default function Hero() {
                   </div>
                   <h3 className="text-xl font-semibold text-primary mb-2">Agro Ikemba</h3>
                   <p className="text-gray-600 mb-4">Revolucionando o mercado de insumos agrícolas</p>
-                  <p className="text-sm text-gray-500 mb-4">Vídeo temporariamente indisponível</p>
+                  <p className="text-sm text-gray-500 mb-4">
+                    Para assistir ao nosso vídeo de apresentação, faça o upload do arquivo pitch-deck.mp4
+                  </p>
                   <Button variant="outline" className="mt-4" asChild>
                     <Link to="/register">Conheça nossa proposta</Link>
                   </Button>
