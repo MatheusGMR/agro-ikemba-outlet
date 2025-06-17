@@ -176,7 +176,7 @@ export default function PreRegistration() {
                     <FormMessage />
                   </FormItem>} />
 
-              <Button type="submit" className="w-full bg-agro-green hover:bg-agro-green-dark text-white py-3 text-lg" disabled={isSubmitting}>
+              <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-white px-8 py-6 text-lg" disabled={isSubmitting}>
                 {isSubmitting ? 'Enviando...' : 'Enviar pré-cadastro'}
               </Button>
             </form>
