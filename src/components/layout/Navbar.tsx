@@ -1,6 +1,7 @@
-import { useState } from 'react';
+
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Menu, X, Shield } from 'lucide-react';
+import { Menu, X, Shield, Crown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
@@ -25,11 +26,35 @@ const NavItem = ({
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const user = JSON.parse(localStorage.getItem('user') || 'null');
-  const { isAuthenticated: isAdminAuthenticated } = useAdminAuth();
+  const [user, setUser] = useState(null);
+  const { isAuthenticated: isAdminAuthenticated, logout } = useAdminAuth();
+  
+  useEffect(() => {
+    // Verificar usuário logado
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (error) {
+        console.error('Erro ao parsear usuário:', error);
+        setUser(null);
+      }
+    }
+    
+    console.log('Navbar - Estado atual:', { 
+      user: storedUser ? JSON.parse(storedUser) : null, 
+      isAdminAuthenticated 
+    });
+  }, [isAdminAuthenticated]);
   
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
+  };
+
+  const handleLogout = () => {
+    logout();
+    setUser(null);
+    window.location.href = '/';
   };
   
   return (
@@ -54,20 +79,21 @@ export default function Navbar() {
           <div className="flex items-center gap-2">
             {user?.verified ? (
               <div className="flex items-center gap-2">
-                <span className="text-sm">Olá, {user.name.split(' ')[0]}</span>
+                <span className="text-sm">
+                  Olá, {user.name.split(' ')[0]}
+                  {isAdminAuthenticated && (
+                    <Crown className="w-4 h-4 inline ml-1 text-yellow-500" title="Administrador" />
+                  )}
+                </span>
                 {isAdminAuthenticated && (
-                  <Button variant="outline" size="sm" asChild>
+                  <Button variant="outline" size="sm" asChild className="bg-yellow-50 border-yellow-200 text-yellow-800 hover:bg-yellow-100">
                     <Link to="/admin">
                       <Shield className="w-4 h-4 mr-1" />
-                      Admin
+                      Painel Admin
                     </Link>
                   </Button>
                 )}
-                <Button variant="outline" onClick={() => {
-                  localStorage.removeItem('user');
-                  localStorage.removeItem('adminSession');
-                  window.location.href = '/';
-                }}>
+                <Button variant="outline" onClick={handleLogout}>
                   Sair
                 </Button>
               </div>
@@ -105,27 +131,28 @@ export default function Navbar() {
               )}
               <NavItem href="/about">Sobre Nós</NavItem>
               {isAdminAuthenticated && (
-                <NavItem href="/admin">Administração</NavItem>
+                <NavItem href="/admin">Painel Admin</NavItem>
               )}
             </ul>
             
             <div className="mt-8 flex flex-col gap-2">
               {user?.verified ? (
                 <>
-                  <span className="text-sm mb-2">Olá, {user.name.split(' ')[0]}</span>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-sm">Olá, {user.name.split(' ')[0]}</span>
+                    {isAdminAuthenticated && (
+                      <Crown className="w-4 h-4 text-yellow-500" title="Administrador" />
+                    )}
+                  </div>
                   {isAdminAuthenticated && (
-                    <Button variant="outline" className="w-full mb-2" asChild>
+                    <Button variant="outline" className="w-full mb-2 bg-yellow-50 border-yellow-200 text-yellow-800" asChild>
                       <Link to="/admin">
                         <Shield className="w-4 h-4 mr-1" />
                         Painel Admin
                       </Link>
                     </Button>
                   )}
-                  <Button variant="outline" className="w-full" onClick={() => {
-                    localStorage.removeItem('user');
-                    localStorage.removeItem('adminSession');
-                    window.location.href = '/';
-                  }}>
+                  <Button variant="outline" className="w-full" onClick={handleLogout}>
                     Sair
                   </Button>
                 </>

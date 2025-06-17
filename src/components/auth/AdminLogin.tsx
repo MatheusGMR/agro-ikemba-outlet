@@ -5,41 +5,75 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Lock, Mail } from 'lucide-react';
+import { Lock, Mail, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export default function AdminLogin() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
   const navigate = useNavigate();
+
+  const clearStorageAndStart = () => {
+    // Limpar qualquer dados conflitantes
+    localStorage.removeItem('adminSession');
+    localStorage.removeItem('user');
+    console.log('Storage limpo antes do login');
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError('');
+    
+    console.log('Tentativa de login:', { email, password: password ? '***' : 'vazio' });
 
-    // Verificar credenciais específicas do admin
-    if (email === 'admin@agroikemba.com' && password === 'AgroIkemba2024!') {
-      // Armazenar token de admin com timestamp
-      const adminSession = {
-        email: email,
-        isAdmin: true,
-        loginTime: Date.now(),
-        verified: true
-      };
-      
-      localStorage.setItem('adminSession', JSON.stringify(adminSession));
-      localStorage.setItem('user', JSON.stringify({
-        email: email,
-        name: 'Administrador',
-        verified: true,
-        isAdmin: true
-      }));
-      
-      toast.success('Login realizado com sucesso!');
-      navigate('/admin');
-    } else {
-      toast.error('Credenciais inválidas. Acesso negado.');
+    // Limpar storage antes de tentar
+    clearStorageAndStart();
+
+    try {
+      // Verificar credenciais específicas do admin
+      if (email === 'admin@agroikemba.com' && password === 'AgroIkemba2024!') {
+        console.log('Credenciais válidas, criando sessão...');
+        
+        // Armazenar token de admin com timestamp
+        const adminSession = {
+          email: email,
+          isAdmin: true,
+          loginTime: Date.now(),
+          verified: true
+        };
+        
+        const userSession = {
+          email: email,
+          name: 'Administrador',
+          verified: true,
+          isAdmin: true
+        };
+        
+        localStorage.setItem('adminSession', JSON.stringify(adminSession));
+        localStorage.setItem('user', JSON.stringify(userSession));
+        
+        console.log('Sessão criada:', adminSession);
+        
+        toast.success('Login realizado com sucesso!');
+        
+        // Dar um tempo para o storage ser persistido
+        setTimeout(() => {
+          console.log('Redirecionando para /admin');
+          navigate('/admin');
+        }, 100);
+      } else {
+        console.log('Credenciais inválidas');
+        setError('Credenciais inválidas. Verifique email e senha.');
+        toast.error('Credenciais inválidas. Acesso negado.');
+      }
+    } catch (error) {
+      console.error('Erro durante login:', error);
+      setError('Erro interno. Tente novamente.');
+      toast.error('Erro interno. Tente novamente.');
     }
     
     setIsLoading(false);
@@ -53,6 +87,13 @@ export default function AdminLogin() {
           <p className="text-gray-600">Entre com suas credenciais de admin</p>
         </CardHeader>
         <CardContent>
+          {error && (
+            <Alert className="mb-4" variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+          
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
               <Label htmlFor="email">Email</Label>
@@ -66,6 +107,7 @@ export default function AdminLogin() {
                   className="pl-10"
                   placeholder="admin@agroikemba.com"
                   required
+                  disabled={isLoading}
                 />
               </div>
             </div>
@@ -82,6 +124,7 @@ export default function AdminLogin() {
                   className="pl-10"
                   placeholder="Digite sua senha"
                   required
+                  disabled={isLoading}
                 />
               </div>
             </div>
@@ -94,6 +137,14 @@ export default function AdminLogin() {
               {isLoading ? 'Entrando...' : 'Entrar'}
             </Button>
           </form>
+          
+          <div className="mt-4 text-center">
+            <p className="text-sm text-gray-500">
+              Credenciais de teste:<br />
+              Email: admin@agroikemba.com<br />
+              Senha: AgroIkemba2024!
+            </p>
+          </div>
         </CardContent>
       </Card>
     </div>
