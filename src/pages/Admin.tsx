@@ -1,5 +1,5 @@
-
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -21,7 +21,8 @@ import {
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { PendingUser, AdminStats } from '@/types/admin';
-import { Check, X, Eye, Users, UserCheck, UserX, Clock } from 'lucide-react';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
+import { Check, X, Eye, Users, UserCheck, UserX, Clock, LogOut } from 'lucide-react';
 
 export default function Admin() {
   const [pendingUsers, setPendingUsers] = useState<PendingUser[]>([]);
@@ -34,6 +35,8 @@ export default function Admin() {
     totalUsers: 0
   });
   const { toast } = useToast();
+  const { logout } = useAdminAuth();
+  const navigate = useNavigate();
 
   // Simular dados - em produção viriam do backend
   useEffect(() => {
@@ -133,12 +136,23 @@ export default function Admin() {
     }
   };
 
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Painel Administrativo</h1>
-          <p className="text-gray-600">Gerencie os acessos à plataforma Agro Ikemba</p>
+        <div className="mb-8 flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Painel Administrativo</h1>
+            <p className="text-gray-600">Gerencie os acessos à plataforma Agro Ikemba</p>
+          </div>
+          <Button variant="outline" onClick={handleLogout}>
+            <LogOut className="w-4 h-4 mr-2" />
+            Sair
+          </Button>
         </div>
 
         {/* Stats Cards */}

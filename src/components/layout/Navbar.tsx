@@ -1,9 +1,9 @@
-
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Menu, X, ChevronDown, Shield } from 'lucide-react';
+import { Menu, X, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
 
 interface NavItemProps {
   href: string;
@@ -24,7 +24,7 @@ const NavItem = ({
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const user = JSON.parse(localStorage.getItem('user') || 'null');
-  const isAdmin = user?.email === 'admin@agroikemba.com';
+  const { isAuthenticated: isAdminAuthenticated } = useAdminAuth();
   
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -49,7 +49,7 @@ export default function Navbar() {
           <div className="flex items-center gap-2">
             {user?.verified ? <div className="flex items-center gap-2">
                 <span className="text-sm">Olá, {user.name.split(' ')[0]}</span>
-                {isAdmin && (
+                {isAdminAuthenticated && (
                   <Button variant="outline" size="sm" asChild>
                     <Link to="/admin">
                       <Shield className="w-4 h-4 mr-1" />
@@ -59,6 +59,7 @@ export default function Navbar() {
                 )}
                 <Button variant="outline" onClick={() => {
               localStorage.removeItem('user');
+              localStorage.removeItem('adminSession');
               window.location.href = '/';
             }}>
                   Sair
@@ -93,7 +94,7 @@ export default function Navbar() {
                 </>
               )}
               <NavItem href="/about">Sobre Nós</NavItem>
-              {isAdmin && (
+              {isAdminAuthenticated && (
                 <NavItem href="/admin">Administração</NavItem>
               )}
             </ul>
@@ -101,7 +102,7 @@ export default function Navbar() {
             <div className="mt-8 flex flex-col gap-2">
               {user?.verified ? <>
                   <span className="text-sm mb-2">Olá, {user.name.split(' ')[0]}</span>
-                  {isAdmin && (
+                  {isAdminAuthenticated && (
                     <Button variant="outline" className="w-full mb-2" asChild>
                       <Link to="/admin">
                         <Shield className="w-4 h-4 mr-1" />
@@ -111,6 +112,7 @@ export default function Navbar() {
                   )}
                   <Button variant="outline" className="w-full" onClick={() => {
               localStorage.removeItem('user');
+              localStorage.removeItem('adminSession');
               window.location.href = '/';
             }}>
                     Sair
