@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
@@ -13,7 +12,7 @@ import { toast } from 'sonner';
 import { formSchema } from '@/lib/validations/auth';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from '@/integrations/supabase/client';
-import { addPendingUser } from '@/utils/adminStorage';
+import { userService } from '@/services/userService';
 
 type FormValues = z.infer<typeof formSchema>;
 
@@ -72,17 +71,33 @@ export default function RegistrationForm() {
     });
 
     try {
-      // SEMPRE adicionar ao painel admin primeiro
-      console.log('Adicionando usuário ao painel admin...');
-      addPendingUser({
+      // Verificar se email já existe
+      const { exists, error: checkError } = await userService.checkEmailExists(data.email);
+      if (checkError) {
+        throw new Error(`Erro ao verificar email: ${checkError}`);
+      }
+      
+      if (exists) {
+        toast.error('Este email já está cadastrado!');
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Adicionar usuário ao Supabase
+      console.log('Salvando usuário no Supabase...');
+      const { success, error: userError, user } = await userService.addUser({
         name: data.name,
         email: data.email,
         tipo: data.tipo,
         conheceu: data.conheceu,
         cnpj: data.cnpj
       });
-      
-      // Armazenar dados do usuário localmente
+
+      if (!success || userError) {
+        throw new Error(`Erro ao salvar usuário: ${userError}`);
+      }
+
+      // Armazenar dados do usuário localmente para navegação
       console.log('Salvando dados do usuário no localStorage...');
       localStorage.setItem('user', JSON.stringify({
         name: data.name,
@@ -120,9 +135,9 @@ export default function RegistrationForm() {
         console.warn('Aviso: Erro inesperado no envio de emails:', emailError);
       }
 
-      // SEMPRE mostrar sucesso, independentemente dos emails
+      // SEMPRE mostrar sucesso
       console.log('=== CADASTRO CONCLUÍDO COM SUCESSO ===');
-      console.log('Usuário adicionado ao painel admin para aprovação');
+      console.log('Usuário salvo no Supabase para aprovação do admin');
       
       setShowConfirmation(true);
 
@@ -135,7 +150,7 @@ export default function RegistrationForm() {
     } catch (error) {
       console.error('=== ERRO CRÍTICO NO CADASTRO ===');
       console.error('Erro:', error);
-      toast.error('Erro inesperado. Seus dados foram salvos para análise. Tente novamente ou entre em contato conosco.');
+      toast.error('Erro ao processar cadastro. Tente novamente ou entre em contato conosco.');
     } finally {
       setIsSubmitting(false);
     }

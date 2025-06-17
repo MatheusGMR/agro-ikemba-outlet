@@ -24,12 +24,13 @@ import { toast } from 'sonner';
 import { PendingUser, AdminStats } from '@/types/admin';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { Check, X, Eye, Users, UserCheck, UserX, Clock, LogOut, RefreshCw } from 'lucide-react';
-import { getStoredUsers, updateUserStatus } from '@/utils/adminStorage';
+import { userService } from '@/services/userService';
 
 export default function Admin() {
   const [pendingUsers, setPendingUsers] = useState<PendingUser[]>([]);
   const [selectedUser, setSelectedUser] = useState<PendingUser | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [stats, setStats] = useState<AdminStats>({
     totalPending: 0,
     totalApproved: 0,
@@ -39,15 +40,30 @@ export default function Admin() {
   const { logout } = useAdminAuth();
   const navigate = useNavigate();
 
-  const loadUsers = () => {
-    console.log('Carregando usuários do storage...');
-    const users = getStoredUsers();
-    console.log('Usuários carregados:', users);
-    setPendingUsers(users);
+  const loadUsers = async () => {
+    console.log('Carregando usuários do Supabase...');
+    setIsLoading(true);
+    
+    try {
+      const { success, users, error } = await userService.getUsers();
+      
+      if (success && users) {
+        console.log('Usuários carregados do Supabase:', users.length);
+        setPendingUsers(users);
+      } else {
+        console.error('Erro ao carregar usuários:', error);
+        toast.error('Erro ao carregar usuários: ' + error);
+      }
+    } catch (error) {
+      console.error('Erro inesperado ao carregar usuários:', error);
+      toast.error('Erro inesperado ao carregar dados');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
-    console.log('Admin panel inicializado - carregando usuários...');
+    console.log('Admin panel inicializado - carregando usuários do Supabase...');
     loadUsers();
     
     // Recarregar dados a cada 30 segundos para capturar novos cadastros
@@ -71,24 +87,44 @@ export default function Admin() {
     setStats(newStats);
   }, [pendingUsers]);
 
-  const handleApprove = (userId: string) => {
+  const handleApprove = async (userId: string) => {
     console.log('Aprovando usuário:', userId);
-    updateUserStatus(userId, 'approved');
-    loadUsers(); // Recarregar dados
     
-    toast.success('Usuário aprovado com sucesso!', {
-      description: 'O acesso foi liberado para o usuário.',
-    });
+    try {
+      const { success, error } = await userService.updateUserStatus(userId, 'approved');
+      
+      if (success) {
+        await loadUsers(); // Recarregar dados do Supabase
+        toast.success('Usuário aprovado com sucesso!', {
+          description: 'O acesso foi liberado para o usuário.',
+        });
+      } else {
+        toast.error('Erro ao aprovar usuário: ' + error);
+      }
+    } catch (error) {
+      console.error('Erro ao aprovar usuário:', error);
+      toast.error('Erro inesperado ao aprovar usuário');
+    }
   };
 
-  const handleReject = (userId: string) => {
+  const handleReject = async (userId: string) => {
     console.log('Rejeitando usuário:', userId);
-    updateUserStatus(userId, 'rejected');
-    loadUsers(); // Recarregar dados
     
-    toast.error('Usuário rejeitado', {
-      description: 'O acesso foi negado para o usuário.',
-    });
+    try {
+      const { success, error } = await userService.updateUserStatus(userId, 'rejected');
+      
+      if (success) {
+        await loadUsers(); // Recarregar dados do Supabase
+        toast.error('Usuário rejeitado', {
+          description: 'O acesso foi negado para o usuário.',
+        });
+      } else {
+        toast.error('Erro ao rejeitar usuário: ' + error);
+      }
+    } catch (error) {
+      console.error('Erro ao rejeitar usuário:', error);
+      toast.error('Erro inesperado ao rejeitar usuário');
+    }
   };
 
   const openUserDialog = (user: PendingUser) => {
@@ -115,7 +151,7 @@ export default function Admin() {
   };
 
   const handleRefresh = () => {
-    console.log('Atualizando lista de usuários...');
+    console.log('Atualizando lista de usuários do Supabase...');
     loadUsers();
     toast.success('Lista atualizada!');
   };
@@ -129,8 +165,8 @@ export default function Admin() {
             <p className="text-gray-600">Gerencie os acessos à plataforma Agro Ikemba</p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={handleRefresh}>
-              <RefreshCw className="w-4 h-4 mr-2" />
+            <Button variant="outline" onClick={handleRefresh} disabled={isLoading}>
+              <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
               Atualizar
             </Button>
             <Button variant="outline" onClick={handleLogout}>
@@ -189,7 +225,12 @@ export default function Admin() {
             <CardTitle>Solicitações de Acesso ({pendingUsers.length} total)</CardTitle>
           </CardHeader>
           <CardContent>
-            {pendingUsers.length === 0 ? (
+            {isLoading ? (
+              <div className="text-center py-8">
+                <RefreshCw className="h-8 w-8 mx-auto mb-4 animate-spin text-gray-400" />
+                <p className="text-gray-500">Carregando usuários...</p>
+              </div>
+            ) : pendingUsers.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
                 <Users className="h-12 w-12 mx-auto mb-4 text-gray-300" />
                 <p>Nenhuma solicitação de cadastro encontrada.</p>

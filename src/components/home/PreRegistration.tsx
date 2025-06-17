@@ -8,7 +8,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { addPendingUser } from '@/utils/adminStorage';
+import { userService } from '@/services/userService';
 
 const preRegistrationSchema = z.object({
   nome: z.string().min(1, 'Nome é obrigatório'),
@@ -42,15 +42,31 @@ export default function PreRegistration() {
     console.log('Dados do pré-cadastro:', data);
 
     try {
-      // SEMPRE adicionar ao painel admin primeiro
-      console.log('Adicionando pré-cadastro ao painel admin...');
-      addPendingUser({
+      // Verificar se email já existe
+      const { exists, error: checkError } = await userService.checkEmailExists(data.email);
+      if (checkError) {
+        throw new Error(`Erro ao verificar email: ${checkError}`);
+      }
+      
+      if (exists) {
+        toast.error('Este email já está cadastrado!');
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Salvar no Supabase
+      console.log('Salvando pré-cadastro no Supabase...');
+      const { success, error: userError } = await userService.addUser({
         name: data.nome,
         email: data.email,
         tipo: data.tipo,
         conheceu: data.conheceu,
         cnpj: `Empresa: ${data.empresa} | Tel: ${data.telefone}`
       });
+
+      if (!success || userError) {
+        throw new Error(`Erro ao salvar pré-cadastro: ${userError}`);
+      }
 
       // Tentar enviar via Edge Function (não crítico)
       console.log('Tentando enviar emails do pré-cadastro...');
@@ -72,7 +88,7 @@ export default function PreRegistration() {
 
       // SEMPRE mostrar sucesso
       console.log('=== PRÉ-CADASTRO CONCLUÍDO COM SUCESSO ===');
-      console.log('Pré-cadastro adicionado ao painel admin para análise');
+      console.log('Pré-cadastro salvo no Supabase para análise do admin');
       
       toast.success('Pré-cadastro enviado com sucesso!', {
         description: 'Sua solicitação foi enviada para análise. Entraremos em contato em breve.',
@@ -83,7 +99,7 @@ export default function PreRegistration() {
     } catch (error) {
       console.error('=== ERRO NO PRÉ-CADASTRO ===');
       console.error('Erro:', error);
-      toast.error('Erro ao enviar pré-cadastro. Seus dados foram salvos para análise. Tente novamente ou entre em contato conosco.');
+      toast.error('Erro ao enviar pré-cadastro. Tente novamente ou entre em contato conosco.');
     } finally {
       setIsSubmitting(false);
     }
