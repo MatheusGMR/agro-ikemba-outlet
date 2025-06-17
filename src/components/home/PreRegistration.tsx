@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -8,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 const preRegistrationSchema = z.object({
   nome: z.string().min(1, 'Nome é obrigatório'),
@@ -38,16 +38,24 @@ export default function PreRegistration() {
   const onSubmit = async (data: PreRegistrationFormValues) => {
     setIsSubmitting(true);
     try {
-      // Simular envio para FormSubmit.co
-      console.log('Dados do pré-cadastro:', data);
+      console.log('Enviando dados do pré-cadastro:', data);
 
-      // Em um ambiente real, os dados seriam enviados para o endpoint
-      const formData = new FormData();
-      Object.entries(data).forEach(([key, value]) => {
-        formData.append(key, value || '');
+      const { data: response, error } = await supabase.functions.invoke('send-pre-registration', {
+        body: data
       });
-      toast.success('Pré-cadastro enviado com sucesso!');
-      form.reset();
+
+      if (error) {
+        console.error('Erro na função:', error);
+        toast.error('Erro ao enviar pré-cadastro. Tente novamente.');
+        return;
+      }
+
+      if (response?.success) {
+        toast.success('Pré-cadastro enviado com sucesso! Verifique seu email.');
+        form.reset();
+      } else {
+        toast.error(response?.message || 'Erro ao enviar pré-cadastro. Tente novamente.');
+      }
     } catch (error) {
       console.error('Erro ao enviar pré-cadastro:', error);
       toast.error('Erro ao enviar pré-cadastro. Tente novamente.');
