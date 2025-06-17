@@ -2,8 +2,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "npm:resend@2.0.0";
 
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
-
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -18,12 +16,17 @@ interface RegistrationRequest {
 }
 
 const handler = async (req: Request): Promise<Response> => {
+  console.log("=== INÍCIO DA FUNÇÃO SEND-REGISTRATION ===");
+  console.log("Método:", req.method);
+  
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
+    console.log("Retornando headers CORS para OPTIONS");
     return new Response(null, { headers: corsHeaders });
   }
 
   if (req.method !== "POST") {
+    console.log("Método não permitido:", req.method);
     return new Response("Method not allowed", { 
       status: 405, 
       headers: corsHeaders 
@@ -31,9 +34,39 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const data: RegistrationRequest = await req.json();
-    console.log("Dados de cadastro recebidos:", data);
+    // Verificar se a chave da API do Resend está configurada
+    const resendApiKey = Deno.env.get("RESEND_API_KEY");
+    if (!resendApiKey) {
+      console.error("ERRO CRÍTICO: RESEND_API_KEY não está configurada!");
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: "Configuração de email não encontrada",
+          message: "Erro interno: serviço de email não configurado" 
+        }),
+        {
+          status: 500,
+          headers: { 
+            "Content-Type": "application/json", 
+            ...corsHeaders 
+          },
+        }
+      );
+    }
 
+    console.log("RESEND_API_KEY encontrada, criando cliente Resend...");
+    const resend = new Resend(resendApiKey);
+
+    const data: RegistrationRequest = await req.json();
+    console.log("Dados de cadastro recebidos:", {
+      name: data.name,
+      email: data.email,
+      tipo: data.tipo,
+      conheceu: data.conheceu,
+      cnpj: data.cnpj ? "***CNPJ FORNECIDO***" : "Não fornecido"
+    });
+
+    console.log("Enviando email para a empresa...");
     // Enviar email para a empresa
     const companyEmailResponse = await resend.emails.send({
       from: "Agro Ikemba <noreply@agroikemba.com.br>",
@@ -68,6 +101,14 @@ const handler = async (req: Request): Promise<Response> => {
       `,
     });
 
+    console.log("Email para empresa enviado:", companyEmailResponse);
+
+    if (companyEmailResponse.error) {
+      console.error("Erro ao enviar email para empresa:", companyEmailResponse.error);
+      throw new Error(`Erro ao enviar email para empresa: ${companyEmailResponse.error.message}`);
+    }
+
+    console.log("Enviando email de confirmação para o usuário...");
     // Enviar email de confirmação para o usuário
     const userEmailResponse = await resend.emails.send({
       from: "Agro Ikemba <noreply@agroikemba.com.br>",
@@ -119,12 +160,20 @@ const handler = async (req: Request): Promise<Response> => {
       `,
     });
 
-    console.log("Emails de cadastro enviados com sucesso:", { companyEmailResponse, userEmailResponse });
+    console.log("Email para usuário enviado:", userEmailResponse);
+
+    if (userEmailResponse.error) {
+      console.error("Erro ao enviar email para usuário:", userEmailResponse.error);
+      throw new Error(`Erro ao enviar email para usuário: ${userEmailResponse.error.message}`);
+    }
+
+    console.log("Ambos os emails enviados com sucesso!");
+    console.log("=== FIM DA FUNÇÃO SEND-REGISTRATION ===");
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: "Solicitação de cadastro enviada com sucesso!" 
+        message: "Solicitação de cadastro enviada com sucesso! Verifique seu email." 
       }), 
       {
         status: 200,
@@ -135,12 +184,17 @@ const handler = async (req: Request): Promise<Response> => {
       }
     );
   } catch (error: any) {
-    console.error("Erro ao processar solicitação de cadastro:", error);
+    console.error("=== ERRO NA FUNÇÃO SEND-REGISTRATION ===");
+    console.error("Tipo do erro:", error.constructor.name);
+    console.error("Mensagem do erro:", error.message);
+    console.error("Stack trace:", error.stack);
+    console.error("=== FIM DO ERRO ===");
+    
     return new Response(
       JSON.stringify({ 
         success: false, 
         error: "Erro interno do servidor",
-        message: "Não foi possível processar sua solicitação. Tente novamente." 
+        message: "Não foi possível processar sua solicitação. Tente novamente ou entre em contato conosco." 
       }),
       {
         status: 500,

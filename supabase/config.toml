@@ -1,1 +1,8 @@
+
 project_id = "jhkxcplfempenoczcoep"
+
+[functions.send-registration]
+verify_jwt = false
+
+[functions.send-pre-registration]
+verify_jwt = false

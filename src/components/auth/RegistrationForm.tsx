@@ -61,6 +61,8 @@ export default function RegistrationForm() {
   const onSubmit = async (data: FormValues) => {
     setIsSubmitting(true);
     try {
+      console.log('Iniciando processo de cadastro...');
+      
       // Preparar dados para envio via Edge Function
       const registrationData = {
         name: data.name,
@@ -70,43 +72,52 @@ export default function RegistrationForm() {
         cnpj: data.cnpj
       };
 
+      console.log('Enviando dados para a edge function...', registrationData);
+
       // Enviar via Edge Function
       const { data: emailResult, error: emailError } = await supabase.functions.invoke('send-registration', {
         body: registrationData
       });
 
+      console.log('Resposta da edge function:', { emailResult, emailError });
+
       if (emailError) {
-        console.error('Erro ao enviar email:', emailError);
-        // Continuar com armazenamento local como fallback
-        toast.error('Erro ao enviar email, mas dados foram salvos localmente.');
-      } else {
-        console.log('Email enviado com sucesso:', emailResult);
+        console.error('Erro na edge function:', emailError);
+        toast.error('Erro ao enviar emails. Verifique se o serviço de email está configurado.');
+        return;
       }
 
-      // Armazenar dados do usuário localmente (como backup)
-      localStorage.setItem('user', JSON.stringify({
-        name: data.name,
-        email: data.email,
-        tipo: data.tipo,
-        conheceu: data.conheceu,
-        cnpj: data.cnpj,
-        verified: false,
-        submittedAt: new Date().toISOString()
-      }));
+      if (emailResult?.success) {
+        console.log('Emails enviados com sucesso');
+        
+        // Armazenar dados do usuário localmente (como backup)
+        localStorage.setItem('user', JSON.stringify({
+          name: data.name,
+          email: data.email,
+          tipo: data.tipo,
+          conheceu: data.conheceu,
+          cnpj: data.cnpj,
+          verified: false,
+          submittedAt: new Date().toISOString()
+        }));
 
-      // Mostrar o diálogo de confirmação
-      setShowConfirmation(true);
+        // Mostrar o diálogo de confirmação
+        setShowConfirmation(true);
 
-      // Definir um temporizador para fechar o diálogo após 5 segundos
-      setTimeout(() => {
-        setShowConfirmation(false);
-        toast.success('Solicitação de cadastro enviada com sucesso!');
-        navigate('/products');
-      }, 5000);
+        // Definir um temporizador para fechar o diálogo após 5 segundos
+        setTimeout(() => {
+          setShowConfirmation(false);
+          toast.success('Solicitação de cadastro enviada com sucesso!');
+          navigate('/products');
+        }, 5000);
+      } else {
+        console.error('Falha no envio de emails:', emailResult);
+        toast.error(emailResult?.message || 'Erro ao enviar emails. Tente novamente.');
+      }
 
     } catch (error) {
-      console.error('Erro ao enviar solicitação:', error);
-      toast.error('Erro ao enviar solicitação. Tente novamente.');
+      console.error('Erro inesperado ao enviar solicitação:', error);
+      toast.error('Erro inesperado. Verifique sua conexão e tente novamente.');
     } finally {
       setIsSubmitting(false);
     }
