@@ -82,7 +82,7 @@ export default function Hero() {
             </div>
           </div>
           
-          {/* Video section using local file */}
+          {/* Video section using local file as primary source */}
           <div className="relative flex-1 min-w-[300px] max-w-[600px]">
             {!videoError ? (
               <div className="relative">
@@ -112,7 +112,7 @@ export default function Hero() {
                   onCanPlay={handleCanPlay}
                   onLoadStart={handleLoadStart}
                 >
-                  {/* Primary source - local MP4 */}
+                  {/* Primary source - local MP4 file */}
                   <source src="/pitch-deck.mp4" type="video/mp4" />
                   {/* Fallback source - external URL */}
                   <source src="https://agroikemba.com.br/wp-content/uploads/2025/05/Pitch-deck-1.mp4" type="video/mp4" />
@@ -131,7 +131,7 @@ export default function Hero() {
                   <h3 className="text-xl font-semibold text-primary mb-2">Agro Ikemba</h3>
                   <p className="text-gray-600 mb-4">Revolucionando o mercado de insumos agrícolas</p>
                   <p className="text-sm text-gray-500 mb-4">
-                    Para assistir ao nosso vídeo de apresentação, faça o upload do arquivo pitch-deck.mp4 para a pasta public_html/
+                    Faça o upload do arquivo pitch-deck.mp4 para a pasta raiz do projeto para exibir o vídeo
                   </p>
                   <Button variant="outline" className="mt-4" asChild>
                     <Link to="/register">Conheça nossa proposta</Link>
