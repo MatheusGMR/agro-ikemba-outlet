@@ -57,8 +57,20 @@ export const userService = {
         return { success: false, error: error.message };
       }
 
-      console.log('Usuários encontrados:', data?.length || 0);
-      return { success: true, users: data || [] };
+      // Mapear os dados do Supabase para o tipo PendingUser
+      const mappedUsers: PendingUser[] = (data || []).map(user => ({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        tipo: user.tipo,
+        conheceu: user.conheceu,
+        cnpj: user.cnpj,
+        createdAt: user.created_at,
+        status: user.status as 'pending' | 'approved' | 'rejected'
+      }));
+
+      console.log('Usuários encontrados:', mappedUsers.length);
+      return { success: true, users: mappedUsers };
     } catch (error) {
       console.error('Erro inesperado ao buscar usuários:', error);
       return { success: false, error: 'Erro inesperado ao buscar dados' };
