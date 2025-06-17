@@ -41,9 +41,10 @@ export default function Hero() {
   };
 
   const handleSaibaMais = () => {
-    const section = document.getElementById('why-choose-us');
-    if (section) {
-      section.scrollIntoView({ behavior: 'smooth' });
+    // Look for the Features section with the "Transformando o comércio" title
+    const featuresSection = document.querySelector('section.py-20.bg-gray-50');
+    if (featuresSection) {
+      featuresSection.scrollIntoView({ behavior: 'smooth' });
     }
   };
 
