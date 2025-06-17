@@ -16,6 +16,38 @@
     <!-- Load critical CSS fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
+    <!-- Critical CSS inline para carregamento instantâneo -->
+    <style>
+      #root {
+        min-height: 100vh;
+        font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+      }
+      
+      .loading-spinner {
+        display: inline-block;
+        width: 40px;
+        height: 40px;
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #075e54;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+      
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      
+      .fallback-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background: #f9fafb;
+        font-family: Inter, Arial, sans-serif;
+      }
+    </style>
+
     <meta property="og:title" content="Agro Ikemba - Revolucionando o Mercado de Insumos Agrícolas" />
     <meta property="og:description" content="Plataforma B2B que conecta fabricantes e distribuidores de insumos agrícolas. Economize +25% na compra de seus genéricos." />
     <meta property="og:type" content="website" />
@@ -24,10 +56,65 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@agroikemba" />
     <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+
+    <!-- Preload critical resources -->
+    <link rel="modulepreload" href="/src/main.tsx">
+    <link rel="modulepreload" href="/src/App.tsx">
   </head>
 
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Fallback inicial enquanto o React carrega -->
+      <div class="fallback-container">
+        <div style="text-center;">
+          <div class="loading-spinner" style="margin: 0 auto 1rem;"></div>
+          <h1 style="color: #075e54; font-size: 1.5rem; font-weight: 600; margin-bottom: 0.5rem;">Agro Ikemba</h1>
+          <p style="color: #6b7280;">Carregando...</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Scripts críticos -->
+    <script>
+      // Verificação de compatibilidade do navegador
+      if (!window.fetch || !window.Promise || !window.Symbol) {
+        document.getElementById('root').innerHTML = `
+          <div class="fallback-container">
+            <div style="text-center; max-width: 400px; padding: 2rem;">
+              <h1 style="color: #075e54; margin-bottom: 1rem;">Agro Ikemba</h1>
+              <p style="color: #6b7280; margin-bottom: 1rem;">
+                Seu navegador não é compatível com esta aplicação.
+              </p>
+              <p style="color: #9ca3af; font-size: 0.875rem;">
+                Por favor, atualize seu navegador ou use uma versão mais recente.
+              </p>
+            </div>
+          </div>
+        `;
+      }
+      
+      // Timeout de segurança para carregamento
+      setTimeout(() => {
+        const root = document.getElementById('root');
+        if (root && root.innerHTML.includes('Carregando...')) {
+          console.warn('⚠️ Timeout de carregamento atingido');
+          root.innerHTML = `
+            <div class="fallback-container">
+              <div style="text-center; max-width: 400px; padding: 2rem;">
+                <h1 style="color: #075e54; margin-bottom: 1rem;">Agro Ikemba</h1>
+                <p style="color: #6b7280; margin-bottom: 1rem;">
+                  A aplicação está demorando para carregar.
+                </p>
+                <button onclick="window.location.reload()" style="background: #075e54; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer;">
+                  Tentar novamente
+                </button>
+              </div>
+            </div>
+          `;
+        }
+      }, 10000); // 10 segundos
+    </script>
+    
     <!-- IMPORTANT: DO NOT REMOVE THIS SCRIPT TAG OR THIS VERY COMMENT! -->
     <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
     <script type="module" src="/src/main.tsx"></script>
