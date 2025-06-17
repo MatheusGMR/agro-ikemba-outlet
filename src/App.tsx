@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { DiagnosticLogger } from "@/components/ui/DiagnosticLogger";
+import { AdvancedDiagnostics } from "@/components/debug/AdvancedDiagnostics";
 import { Suspense, lazy } from "react";
 import { LoadingFallback } from "@/components/ui/LoadingFallback";
 
@@ -37,6 +38,7 @@ const App = () => {
   return (
     <ErrorBoundary>
       <DiagnosticLogger />
+      <AdvancedDiagnostics />
       <QueryClientProvider client={queryClient}>
         <Toaster />
         <Sonner />
