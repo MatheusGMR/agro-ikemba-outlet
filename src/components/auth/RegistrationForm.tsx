@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
@@ -310,7 +311,7 @@ export default function RegistrationForm() {
 
           <Button 
             type="submit" 
-            className="w-full bg-agro-green hover:bg-agro-green-light text-white"
+            className="w-full bg-primary hover:bg-primary/90 text-white"
             disabled={isSubmitting}
           >
             {isSubmitting ? 'Enviando...' : 'Solicitar Aprovação'}
