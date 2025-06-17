@@ -79,10 +79,10 @@ export default function Navbar() {
           <div className="flex items-center gap-2">
             {user?.verified ? (
               <div className="flex items-center gap-2">
-                <span className="text-sm">
+                <span className="text-sm flex items-center gap-1">
                   Olá, {user.name.split(' ')[0]}
                   {isAdminAuthenticated && (
-                    <Crown className="w-4 h-4 inline ml-1 text-yellow-500" title="Administrador" />
+                    <Crown className="w-4 h-4 ml-1 text-yellow-500" />
                   )}
                 </span>
                 {isAdminAuthenticated && (
@@ -139,10 +139,12 @@ export default function Navbar() {
               {user?.verified ? (
                 <>
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="text-sm">Olá, {user.name.split(' ')[0]}</span>
-                    {isAdminAuthenticated && (
-                      <Crown className="w-4 h-4 text-yellow-500" title="Administrador" />
-                    )}
+                    <span className="text-sm flex items-center gap-1">
+                      Olá, {user.name.split(' ')[0]}
+                      {isAdminAuthenticated && (
+                        <Crown className="w-4 h-4 text-yellow-500" />
+                      )}
+                    </span>
                   </div>
                   {isAdminAuthenticated && (
                     <Button variant="outline" className="w-full mb-2 bg-yellow-50 border-yellow-200 text-yellow-800" asChild>

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -19,10 +20,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { PendingUser, AdminStats } from '@/types/admin';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
-import { Check, X, Eye, Users, UserCheck, UserX, Clock, LogOut } from 'lucide-react';
+import { Check, X, Eye, Users, UserCheck, UserX, Clock, LogOut, RefreshCw } from 'lucide-react';
+import { getStoredUsers, updateUserStatus } from '@/utils/adminStorage';
 
 export default function Admin() {
   const [pendingUsers, setPendingUsers] = useState<PendingUser[]>([]);
@@ -34,48 +36,23 @@ export default function Admin() {
     totalRejected: 0,
     totalUsers: 0
   });
-  const { toast } = useToast();
   const { logout } = useAdminAuth();
   const navigate = useNavigate();
 
-  // Simular dados - em produção viriam do backend
-  useEffect(() => {
-    const mockUsers: PendingUser[] = [
-      {
-        id: '1',
-        name: 'João Silva',
-        email: 'joao@email.com',
-        tipo: 'Distribuidor',
-        conheceu: 'Google',
-        createdAt: '2024-01-15',
-        status: 'pending'
-      },
-      {
-        id: '2',
-        name: 'Maria Santos',
-        email: 'maria@email.com',
-        tipo: 'Fabricante',
-        conheceu: 'Indicação',
-        createdAt: '2024-01-14',
-        status: 'pending'
-      },
-      {
-        id: '3',
-        name: 'Pedro Costa',
-        email: 'pedro@email.com',
-        tipo: 'Cooperativa',
-        createdAt: '2024-01-13',
-        status: 'approved'
-      }
-    ];
+  const loadUsers = () => {
+    console.log('Carregando usuários do storage...');
+    const users = getStoredUsers();
+    console.log('Usuários carregados:', users);
+    setPendingUsers(users);
+  };
 
-    const stored = localStorage.getItem('pendingUsers');
-    if (stored) {
-      setPendingUsers(JSON.parse(stored));
-    } else {
-      setPendingUsers(mockUsers);
-      localStorage.setItem('pendingUsers', JSON.stringify(mockUsers));
-    }
+  useEffect(() => {
+    console.log('Admin panel inicializado - carregando usuários...');
+    loadUsers();
+    
+    // Recarregar dados a cada 30 segundos para capturar novos cadastros
+    const interval = setInterval(loadUsers, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -83,38 +60,34 @@ export default function Admin() {
     const approved = pendingUsers.filter(u => u.status === 'approved').length;
     const rejected = pendingUsers.filter(u => u.status === 'rejected').length;
     
-    setStats({
+    const newStats = {
       totalPending: pending,
       totalApproved: approved,
       totalRejected: rejected,
       totalUsers: pendingUsers.length
-    });
+    };
+    
+    console.log('Estatísticas atualizadas:', newStats);
+    setStats(newStats);
   }, [pendingUsers]);
 
   const handleApprove = (userId: string) => {
-    const updatedUsers = pendingUsers.map(user => 
-      user.id === userId ? { ...user, status: 'approved' as const } : user
-    );
-    setPendingUsers(updatedUsers);
-    localStorage.setItem('pendingUsers', JSON.stringify(updatedUsers));
+    console.log('Aprovando usuário:', userId);
+    updateUserStatus(userId, 'approved');
+    loadUsers(); // Recarregar dados
     
-    toast({
-      title: "Usuário aprovado",
-      description: "O acesso foi liberado com sucesso.",
+    toast.success('Usuário aprovado com sucesso!', {
+      description: 'O acesso foi liberado para o usuário.',
     });
   };
 
   const handleReject = (userId: string) => {
-    const updatedUsers = pendingUsers.map(user => 
-      user.id === userId ? { ...user, status: 'rejected' as const } : user
-    );
-    setPendingUsers(updatedUsers);
-    localStorage.setItem('pendingUsers', JSON.stringify(updatedUsers));
+    console.log('Rejeitando usuário:', userId);
+    updateUserStatus(userId, 'rejected');
+    loadUsers(); // Recarregar dados
     
-    toast({
-      title: "Usuário rejeitado",
-      description: "O acesso foi negado.",
-      variant: "destructive"
+    toast.error('Usuário rejeitado', {
+      description: 'O acesso foi negado para o usuário.',
     });
   };
 
@@ -141,6 +114,12 @@ export default function Admin() {
     navigate('/');
   };
 
+  const handleRefresh = () => {
+    console.log('Atualizando lista de usuários...');
+    loadUsers();
+    toast.success('Lista atualizada!');
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
@@ -149,10 +128,16 @@ export default function Admin() {
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Painel Administrativo</h1>
             <p className="text-gray-600">Gerencie os acessos à plataforma Agro Ikemba</p>
           </div>
-          <Button variant="outline" onClick={handleLogout}>
-            <LogOut className="w-4 h-4 mr-2" />
-            Sair
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={handleRefresh}>
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Atualizar
+            </Button>
+            <Button variant="outline" onClick={handleLogout}>
+              <LogOut className="w-4 h-4 mr-2" />
+              Sair
+            </Button>
+          </div>
         </div>
 
         {/* Stats Cards */}
@@ -201,63 +186,71 @@ export default function Admin() {
         {/* Users Table */}
         <Card>
           <CardHeader>
-            <CardTitle>Solicitações de Acesso</CardTitle>
+            <CardTitle>Solicitações de Acesso ({pendingUsers.length} total)</CardTitle>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nome</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Tipo</TableHead>
-                  <TableHead>Data</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {pendingUsers.map((user) => (
-                  <TableRow key={user.id}>
-                    <TableCell className="font-medium">{user.name}</TableCell>
-                    <TableCell>{user.email}</TableCell>
-                    <TableCell>{user.tipo}</TableCell>
-                    <TableCell>{new Date(user.createdAt).toLocaleDateString('pt-BR')}</TableCell>
-                    <TableCell>{getStatusBadge(user.status)}</TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => openUserDialog(user)}
-                        >
-                          <Eye className="w-4 h-4" />
-                        </Button>
-                        {user.status === 'pending' && (
-                          <>
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              className="text-green-600 border-green-600 hover:bg-green-50"
-                              onClick={() => handleApprove(user.id)}
-                            >
-                              <Check className="w-4 h-4" />
-                            </Button>
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              className="text-red-600 border-red-600 hover:bg-red-50"
-                              onClick={() => handleReject(user.id)}
-                            >
-                              <X className="w-4 h-4" />
-                            </Button>
-                          </>
-                        )}
-                      </div>
-                    </TableCell>
+            {pendingUsers.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                <Users className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                <p>Nenhuma solicitação de cadastro encontrada.</p>
+                <p className="text-sm">Aguarde por novos usuários ou clique em "Atualizar".</p>
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Nome</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Tipo</TableHead>
+                    <TableHead>Data</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Ações</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {pendingUsers.map((user) => (
+                    <TableRow key={user.id}>
+                      <TableCell className="font-medium">{user.name}</TableCell>
+                      <TableCell>{user.email}</TableCell>
+                      <TableCell>{user.tipo}</TableCell>
+                      <TableCell>{new Date(user.createdAt).toLocaleDateString('pt-BR')}</TableCell>
+                      <TableCell>{getStatusBadge(user.status)}</TableCell>
+                      <TableCell>
+                        <div className="flex gap-2">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => openUserDialog(user)}
+                          >
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                          {user.status === 'pending' && (
+                            <>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                className="text-green-600 border-green-600 hover:bg-green-50"
+                                onClick={() => handleApprove(user.id)}
+                              >
+                                <Check className="w-4 h-4" />
+                              </Button>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                className="text-red-600 border-red-600 hover:bg-red-50"
+                                onClick={() => handleReject(user.id)}
+                              >
+                                <X className="w-4 h-4" />
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
           </CardContent>
         </Card>
 
@@ -288,6 +281,12 @@ export default function Admin() {
                   <div>
                     <label className="text-sm font-medium text-gray-500">Como nos conheceu</label>
                     <p className="text-lg">{selectedUser.conheceu}</p>
+                  </div>
+                )}
+                {selectedUser.cnpj && (
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">CNPJ</label>
+                    <p className="text-lg">{selectedUser.cnpj}</p>
                   </div>
                 )}
                 <div>

@@ -5,6 +5,7 @@ export interface PendingUser {
   email: string;
   tipo: string;
   conheceu?: string;
+  cnpj?: string;
   createdAt: string;
   status: 'pending' | 'approved' | 'rejected';
 }

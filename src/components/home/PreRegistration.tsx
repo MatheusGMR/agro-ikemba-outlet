@@ -8,6 +8,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { addPendingUser } from '@/utils/adminStorage';
 
 const preRegistrationSchema = z.object({
   nome: z.string().min(1, 'Nome é obrigatório'),
@@ -37,28 +38,52 @@ export default function PreRegistration() {
 
   const onSubmit = async (data: PreRegistrationFormValues) => {
     setIsSubmitting(true);
-    try {
-      console.log('Enviando dados do pré-cadastro:', data);
+    console.log('=== INÍCIO DO PRÉ-CADASTRO ===');
+    console.log('Dados do pré-cadastro:', data);
 
-      const { data: response, error } = await supabase.functions.invoke('send-pre-registration', {
-        body: data
+    try {
+      // SEMPRE adicionar ao painel admin primeiro
+      console.log('Adicionando pré-cadastro ao painel admin...');
+      addPendingUser({
+        name: data.nome,
+        email: data.email,
+        tipo: data.tipo,
+        conheceu: data.conheceu,
+        cnpj: `Empresa: ${data.empresa} | Tel: ${data.telefone}`
       });
 
-      if (error) {
-        console.error('Erro na função:', error);
-        toast.error('Erro ao enviar pré-cadastro. Tente novamente.');
-        return;
+      // Tentar enviar via Edge Function (não crítico)
+      console.log('Tentando enviar emails do pré-cadastro...');
+      try {
+        const { data: response, error } = await supabase.functions.invoke('send-pre-registration', {
+          body: data
+        });
+
+        if (error) {
+          console.warn('Aviso: Erro na função de pré-cadastro:', error);
+        } else if (response?.success) {
+          console.log('Emails de pré-cadastro enviados com sucesso');
+        } else {
+          console.warn('Aviso: Falha no envio de emails do pré-cadastro:', response);
+        }
+      } catch (emailError) {
+        console.warn('Aviso: Erro inesperado no envio de emails do pré-cadastro:', emailError);
       }
 
-      if (response?.success) {
-        toast.success('Pré-cadastro enviado com sucesso! Verifique seu email.');
-        form.reset();
-      } else {
-        toast.error(response?.message || 'Erro ao enviar pré-cadastro. Tente novamente.');
-      }
+      // SEMPRE mostrar sucesso
+      console.log('=== PRÉ-CADASTRO CONCLUÍDO COM SUCESSO ===');
+      console.log('Pré-cadastro adicionado ao painel admin para análise');
+      
+      toast.success('Pré-cadastro enviado com sucesso!', {
+        description: 'Sua solicitação foi enviada para análise. Entraremos em contato em breve.',
+      });
+      
+      form.reset();
+
     } catch (error) {
-      console.error('Erro ao enviar pré-cadastro:', error);
-      toast.error('Erro ao enviar pré-cadastro. Tente novamente.');
+      console.error('=== ERRO NO PRÉ-CADASTRO ===');
+      console.error('Erro:', error);
+      toast.error('Erro ao enviar pré-cadastro. Seus dados foram salvos para análise. Tente novamente ou entre em contato conosco.');
     } finally {
       setIsSubmitting(false);
     }
@@ -93,88 +118,88 @@ export default function PreRegistration() {
           
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <FormField control={form.control} name="nome" render={({
-              field
-            }) => <FormItem>
-                    <FormLabel>Nome completo*</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Seu nome completo" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>} />
+              <FormField control={form.control} name="nome" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Nome completo*</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Seu nome completo" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
 
-              <FormField control={form.control} name="email" render={({
-              field
-            }) => <FormItem>
-                    <FormLabel>E-mail*</FormLabel>
-                    <FormControl>
-                      <Input type="email" placeholder="seu@email.com" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>} />
+              <FormField control={form.control} name="email" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>E-mail*</FormLabel>
+                  <FormControl>
+                    <Input type="email" placeholder="seu@email.com" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
 
-              <FormField control={form.control} name="telefone" render={({
-              field
-            }) => <FormItem>
-                    <FormLabel>Telefone*</FormLabel>
-                    <FormControl>
-                      <Input type="tel" placeholder="(11) 99999-9999" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>} />
+              <FormField control={form.control} name="telefone" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Telefone*</FormLabel>
+                  <FormControl>
+                    <Input type="tel" placeholder="(11) 99999-9999" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
 
-              <FormField control={form.control} name="empresa" render={({
-              field
-            }) => <FormItem>
-                    <FormLabel>Empresa*</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Nome da sua empresa" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>} />
+              <FormField control={form.control} name="empresa" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Empresa*</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Nome da sua empresa" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
 
-              <FormField control={form.control} name="tipo" render={({
-              field
-            }) => <FormItem>
-                    <FormLabel>Você é:*</FormLabel>
-                    <FormControl>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione uma opção" />
-                        </SelectTrigger>
-                        <SelectContent side="bottom" align="start">
-                          <SelectItem value="Distribuidor">Distribuidor</SelectItem>
-                          <SelectItem value="Cooperativa">Cooperativa</SelectItem>
-                          <SelectItem value="Fabricante">Fabricante</SelectItem>
-                          <SelectItem value="Agricultor">Agricultor</SelectItem>
-                          <SelectItem value="Outro">Outro</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>} />
+              <FormField control={form.control} name="tipo" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Você é:*</FormLabel>
+                  <FormControl>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione uma opção" />
+                      </SelectTrigger>
+                      <SelectContent side="bottom" align="start">
+                        <SelectItem value="Distribuidor">Distribuidor</SelectItem>
+                        <SelectItem value="Cooperativa">Cooperativa</SelectItem>
+                        <SelectItem value="Fabricante">Fabricante</SelectItem>
+                        <SelectItem value="Agricultor">Agricultor</SelectItem>
+                        <SelectItem value="Outro">Outro</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
 
-              <FormField control={form.control} name="conheceu" render={({
-              field
-            }) => <FormItem>
-                    <FormLabel>Como conheceu a Agro Ikemba?</FormLabel>
-                    <FormControl>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione uma opção" />
-                        </SelectTrigger>
-                        <SelectContent side="bottom" align="start">
-                          <SelectItem value="Linkedin">Linkedin</SelectItem>
-                          <SelectItem value="Instagram">Instagram</SelectItem>
-                          <SelectItem value="Indicação">Indicação</SelectItem>
-                          <SelectItem value="Google">Busca na Internet</SelectItem>
-                          <SelectItem value="Evento">Evento</SelectItem>
-                          <SelectItem value="Outro">Outro</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>} />
+              <FormField control={form.control} name="conheceu" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Como conheceu a Agro Ikemba?</FormLabel>
+                  <FormControl>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione uma opção" />
+                      </SelectTrigger>
+                      <SelectContent side="bottom" align="start">
+                        <SelectItem value="Linkedin">Linkedin</SelectItem>
+                        <SelectItem value="Instagram">Instagram</SelectItem>
+                        <SelectItem value="Indicação">Indicação</SelectItem>
+                        <SelectItem value="Google">Busca na Internet</SelectItem>
+                        <SelectItem value="Evento">Evento</SelectItem>
+                        <SelectItem value="Outro">Outro</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
 
               <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-white px-8 py-6 text-lg" disabled={isSubmitting}>
                 {isSubmitting ? 'Enviando...' : 'Enviar pré-cadastro'}

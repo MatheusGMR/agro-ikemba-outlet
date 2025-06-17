@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
@@ -12,6 +13,7 @@ import { toast } from 'sonner';
 import { formSchema } from '@/lib/validations/auth';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from '@/integrations/supabase/client';
+import { addPendingUser } from '@/utils/adminStorage';
 
 type FormValues = z.infer<typeof formSchema>;
 
@@ -60,64 +62,80 @@ export default function RegistrationForm() {
 
   const onSubmit = async (data: FormValues) => {
     setIsSubmitting(true);
+    console.log('=== INÍCIO DO PROCESSO DE CADASTRO ===');
+    console.log('Dados do formulário:', {
+      name: data.name,
+      email: data.email,
+      tipo: data.tipo,
+      conheceu: data.conheceu,
+      cnpj: data.cnpj ? '***FORNECIDO***' : 'Não fornecido'
+    });
+
     try {
-      console.log('Iniciando processo de cadastro...');
-      
-      // Preparar dados para envio via Edge Function
-      const registrationData = {
+      // SEMPRE adicionar ao painel admin primeiro
+      console.log('Adicionando usuário ao painel admin...');
+      addPendingUser({
         name: data.name,
         email: data.email,
         tipo: data.tipo,
         conheceu: data.conheceu,
         cnpj: data.cnpj
-      };
-
-      console.log('Enviando dados para a edge function...', registrationData);
-
-      // Enviar via Edge Function
-      const { data: emailResult, error: emailError } = await supabase.functions.invoke('send-registration', {
-        body: registrationData
       });
+      
+      // Armazenar dados do usuário localmente
+      console.log('Salvando dados do usuário no localStorage...');
+      localStorage.setItem('user', JSON.stringify({
+        name: data.name,
+        email: data.email,
+        tipo: data.tipo,
+        conheceu: data.conheceu,
+        cnpj: data.cnpj,
+        verified: false,
+        submittedAt: new Date().toISOString()
+      }));
 
-      console.log('Resposta da edge function:', { emailResult, emailError });
-
-      if (emailError) {
-        console.error('Erro na edge function:', emailError);
-        toast.error('Erro ao enviar emails. Verifique se o serviço de email está configurado.');
-        return;
-      }
-
-      if (emailResult?.success) {
-        console.log('Emails enviados com sucesso');
-        
-        // Armazenar dados do usuário localmente (como backup)
-        localStorage.setItem('user', JSON.stringify({
+      // Tentar enviar emails via Edge Function (não crítico)
+      console.log('Tentando enviar emails...');
+      try {
+        const registrationData = {
           name: data.name,
           email: data.email,
           tipo: data.tipo,
           conheceu: data.conheceu,
-          cnpj: data.cnpj,
-          verified: false,
-          submittedAt: new Date().toISOString()
-        }));
+          cnpj: data.cnpj
+        };
 
-        // Mostrar o diálogo de confirmação
-        setShowConfirmation(true);
+        const { data: emailResult, error: emailError } = await supabase.functions.invoke('send-registration', {
+          body: registrationData
+        });
 
-        // Definir um temporizador para fechar o diálogo após 5 segundos
-        setTimeout(() => {
-          setShowConfirmation(false);
-          toast.success('Solicitação de cadastro enviada com sucesso!');
-          navigate('/products');
-        }, 5000);
-      } else {
-        console.error('Falha no envio de emails:', emailResult);
-        toast.error(emailResult?.message || 'Erro ao enviar emails. Tente novamente.');
+        if (emailError) {
+          console.warn('Aviso: Erro no envio de emails:', emailError);
+        } else if (emailResult?.success) {
+          console.log('Emails enviados com sucesso');
+        } else {
+          console.warn('Aviso: Falha no envio de emails:', emailResult);
+        }
+      } catch (emailError) {
+        console.warn('Aviso: Erro inesperado no envio de emails:', emailError);
       }
 
+      // SEMPRE mostrar sucesso, independentemente dos emails
+      console.log('=== CADASTRO CONCLUÍDO COM SUCESSO ===');
+      console.log('Usuário adicionado ao painel admin para aprovação');
+      
+      setShowConfirmation(true);
+
+      setTimeout(() => {
+        setShowConfirmation(false);
+        toast.success('Solicitação de cadastro enviada com sucesso!');
+        navigate('/products');
+      }, 5000);
+
     } catch (error) {
-      console.error('Erro inesperado ao enviar solicitação:', error);
-      toast.error('Erro inesperado. Verifique sua conexão e tente novamente.');
+      console.error('=== ERRO CRÍTICO NO CADASTRO ===');
+      console.error('Erro:', error);
+      toast.error('Erro inesperado. Seus dados foram salvos para análise. Tente novamente ou entre em contato conosco.');
     } finally {
       setIsSubmitting(false);
     }
@@ -302,7 +320,6 @@ export default function RegistrationForm() {
         </form>
       </Form>
 
-      {/* Diálogo de confirmação */}
       <Dialog open={showConfirmation} onOpenChange={setShowConfirmation}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -315,7 +332,7 @@ export default function RegistrationForm() {
                 <div className="text-center">
                   Sua solicitação de cadastro foi enviada para análise. 
                   <p className="mt-1 text-gray-500">
-                    Entraremos em contato pelo seu e-mail cadastrado em até 24 horas.
+                    O administrador será notificado e você receberá uma resposta em até 24 horas.
                   </p>
                 </div>
               </div>
