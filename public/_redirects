@@ -1,2 +1,9 @@
 
+# SPA fallback
 /*    /index.html   200
+
+# API redirects (if needed in the future)
+/api/*  /api/:splat  200
+
+# Prevent direct access to source files in production
+/src/*  /  404
