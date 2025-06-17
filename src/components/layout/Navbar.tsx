@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, X, Shield } from 'lucide-react';
@@ -16,11 +15,13 @@ const NavItem = ({
   href,
   children,
   className
-}: NavItemProps) => <li>
+}: NavItemProps) => (
+  <li>
     <Link to={href} className={cn('text-foreground hover:text-primary transition-colors duration-200 py-2 block', className)}>
       {children}
     </Link>
-  </li>;
+  </li>
+);
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -31,7 +32,8 @@ export default function Navbar() {
     setIsMenuOpen(!isMenuOpen);
   };
   
-  return <header className="sticky top-0 z-40 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+  return (
+    <header className="sticky top-0 z-40 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container-custom flex h-16 items-center justify-between">
         <div className="flex items-center gap-2">
           <Link to="/" className="flex items-center gap-2">
@@ -40,6 +42,8 @@ export default function Navbar() {
                 alt="Agro Ikemba" 
                 src="/lovable-uploads/6aea75d9-eade-440b-8bf4-099785748206.png" 
                 className="h-48 w-auto object-contain" 
+                loading="eager"
+                decoding="async"
               />
             </div>
           </Link>
@@ -48,7 +52,8 @@ export default function Navbar() {
         {/* Desktop Nav */}
         <nav className="hidden md:flex items-center gap-6">
           <div className="flex items-center gap-2">
-            {user?.verified ? <div className="flex items-center gap-2">
+            {user?.verified ? (
+              <div className="flex items-center gap-2">
                 <span className="text-sm">Olá, {user.name.split(' ')[0]}</span>
                 {isAdminAuthenticated && (
                   <Button variant="outline" size="sm" asChild>
@@ -59,18 +64,21 @@ export default function Navbar() {
                   </Button>
                 )}
                 <Button variant="outline" onClick={() => {
-              localStorage.removeItem('user');
-              localStorage.removeItem('adminSession');
-              window.location.href = '/';
-            }}>
+                  localStorage.removeItem('user');
+                  localStorage.removeItem('adminSession');
+                  window.location.href = '/';
+                }}>
                   Sair
                 </Button>
-              </div> : <>
+              </div>
+            ) : (
+              <>
                 <Button variant="outline" disabled>Entrar</Button>
                 <Button className="bg-primary hover:bg-primary/90" asChild>
                   <Link to="/register">Cadastrar</Link>
                 </Button>
-              </>}
+              </>
+            )}
           </div>
         </nav>
         
@@ -81,7 +89,8 @@ export default function Navbar() {
       </div>
       
       {/* Mobile menu */}
-      {isMenuOpen && <div className="fixed inset-0 z-50 bg-background md:hidden pt-16">
+      {isMenuOpen && (
+        <div className="fixed inset-0 z-50 bg-background md:hidden pt-16">
           <nav className="container-custom py-4">
             <ul className="space-y-4 text-lg">
               <NavItem href="/">Início</NavItem>
@@ -101,7 +110,8 @@ export default function Navbar() {
             </ul>
             
             <div className="mt-8 flex flex-col gap-2">
-              {user?.verified ? <>
+              {user?.verified ? (
+                <>
                   <span className="text-sm mb-2">Olá, {user.name.split(' ')[0]}</span>
                   {isAdminAuthenticated && (
                     <Button variant="outline" className="w-full mb-2" asChild>
@@ -112,20 +122,25 @@ export default function Navbar() {
                     </Button>
                   )}
                   <Button variant="outline" className="w-full" onClick={() => {
-              localStorage.removeItem('user');
-              localStorage.removeItem('adminSession');
-              window.location.href = '/';
-            }}>
+                    localStorage.removeItem('user');
+                    localStorage.removeItem('adminSession');
+                    window.location.href = '/';
+                  }}>
                     Sair
                   </Button>
-                </> : <>
+                </>
+              ) : (
+                <>
                   <Button variant="outline" className="w-full" disabled>Entrar</Button>
                   <Button className="w-full bg-primary hover:bg-primary/90" asChild>
                     <Link to="/register">Cadastrar</Link>
                   </Button>
-                </>}
+                </>
+              )}
             </div>
           </nav>
-        </div>}
-    </header>;
+        </div>
+      )}
+    </header>
+  );
 }

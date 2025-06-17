@@ -2,31 +2,39 @@
 import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 export default function Hero() {
   const [videoError, setVideoError] = useState(false);
   const [videoLoaded, setVideoLoaded] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   console.log('Hero component mounted');
+
+  // Preload video only when component is visible
+  useEffect(() => {
+    const video = videoRef.current;
+    if (video) {
+      // Only start loading video after initial render
+      const timer = setTimeout(() => {
+        video.load();
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, []);
 
   const handleVideoError = (e: React.SyntheticEvent<HTMLVideoElement, Event>) => {
     console.log('Video error occurred');
     const video = e.target as HTMLVideoElement;
     console.log('Video error code:', video.error?.code);
     console.log('Video error message:', video.error?.message);
-    console.log('Video network state:', video.networkState);
-    console.log('Video ready state:', video.readyState);
-    console.log('Video current src:', video.currentSrc);
-    console.log('Video sources available:', video.querySelectorAll('source'));
     setVideoError(true);
     setIsLoading(false);
   };
 
   const handleVideoLoad = () => {
     console.log('Video loaded successfully');
-    console.log('Video source used:', document.querySelector('video')?.currentSrc);
     setVideoLoaded(true);
     setIsLoading(false);
   };
@@ -36,12 +44,7 @@ export default function Hero() {
     setIsLoading(false);
   };
 
-  const handleLoadStart = () => {
-    console.log('Video started loading');
-  };
-
   const handleSaibaMais = () => {
-    // Look for the Features section with the "Transformando o comércio" title
     const featuresSection = document.querySelector('section.py-20.bg-gray-50');
     if (featuresSection) {
       featuresSection.scrollIntoView({ behavior: 'smooth' });
@@ -83,7 +86,7 @@ export default function Hero() {
             </div>
           </div>
           
-          {/* Video section */}
+          {/* Video section with optimized loading */}
           <div className="relative flex-1 min-w-[300px] max-w-[600px]">
             <div className="relative">
               {isLoading && (
@@ -97,11 +100,13 @@ export default function Hero() {
                 </div>
               )}
               <video 
+                ref={videoRef}
                 width="100%" 
                 controls 
                 muted 
                 loop 
                 playsInline 
+                preload="metadata"
                 poster="/lovable-uploads/6aea75d9-eade-440b-8bf4-099785748206.png"
                 className="rounded-xl shadow-lg bg-gray-50" 
                 style={{
@@ -110,9 +115,8 @@ export default function Hero() {
                 onError={handleVideoError} 
                 onLoadedData={handleVideoLoad} 
                 onCanPlay={handleCanPlay}
-                onLoadStart={handleLoadStart}
-                src="https://agroikemba.com.br/wp-content/uploads/2025/05/Pitch-deck-1.mp4"
               >
+                <source src="https://agroikemba.com.br/wp-content/uploads/2025/05/Pitch-deck-1.mp4" type="video/mp4" />
                 Seu navegador não suporta o elemento de vídeo.
               </video>
             </div>

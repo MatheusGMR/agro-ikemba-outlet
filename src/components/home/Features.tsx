@@ -1,39 +1,49 @@
 import { Warehouse, BadgePercent, Truck, ShieldCheck, Clock, Check, Leaf, Bug, Shield as FungicideIcon } from 'lucide-react';
+import { memo } from 'react';
+
 interface FeatureCardProps {
   icon: React.ReactNode;
   title: string;
   description: string;
 }
-const FeatureCard = ({
+
+const FeatureCard = memo(({
   icon,
   title,
   description
-}: FeatureCardProps) => <div className="bg-white rounded-xl p-6 shadow-md border border-gray-100 hover:shadow-lg transition-all duration-300">
+}: FeatureCardProps) => (
+  <div className="bg-white rounded-xl p-6 shadow-md border border-gray-100 hover:shadow-lg transition-all duration-300">
     <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
       {icon}
     </div>
     <h3 className="text-xl font-semibold text-brand-green-dark mb-2">{title}</h3>
     <p className="text-gray-600">{description}</p>
-  </div>;
+  </div>
+));
+
 interface ProductCardProps {
   name: string;
   activeIngredient: string;
   type: string;
   icon: React.ReactNode;
 }
-const ProductCard = ({
+
+const ProductCard = memo(({
   name,
   activeIngredient,
   type,
   icon
-}: ProductCardProps) => <div className="bg-white rounded-xl p-6 shadow-md border border-gray-100 hover:shadow-lg transition-all duration-300">
+}: ProductCardProps) => (
+  <div className="bg-white rounded-xl p-6 shadow-md border border-gray-100 hover:shadow-lg transition-all duration-300">
     <div className="w-14 h-14 bg-green-50 rounded-full flex items-center justify-center mb-4 mx-auto">
       {icon}
     </div>
     <h3 className="text-lg font-semibold text-brand-green-dark mb-2 text-center">{name}</h3>
     <p className="text-sm text-gray-600 mb-1 text-center"><strong>Princípio Ativo:</strong> {activeIngredient}</p>
     <p className="text-sm text-primary font-medium text-center">{type}</p>
-  </div>;
+  </div>
+));
+
 export default function Features() {
   const mainFeatures = [{
     icon: <Warehouse className="w-6 h-6 text-primary" />,
@@ -87,10 +97,11 @@ export default function Features() {
     type: "Fungicida protetor (Multissítio)",
     icon: <FungicideIcon className="w-8 h-8 text-blue-600" />
   }];
-  return <section className="py-20 bg-gray-50 relative overflow-hidden">
+  return (
+    <section className="py-20 bg-gray-50 relative overflow-hidden">
       <div className="absolute inset-0 opacity-5" style={{
-      backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23075e54' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
-    }} />
+        backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23075e54' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
+      }} />
       <div className="container-custom relative z-10">
         <div className="text-center max-w-3xl mx-auto mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-4 text-brand-green-dark">
@@ -102,7 +113,14 @@ export default function Features() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
-          {mainFeatures.map((feature, index) => <FeatureCard key={index} icon={feature.icon} title={feature.title} description={feature.description} />)}
+          {mainFeatures.map((feature, index) => (
+            <FeatureCard 
+              key={index} 
+              icon={feature.icon} 
+              title={feature.title} 
+              description={feature.description} 
+            />
+          ))}
         </div>
 
         {/* Generic Products Section */}
@@ -120,7 +138,15 @@ export default function Features() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
-            {genericProducts.map((product, index) => <ProductCard key={index} name={product.name} activeIngredient={product.activeIngredient} type={product.type} icon={product.icon} />)}
+            {genericProducts.map((product, index) => (
+              <ProductCard 
+                key={index} 
+                name={product.name} 
+                activeIngredient={product.activeIngredient} 
+                type={product.type} 
+                icon={product.icon} 
+              />
+            ))}
           </div>
         </div>
 
@@ -131,8 +157,16 @@ export default function Features() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {whyChooseUs.map((feature, index) => <FeatureCard key={index} icon={feature.icon} title={feature.title} description={feature.description} />)}
+          {whyChooseUs.map((feature, index) => (
+            <FeatureCard 
+              key={index} 
+              icon={feature.icon} 
+              title={feature.title} 
+              description={feature.description} 
+            />
+          ))}
         </div>
       </div>
-    </section>;
+    </section>
+  );
 }

@@ -34,6 +34,7 @@ export default defineConfig(({ mode }) => ({
           ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-toast'],
           query: ['@tanstack/react-query'],
           supabase: ['@supabase/supabase-js'],
+          icons: ['lucide-react'],
         },
         chunkFileNames: 'assets/[name]-[hash].js',
         entryFileNames: 'assets/[name]-[hash].js',
@@ -42,10 +43,14 @@ export default defineConfig(({ mode }) => ({
     },
     cssCodeSplit: true,
     reportCompressedSize: false,
+    chunkSizeWarningLimit: 1000,
   },
   base: '/',
   publicDir: 'public',
   esbuild: {
     drop: mode === 'production' ? ['console', 'debugger'] : [],
+  },
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'react-router-dom', 'lucide-react'],
   },
 }));
