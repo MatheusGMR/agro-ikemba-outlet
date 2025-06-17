@@ -4,17 +4,17 @@ import { Link } from 'react-router-dom';
 
 export default function CallToAction() {
   const stats = [{
-    value: "25%",
-    label: "Redução média em tempo"
+    value: "+25%",
+    label: "Tempo médio reduzido"
   }, {
-    value: "10.000",
-    label: "Distribuidores e Cooperativas mapeados"
+    value: "750",
+    label: "Distribuidores e Cooperativas cadastrados"
   }, {
-    value: "16.000",
-    label: "Agricultores mapeados"
+    value: "150",
+    label: "Operadores logísticos e financeiros cadastrados"
   }, {
-    value: "30%",
-    label: "Redução média de custos"
+    value: "+30%",
+    label: "Economia na compra dos insumos"
   }];
 
   return (
