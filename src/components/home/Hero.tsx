@@ -73,7 +73,7 @@ export default function Hero() {
             </div>
           </div>
           
-          {/* Video section with local hosting and loading state */}
+          {/* Video section using external URL */}
           <div className="relative flex-1 min-w-[300px] max-w-[600px]">
             {!videoError ? (
               <div className="relative">
@@ -102,8 +102,7 @@ export default function Hero() {
                   onLoadedData={handleVideoLoad} 
                   onCanPlay={handleCanPlay}
                 >
-                  <source src="/pitch-deck.mp4" type="video/mp4" />
-                  <source src="/pitch-deck.webm" type="video/webm" />
+                  <source src="https://agroikemba.com.br/wp-content/uploads/2025/05/Pitch-deck-1.mp4" type="video/mp4" />
                   Seu navegador não suporta o elemento de vídeo.
                 </video>
               </div>
