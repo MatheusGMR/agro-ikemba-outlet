@@ -2,8 +2,6 @@
 import { Skeleton } from '@/components/ui/skeleton';
 
 export const LoadingFallback = () => {
-  console.log('⏳ LoadingFallback renderizando...');
-  
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header skeleton */}
@@ -29,11 +27,6 @@ export const LoadingFallback = () => {
           </div>
           <Skeleton className="h-64 w-full rounded-xl" />
         </div>
-      </div>
-      
-      {/* Status do carregamento */}
-      <div className="fixed bottom-4 right-4 bg-white p-3 rounded-lg shadow-lg">
-        <p className="text-sm text-gray-600">Carregando Agro Ikemba...</p>
       </div>
     </div>
   );
