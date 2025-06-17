@@ -82,6 +82,19 @@ export const userService = {
     try {
       console.log(`Atualizando status do usuário ${userId} para: ${status}`);
       
+      // Primeiro, buscar os dados do usuário para envio do WhatsApp
+      const { data: userData, error: fetchError } = await supabase
+        .from('users')
+        .select('name, email, cnpj')
+        .eq('id', userId)
+        .single();
+
+      if (fetchError) {
+        console.error('Erro ao buscar dados do usuário:', fetchError);
+        return { success: false, error: fetchError.message };
+      }
+
+      // Atualizar o status no banco
       const { error } = await supabase
         .from('users')
         .update({ status })
@@ -93,6 +106,42 @@ export const userService = {
       }
 
       console.log('Status atualizado com sucesso');
+
+      // Tentar enviar WhatsApp (não crítico)
+      try {
+        // Extrair telefone do campo CNPJ se disponível
+        let phoneNumber = '';
+        if (userData.cnpj && userData.cnpj.includes('Tel:')) {
+          const telMatch = userData.cnpj.match(/Tel:\s*(.+?)(?:\s|$)/);
+          if (telMatch) {
+            phoneNumber = telMatch[1].trim();
+          }
+        }
+
+        if (phoneNumber) {
+          console.log('Tentando enviar WhatsApp para:', phoneNumber);
+          const { data: whatsappResponse, error: whatsappError } = await supabase.functions.invoke('send-whatsapp', {
+            body: {
+              to: phoneNumber,
+              name: userData.name,
+              status: status
+            }
+          });
+
+          if (whatsappError) {
+            console.warn('Aviso: Erro ao enviar WhatsApp:', whatsappError);
+          } else if (whatsappResponse?.success) {
+            console.log('WhatsApp enviado com sucesso');
+          } else {
+            console.warn('Aviso: Falha no envio do WhatsApp:', whatsappResponse);
+          }
+        } else {
+          console.log('Telefone não encontrado, WhatsApp não enviado');
+        }
+      } catch (whatsappError) {
+        console.warn('Aviso: Erro inesperado no envio do WhatsApp:', whatsappError);
+      }
+
       return { success: true };
     } catch (error) {
       console.error('Erro inesperado ao atualizar status:', error);

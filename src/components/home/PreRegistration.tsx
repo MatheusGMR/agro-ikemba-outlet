@@ -93,6 +93,14 @@ export default function PreRegistration() {
         return;
       }
 
+      // Preparar dados para salvar (incluindo telefone no campo CNPJ se necessário)
+      let cnpjField = data.cnpj || '';
+      if (!cnpjField) {
+        cnpjField = `Empresa: ${data.empresa} | Tel: ${data.telefone}`;
+      } else {
+        cnpjField = `${data.cnpj} | Empresa: ${data.empresa} | Tel: ${data.telefone}`;
+      }
+
       // Salvar no Supabase
       console.log('Salvando pré-cadastro no Supabase...');
       const { success, error: userError } = await userService.addUser({
@@ -100,7 +108,7 @@ export default function PreRegistration() {
         email: data.email,
         tipo: data.tipo,
         conheceu: data.conheceu,
-        cnpj: data.cnpj || `Empresa: ${data.empresa} | Tel: ${data.telefone}`
+        cnpj: cnpjField
       });
 
       if (!success || userError) {
@@ -130,7 +138,7 @@ export default function PreRegistration() {
       console.log('Pré-cadastro salvo no Supabase para análise do admin');
       
       toast.success('Pré-cadastro enviado com sucesso!', {
-        description: 'Sua solicitação foi enviada para análise. Entraremos em contato em breve.',
+        description: 'Sua solicitação foi enviada para análise. Entraremos em contato em breve via WhatsApp.',
       });
       
       form.reset();
