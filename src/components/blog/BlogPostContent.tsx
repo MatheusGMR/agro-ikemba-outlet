@@ -110,13 +110,13 @@ const BlogPostContent = ({ post }: BlogPostContentProps) => {
       {/* Author Bio */}
       <div className="bg-gray-50 rounded-lg p-6 mb-8">
         <div className="flex items-start gap-4">
-          <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center">
-            <User className="w-8 h-8 text-gray-500" />
+          <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
+            <User className="w-8 h-8 text-primary" />
           </div>
           <div>
             <h3 className="font-bold text-lg mb-2">{post.author}</h3>
-            <p className="text-gray-600 text-sm">
-              Especialista em agronegócio com mais de 10 anos de experiência no setor de insumos agrícolas.
+            <p className="text-gray-600 text-sm leading-relaxed">
+              A equipe de comunicação da AgroIkemba é formada por especialistas em agronegócio, comprometidos em trazer informações atualizadas e relevantes para produtores rurais e profissionais do setor agrícola.
             </p>
           </div>
         </div>
