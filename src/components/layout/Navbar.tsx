@@ -76,6 +76,11 @@ export default function Navbar() {
         
         {/* Desktop Nav */}
         <nav className="hidden md:flex items-center gap-6">
+          <div className="flex items-center gap-4 mr-4">
+            <Link to="/blog" className="text-foreground hover:text-primary transition-colors">
+              Blog
+            </Link>
+          </div>
           <div className="flex items-center gap-2">
             {user?.verified ? (
               <div className="flex items-center gap-2">
@@ -120,6 +125,7 @@ export default function Navbar() {
           <nav className="container-custom py-4">
             <ul className="space-y-4 text-lg">
               <NavItem href="/">Início</NavItem>
+              <NavItem href="/blog">Blog</NavItem>
               {user?.verified && (
                 <>
                   <NavItem href="/products">Produtos</NavItem>
