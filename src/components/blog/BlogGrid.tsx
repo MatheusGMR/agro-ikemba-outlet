@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { useBlogPosts } from '@/hooks/useBlogPosts';
 
 const BlogGrid = () => {
-  const { posts, isLoading } = useBlogPosts();
+  const { data: posts, isLoading } = useBlogPosts();
 
   if (isLoading) {
     return (

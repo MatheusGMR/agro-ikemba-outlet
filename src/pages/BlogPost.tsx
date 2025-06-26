@@ -11,7 +11,7 @@ import { useBlogPost } from '@/hooks/useBlogPost';
 
 const BlogPost = () => {
   const { slug } = useParams<{ slug: string }>();
-  const { post, isLoading } = useBlogPost(slug);
+  const { data: post, isLoading } = useBlogPost(slug);
 
   if (isLoading) {
     return <LoadingFallback />;
