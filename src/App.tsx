@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -21,7 +22,7 @@ const queryClient = new QueryClient();
 
 function App() {
   return (
-    <QueryClient client={queryClient}>
+    <QueryClientProvider client={queryClient}>
       <HelmetProvider>
         <TooltipProvider>
           <Toaster />
@@ -47,7 +48,7 @@ function App() {
           </BrowserRouter>
         </TooltipProvider>
       </HelmetProvider>
-    </QueryClient>
+    </QueryClientProvider>
   );
 }
 
