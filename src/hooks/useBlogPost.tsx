@@ -124,7 +124,7 @@ const mockPosts: BlogPost[] = [
       </div>
     `,
     excerpt: 'Descubra como os insumos agrícolas genéricos podem revolucionar sua produção, oferecendo economia de até 40% nos custos operacionais sem comprometer a qualidade. Um guia completo sobre qualidade, regulamentação e benefícios para o agronegócio brasileiro.',
-    featuredImage: '/lovable-uploads/cc866595-a7de-4eca-b055-09f1bb8beb61.png',
+    featuredImage: 'https://images.unsplash.com/photo-1464226184884-fa280b87c399?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1920&q=80',
     author: 'Comunicação AgroIkemba',
     publishedAt: '2024-01-20T08:00:00Z',
     updatedAt: '2024-01-20T08:00:00Z',
