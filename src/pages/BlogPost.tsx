@@ -1,4 +1,3 @@
-
 import { Suspense } from 'react';
 import { useParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
@@ -70,13 +69,8 @@ const BlogPost = () => {
           <Navbar />
           <main className="flex-1">
             <div className="container-custom py-12">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div className="lg:col-span-2">
-                  <BlogPostContent post={post} />
-                </div>
-                <div className="lg:col-span-1">
-                  <BlogSidebar />
-                </div>
+              <div className="max-w-4xl mx-auto">
+                <BlogPostContent post={post} />
               </div>
             </div>
           </main>
