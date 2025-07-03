@@ -103,27 +103,18 @@ export default function Hero() {
                 </div>
               )}
               <video 
-                ref={videoRef}
                 width="100%" 
                 controls 
                 muted 
+                autoPlay
                 loop 
                 playsInline 
-                preload="metadata"
-                poster="/lovable-uploads/6aea75d9-eade-440b-8bf4-099785748206.png"
                 className="rounded-xl shadow-lg bg-gray-50" 
                 style={{
                   boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
                 }}
-                onError={handleVideoError} 
-                onLoadedData={handleVideoLoad} 
-                onCanPlay={handleCanPlay}
               >
                 <source src="https://agroikemba.com.br/Pitch-deck-1.mp4" type="video/mp4" />
-                <source src="https://agroikemba.com.br/pitch-deck-1.mp4" type="video/mp4" />
-                <source src="https://www.agroikemba.com.br/Pitch-deck-1.mp4" type="video/mp4" />
-                <source src="https://agroikemba.com.br/videos/Pitch-deck-1.mp4" type="video/mp4" />
-                <source src="https://agroikemba.com.br/assets/Pitch-deck-1.mp4" type="video/mp4" />
                 Seu navegador não suporta o elemento de vídeo.
               </video>
             </div>
