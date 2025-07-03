@@ -116,7 +116,7 @@ export default function Hero() {
                 onLoadedData={handleVideoLoad} 
                 onCanPlay={handleCanPlay}
               >
-                <source src="https://agroikemba.com.br/wp-content/uploads/2025/05/Pitch-deck-1.mp4" type="video/mp4" />
+                <source src="https://agroikemba.com.br/public_html/Pitch-deck-1.mp4" type="video/mp4" />
                 Seu navegador não suporta o elemento de vídeo.
               </video>
             </div>
