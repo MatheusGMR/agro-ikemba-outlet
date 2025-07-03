@@ -116,10 +116,7 @@ export default function Hero() {
                 onLoadedData={handleVideoLoad} 
                 onCanPlay={handleCanPlay}
               >
-                {/* Video URL temporariamente indisponível */}
-                <div className="flex items-center justify-center h-64 bg-gray-100 rounded-xl">
-                  <p className="text-gray-600">Vídeo temporariamente indisponível</p>
-                </div>
+                <source src="https://agroikemba.com.br/wp-content/uploads/2025/05/Pitch-deck-1.mp4" type="video/mp4" />
                 Seu navegador não suporta o elemento de vídeo.
               </video>
             </div>
