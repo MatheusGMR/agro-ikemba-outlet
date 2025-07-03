@@ -107,7 +107,7 @@ export default function Hero() {
                 loop 
                 playsInline 
                 preload="metadata"
-                poster="/lovable-uploads/6aea75d9-eade-440b-8bf4-099785748206.png"
+                poster="https://agroikemba.com.br/wp-content/uploads/2025/05/video-thumbnail.png"
                 className="rounded-xl shadow-lg bg-gray-50" 
                 style={{
                   boxShadow: '0 4px 12px rgba(0,0,0,0.2)'

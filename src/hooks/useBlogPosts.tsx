@@ -249,7 +249,7 @@ const mockPosts: BlogPost[] = [
       <p>O ano de 2024 promete ser de grandes transformações no mercado de defensivos agrícolas. Acompanhar essas tendências é fundamental para o sucesso dos produtores.</p>
     `,
     excerpt: 'Descubra as principais tendências que irão moldar o mercado de defensivos agrícolas em 2024 e como se preparar para essas mudanças.',
-    featuredImage: '/lovable-uploads/cc866595-a7de-4eca-b055-09f1bb8beb61.png',
+    featuredImage: 'https://agroikemba.com.br/wp-content/uploads/2025/05/defensivos-agricolas-2024.jpg',
     author: 'Comunicação AgroIkemba',
     publishedAt: '2024-01-15T10:00:00Z',
     updatedAt: '2024-01-15T10:00:00Z',
