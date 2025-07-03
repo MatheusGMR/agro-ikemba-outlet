@@ -65,7 +65,7 @@ export default function Navbar() {
             <div className="flex items-center gap-1 py-2 px-0">
               <img 
                 alt="Agro Ikemba" 
-                src="/lovable-uploads/6aea75d9-eade-440b-8bf4-099785748206.png" 
+                src="http://agroikemba.com.br/wp-content/uploads/2025/05/Add-a-heading-3.png" 
                 className="h-48 w-auto object-contain" 
                 loading="eager"
                 decoding="async"
