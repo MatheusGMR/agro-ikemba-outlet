@@ -1,5 +1,6 @@
 
 import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 interface BlogPost {
   id: string;
@@ -13,6 +14,9 @@ interface BlogPost {
   category: string;
   tags?: string[];
   slug: string;
+  metaTitle?: string;
+  metaDescription?: string;
+  metaKeywords?: string;
 }
 
 // Mock data - mesmo do useBlogPosts
@@ -231,11 +235,36 @@ export const useBlogPost = (slug?: string) => {
     queryFn: async () => {
       if (!slug) return null;
       
-      // Simular delay de API
-      await new Promise(resolve => setTimeout(resolve, 500));
+      const { data, error } = await supabase
+        .from('blog_posts')
+        .select('*')
+        .eq('slug', slug)
+        .eq('status', 'published')
+        .maybeSingle();
       
-      const post = mockPosts.find(post => post.slug === slug);
-      return post || null;
+      if (error) {
+        console.error('Error fetching blog post:', error);
+        throw error;
+      }
+      
+      if (!data) return null;
+      
+      return {
+        id: data.id,
+        title: data.title,
+        content: data.content,
+        excerpt: data.excerpt,
+        featuredImage: data.featured_image,
+        author: data.author,
+        publishedAt: data.published_at,
+        updatedAt: data.updated_at,
+        category: data.category,
+        tags: data.tags,
+        slug: data.slug,
+        metaTitle: data.meta_title,
+        metaDescription: data.meta_description,
+        metaKeywords: data.meta_keywords
+      };
     },
     enabled: !!slug
   });

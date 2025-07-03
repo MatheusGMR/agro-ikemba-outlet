@@ -23,9 +23,9 @@ const BlogPost = () => {
   return (
     <>
       <Helmet>
-        <title>{post.title} - Blog Agro Ikemba</title>
-        <meta name="description" content={post.excerpt.length > 155 ? post.excerpt.substring(0, 152) + '...' : post.excerpt} />
-        <meta name="keywords" content={post.tags?.join(', ')} />
+        <title>{post.metaTitle || post.title} - Blog AgroIkemba</title>
+        <meta name="description" content={post.metaDescription || (post.excerpt.length > 155 ? post.excerpt.substring(0, 152) + '...' : post.excerpt)} />
+        <meta name="keywords" content={post.metaKeywords || post.tags?.join(', ')} />
         <meta name="author" content={post.author} />
         <meta property="article:published_time" content={post.publishedAt} />
         <meta property="article:modified_time" content={post.updatedAt} />

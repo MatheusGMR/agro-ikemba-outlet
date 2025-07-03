@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 interface BlogPost {
   id: string;
@@ -12,6 +13,9 @@ interface BlogPost {
   category: string;
   tags?: string[];
   slug: string;
+  metaTitle?: string;
+  metaDescription?: string;
+  metaKeywords?: string;
 }
 
 // Mock data for demonstration
@@ -291,13 +295,43 @@ const mockPosts: BlogPost[] = [
   }
 ];
 
-export const useBlogPosts = () => {
+export const useBlogPosts = (category?: string) => {
   return useQuery({
-    queryKey: ['blogPosts'],
+    queryKey: ['blog-posts', category],
     queryFn: async () => {
-      // Simular delay de API
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      return mockPosts;
-    }
+      let query = supabase
+        .from('blog_posts')
+        .select('*')
+        .eq('status', 'published')
+        .order('published_at', { ascending: false });
+      
+      if (category && category !== 'all') {
+        query = query.eq('category', category);
+      }
+      
+      const { data, error } = await query;
+      
+      if (error) {
+        console.error('Error fetching blog posts:', error);
+        throw error;
+      }
+      
+      return data?.map(post => ({
+        id: post.id,
+        title: post.title,
+        content: post.content,
+        excerpt: post.excerpt,
+        author: post.author,
+        publishedAt: post.published_at,
+        updatedAt: post.updated_at,
+        category: post.category,
+        featuredImage: post.featured_image,
+        tags: post.tags,
+        slug: post.slug,
+        metaTitle: post.meta_title,
+        metaDescription: post.meta_description,
+        metaKeywords: post.meta_keywords
+      })) || [];
+    },
   });
 };
