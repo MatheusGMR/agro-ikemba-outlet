@@ -66,7 +66,7 @@ export default function Navbar() {
               <img 
                 alt="Agro Ikemba" 
                 src="http://agroikemba.com.br/wp-content/uploads/2025/05/Add-a-heading-3.png" 
-                className="h-48 w-auto object-contain" 
+                className="h-12 w-auto object-contain" 
                 loading="eager"
                 decoding="async"
               />
