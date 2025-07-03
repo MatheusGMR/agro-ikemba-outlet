@@ -114,7 +114,7 @@ export default function Hero() {
                   boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
                 }}
               >
-                <source src="https://agroikemba.com.br/Pitch-deck-1.mp4" type="video/mp4" />
+                <source src="https://agroikemba.com.br/uploads/pitch-deck.mp4" type="video/mp4" />
                 Seu navegador não suporta o elemento de vídeo.
               </video>
             </div>
