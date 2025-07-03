@@ -123,7 +123,7 @@ const mockPosts: BlogPost[] = [
         </p>
       </div>
     `,
-    excerpt: 'Descubra como os insumos agrícolas genéricos podem revolucionar sua produção, oferecendo economia de até 40% nos custos operacionais sem comprometer a qualidade. Um guia completo sobre qualidade, regulamentação e benefícios para o agronegócio brasileiro.',
+    excerpt: 'Descubra como os insumos agrícolas genéricos podem revolucionar sua produção, oferecendo economia de até 40% nos custos operacionais sem comprometer a qualidade.',
     featuredImage: 'https://images.unsplash.com/photo-1464226184884-fa280b87c399?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1920&q=80',
     author: 'Comunicação AgroIkemba',
     publishedAt: '2024-01-20T08:00:00Z',
@@ -213,7 +213,7 @@ const mockPosts: BlogPost[] = [
         </p>
       </div>
     `,
-    excerpt: 'Análise profunda da gestão de distribuidoras de insumos agrícolas no Brasil, explorando os riscos da consolidação, os desafios financeiros e operacionais do setor, e estratégias para construir um futuro mais resiliente.',
+    excerpt: 'Análise da gestão de distribuidoras de insumos agrícolas no Brasil, explorando riscos da consolidação e estratégias para um futuro mais resiliente.',
     featuredImage: 'https://images.unsplash.com/photo-1500595046743-cd271d694d30?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1920&q=80',
     author: 'Renato Seraphim',
     publishedAt: '2025-01-07T08:00:00Z',

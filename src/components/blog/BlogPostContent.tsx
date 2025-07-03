@@ -41,8 +41,11 @@ const BlogPostContent = ({ post }: BlogPostContentProps) => {
         <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden mb-8">
           <img
             src={post.featuredImage}
-            alt={post.title}
+            alt={`Imagem ilustrativa do artigo: ${post.title} - ${post.excerpt.substring(0, 100)}...`}
             className="w-full h-full object-cover"
+            loading="lazy"
+            width="1920"
+            height="1080"
           />
         </div>
       )}
