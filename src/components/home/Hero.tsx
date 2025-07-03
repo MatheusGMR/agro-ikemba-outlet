@@ -29,6 +29,9 @@ export default function Hero() {
     const video = e.target as HTMLVideoElement;
     console.log('Video error code:', video.error?.code);
     console.log('Video error message:', video.error?.message);
+    console.log('Video current source:', video.currentSrc);
+    console.log('Video network state:', video.networkState);
+    console.log('Video ready state:', video.readyState);
     setVideoError(true);
     setIsLoading(false);
   };
@@ -99,28 +102,46 @@ export default function Hero() {
                   </div>
                 </div>
               )}
-              <video 
-                ref={videoRef}
-                width="100%" 
-                controls 
-                muted 
-                loop 
-                playsInline 
-                preload="metadata"
-                poster="/lovable-uploads/6aea75d9-eade-440b-8bf4-099785748206.png"
-                className="rounded-xl shadow-lg bg-gray-50" 
-                style={{
+              
+              {videoError ? (
+                <div className="rounded-xl shadow-lg overflow-hidden bg-gray-50" style={{
                   boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
-                }}
-                onError={handleVideoError} 
-                onLoadedData={handleVideoLoad} 
-                onCanPlay={handleCanPlay}
-              >
-                <source src="https://agroikemba.com.br/public_html/Pitch-deck-1.mp4" type="video/mp4" />
-                <source src="https://agroikemba.com.br/wp-content/uploads/2025/05/Pitch-deck-1.mp4" type="video/mp4" />
-                <source src="https://www.agroikemba.com.br/Pitch-deck-1.mp4" type="video/mp4" />
-                Seu navegador não suporta o elemento de vídeo.
-              </video>
+                }}>
+                  <img 
+                    src="/lovable-uploads/6aea75d9-eade-440b-8bf4-099785748206.png" 
+                    alt="Agro Ikemba - Revolucionando o Mercado de Insumos"
+                    className="w-full h-auto"
+                  />
+                  <div className="p-4 bg-white">
+                    <p className="text-sm text-gray-600 text-center">
+                      Vídeo temporariamente indisponível
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <video 
+                  ref={videoRef}
+                  width="100%" 
+                  controls 
+                  muted 
+                  loop 
+                  playsInline 
+                  preload="metadata"
+                  poster="/lovable-uploads/6aea75d9-eade-440b-8bf4-099785748206.png"
+                  className="rounded-xl shadow-lg bg-gray-50" 
+                  style={{
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+                  }}
+                  onError={handleVideoError} 
+                  onLoadedData={handleVideoLoad} 
+                  onCanPlay={handleCanPlay}
+                >
+                  <source src="https://agroikemba.com.br/public_html/Pitch-deck-1.mp4" type="video/mp4" />
+                  <source src="https://agroikemba.com.br/wp-content/uploads/2025/05/Pitch-deck-1.mp4" type="video/mp4" />
+                  <source src="https://www.agroikemba.com.br/Pitch-deck-1.mp4" type="video/mp4" />
+                  Seu navegador não suporta o elemento de vídeo.
+                </video>
+              )}
             </div>
           </div>
         </div>
