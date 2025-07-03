@@ -54,7 +54,7 @@ export default function Navbar() {
         <div className="flex items-center gap-2">
           <Link to="/" className="flex items-center gap-2">
             <div className="flex items-center gap-1 py-2 px-0">
-              <img alt="Agro Ikemba" src="http://agroikemba.com.br/wp-content/uploads/2025/05/Add-a-heading-3.png" loading="eager" decoding="async" className="h-24 w-auto object-contain" />
+              <img alt="Agro Ikemba" src="http://agroikemba.com.br/wp-content/uploads/2025/05/Add-a-heading-3.png" loading="eager" decoding="async" className="h-20 w-auto object-contain" />
             </div>
           </Link>
         </div>
