@@ -3,6 +3,10 @@
   RewriteEngine On
   RewriteBase /
   
+  # Force www subdomain
+  RewriteCond %{HTTP_HOST} ^agroikemba\.com\.br [NC]
+  RewriteRule ^(.*)$ https://www.agroikemba.com.br/$1 [R=301,L]
+  
   # Handle Angular and React Router
   RewriteRule ^index\.html$ - [L]
   RewriteCond %{REQUEST_FILENAME} !-f
