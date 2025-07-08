@@ -104,17 +104,6 @@ export default function BannerCarousel() {
                 <p className="text-lg md:text-xl mb-6 animate-fade-in">
                   {banner.subtitle}
                 </p>
-                {banner.ctaText && banner.ctaLink && (
-                  <Button 
-                    size="lg"
-                    className="bg-primary hover:bg-primary/90 text-white px-8 py-3 text-lg animate-fade-in"
-                    asChild
-                  >
-                    <a href={banner.ctaLink}>
-                      {banner.ctaText}
-                    </a>
-                  </Button>
-                )}
               </div>
             </div>
           </div>
