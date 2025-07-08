@@ -26,35 +26,37 @@ export default {
 				background: 'hsl(var(--background))',
 				foreground: 'hsl(var(--foreground))',
 				primary: {
-					DEFAULT: '#14a249',
-					foreground: '#FFFFFF'
+					DEFAULT: 'hsl(var(--primary))',
+					foreground: 'hsl(var(--primary-foreground))'
 				},
 				secondary: {
-					DEFAULT: '#ebf0f1',
-					foreground: '#000000'
+					DEFAULT: 'hsl(var(--secondary))',
+					foreground: 'hsl(var(--secondary-foreground))'
 				},
 				destructive: {
-					DEFAULT: '#E53E3E',
-					foreground: '#FFFFFF'
+					DEFAULT: 'hsl(var(--destructive))',
+					foreground: 'hsl(var(--destructive-foreground))'
 				},
 				muted: {
-					DEFAULT: '#F7FAFC',
-					foreground: '#718096'
+					DEFAULT: 'hsl(var(--muted))',
+					foreground: 'hsl(var(--muted-foreground))'
 				},
 				accent: {
-					DEFAULT: '#EDF2F7',
-					foreground: '#14a249'
+					DEFAULT: 'hsl(var(--accent))',
+					foreground: 'hsl(var(--accent-foreground))'
 				},
-				// Cores do brandbook Agro Ikemba
-				"brand": {
-					"green": {
-						DEFAULT: "#14a249",
-						"dark": "#115629"
-					},
-					"gray": {
-						DEFAULT: "#ebf0f1"
-					},
-					"black": "#000000"
+				popover: {
+					DEFAULT: 'hsl(var(--popover))',
+					foreground: 'hsl(var(--popover-foreground))'
+				},
+				card: {
+					DEFAULT: 'hsl(var(--card))',
+					foreground: 'hsl(var(--card-foreground))'
+				},
+				// Cores do brandbook Agro Ikemba mantendo compatibilidade
+				"agro-green": {
+					DEFAULT: 'hsl(var(--primary))',
+					"light": 'hsl(var(--secondary))'
 				}
 			},
 			borderRadius: {

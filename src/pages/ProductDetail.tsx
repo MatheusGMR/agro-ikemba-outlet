@@ -298,7 +298,7 @@ const ProductDetail = () => {
                 </div>
                 
                 <div className="flex flex-wrap gap-3">
-                  <Button size="lg" className="flex-1 bg-agro-green hover:bg-agro-green-light">
+                  <Button size="lg" className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90">
                     <ShoppingCart className="mr-2 h-5 w-5" />
                     Adicionar ao Carrinho
                   </Button>
