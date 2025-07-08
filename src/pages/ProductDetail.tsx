@@ -310,10 +310,19 @@ const ProductDetail = () => {
                 </div>
                 
                 <div className="flex flex-col gap-3">
+                  <Button 
+                    size="lg" 
+                    className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+                    onClick={handleBuyNow}
+                  >
+                    Comprar Agora
+                  </Button>
+                  
                   <div className="flex gap-3">
                     <Button 
                       size="lg" 
-                      className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
+                      variant="outline"
+                      className="flex-1 border-primary text-primary hover:bg-primary hover:text-primary-foreground"
                       onClick={handleAddToCart}
                     >
                       <ShoppingCart className="mr-2 h-5 w-5" />
@@ -331,15 +340,6 @@ const ProductDetail = () => {
                       />
                     </Button>
                   </div>
-                  
-                  <Button 
-                    size="lg" 
-                    variant="outline"
-                    className="w-full border-primary text-primary hover:bg-primary hover:text-primary-foreground"
-                    onClick={handleBuyNow}
-                  >
-                    Comprar Agora
-                  </Button>
                 </div>
                 
                 <div className="mt-4 p-3 bg-muted rounded-md flex items-start gap-2">
