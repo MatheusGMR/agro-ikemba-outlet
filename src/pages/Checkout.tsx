@@ -317,198 +317,216 @@ const Checkout = () => {
                     </div>
                   </div>
                   
-                  {/* Shipping Options */}
-                  <div className="bg-white border rounded-lg p-6 mb-6">
-                    <h2 className="text-xl font-semibold mb-4 flex items-center">
-                      <Truck className="mr-2 h-5 w-5 text-agro-green" />
-                      Opções de Frete
-                    </h2>
-                    
-                    <div className="space-y-4">
-                      <RadioGroup value={selectedShipping || ''} onValueChange={setSelectedShipping}>
-                        {SHIPPING_OPTIONS.map((option) => (
-                          <div 
-                            key={option.id}
-                            className="flex items-start border rounded-md p-4 hover:bg-muted/50 cursor-pointer"
-                            onClick={() => setSelectedShipping(option.id)}
-                          >
-                            <RadioGroupItem value={option.id} id={option.id} className="mt-1" />
-                            <div className="ml-3 flex-1">
-                              <div className="flex justify-between">
-                                <Label htmlFor={option.id} className="font-medium">
-                                  {option.carrier}
-                                </Label>
-                                <p className="font-semibold">R$ {option.price.toFixed(2)}</p>
-                              </div>
-                              <div className="flex justify-between mt-1">
-                                <p className="text-sm text-muted-foreground">
-                                  Entrega em {option.days} dias úteis
-                                </p>
-                                <p className="text-sm font-medium bg-agro-beige px-2 py-0.5 rounded">
-                                  {option.type}
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </RadioGroup>
-                    </div>
-                    
-                    {!selectedShipping && (
-                      <p className="text-red-500 text-sm mt-2 flex items-center">
-                        <Info className="h-4 w-4 mr-1" />
-                        Por favor, selecione uma opção de frete para continuar.
-                      </p>
-                    )}
-                  </div>
-                  
-                  {/* Insurance Option */}
-                  <div className="bg-white border rounded-lg p-6 mb-6">
-                    <div className="flex items-start">
-                      <div className="mr-4 mt-1">
-                        <Shield className="h-6 w-6 text-agro-green" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <h2 className="text-xl font-semibold">Seguro do Produto</h2>
-                            <p className="text-sm text-muted-foreground mt-1">
-                              Proteja sua carga contra danos, roubo e extravios durante o transporte
-                            </p>
-                          </div>
-                          <div className="flex items-center">
-                            <Checkbox 
-                              id="insurance" 
-                              checked={needsInsurance}
-                              onCheckedChange={(checked) => setNeedsInsurance(checked === true)}
-                            />
-                            <Label htmlFor="insurance" className="ml-2">
-                              R$ {(subtotal * 0.02).toFixed(2)}
-                            </Label>
-                          </div>
-                        </div>
-                        
-                        {needsInsurance && (
-                          <div className="mt-4 p-3 bg-muted rounded-md flex items-start gap-2">
-                            <Info className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-0.5" />
-                            <p className="text-sm">
-                              O seguro cobre 100% do valor dos produtos e frete em caso de danos, roubo ou extravios durante o transporte.
-                              <a href="#" className="text-agro-green ml-1 hover:underline">
-                                Ver termos e condições do seguro
-                              </a>
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Storage Option */}
-                  <div className="bg-white border rounded-lg p-6 mb-6">
-                    <div className="flex items-start">
-                      <div className="mr-4 mt-1">
-                        <Warehouse className="h-6 w-6 text-agro-green" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <h2 className="text-xl font-semibold">Armazenagem Temporária</h2>
-                            <p className="text-sm text-muted-foreground mt-1">
-                              Precisa armazenar os produtos antes da entrega final?
-                            </p>
-                          </div>
-                          <div>
-                            <Checkbox 
-                              id="storage" 
-                              checked={needsStorage}
-                              onCheckedChange={(checked) => {
-                                setNeedsStorage(checked === true);
-                                if (checked !== true) {
-                                  setSelectedStorage(null);
-                                  setSelectedStoragePeriod(null);
-                                }
-                              }}
-                            />
-                            <Label htmlFor="storage" className="ml-2">
-                              Sim, preciso
-                            </Label>
-                          </div>
-                        </div>
-                        
-                        {needsStorage && (
-                          <div className="mt-4">
-                            <div className="mb-4">
-                              <h3 className="font-medium mb-2 flex items-center">
-                                <Clock className="mr-2 h-4 w-4" />
-                                Período de Armazenagem
-                              </h3>
-                              <RadioGroup 
-                                value={selectedStoragePeriod || ''} 
-                                onValueChange={setSelectedStoragePeriod}
-                                className="flex flex-wrap gap-2"
-                              >
-                                {STORAGE_PERIODS.map((period) => (
-                                  <div key={period.id} className="flex items-center">
-                                    <RadioGroupItem 
-                                      value={period.id} 
-                                      id={period.id} 
-                                      className="sr-only" 
-                                    />
-                                    <Label 
-                                      htmlFor={period.id}
-                                      className={`px-4 py-2 border rounded-md cursor-pointer transition-colors ${
-                                        selectedStoragePeriod === period.id 
-                                          ? 'bg-agro-green text-white border-agro-green' 
-                                          : 'hover:bg-muted'
-                                      }`}
-                                    >
-                                      {period.label}
-                                    </Label>
-                                  </div>
-                                ))}
-                              </RadioGroup>
-                            </div>
-                            
-                            <h3 className="font-medium mb-2">Armazéns Disponíveis</h3>
-                            <RadioGroup 
-                              value={selectedStorage || ''} 
-                              onValueChange={setSelectedStorage}
+                  {/* Show shipping options only after address is selected */}
+                  {selectedAddress && (
+                    <div className="bg-white border rounded-lg p-6 mb-6">
+                      <h2 className="text-xl font-semibold mb-4 flex items-center">
+                        <Truck className="mr-2 h-5 w-5 text-agro-green" />
+                        Opções de Frete
+                      </h2>
+                      
+                      <div className="space-y-4">
+                        <RadioGroup value={selectedShipping || ''} onValueChange={setSelectedShipping}>
+                          {SHIPPING_OPTIONS.map((option) => (
+                            <div 
+                              key={option.id}
+                              className="flex items-start border rounded-md p-4 hover:bg-muted/50 cursor-pointer"
+                              onClick={() => setSelectedShipping(option.id)}
                             >
-                              {STORAGE_FACILITIES.map((facility) => (
-                                <div 
-                                  key={facility.id}
-                                  className="flex items-start border rounded-md p-4 mb-2 hover:bg-muted/50 cursor-pointer"
-                                  onClick={() => setSelectedStorage(facility.id)}
-                                >
-                                  <RadioGroupItem value={facility.id} id={facility.id} className="mt-1" />
-                                  <div className="ml-3 flex-1">
-                                    <div className="flex justify-between">
-                                      <Label htmlFor={facility.id} className="font-medium">
-                                        {facility.name}
-                                      </Label>
-                                      <p className="font-semibold">
-                                        R$ {facility.pricePerDay.toFixed(2)}<span className="font-normal">/dia</span>
-                                      </p>
-                                    </div>
-                                    <p className="text-sm text-muted-foreground mt-1">
-                                      {facility.location}
-                                    </p>
-                                  </div>
+                              <RadioGroupItem value={option.id} id={option.id} className="mt-1" />
+                              <div className="ml-3 flex-1">
+                                <div className="flex justify-between">
+                                  <Label htmlFor={option.id} className="font-medium">
+                                    {option.carrier}
+                                  </Label>
+                                  <p className="font-semibold">R$ {option.price.toFixed(2)}</p>
                                 </div>
-                              ))}
-                            </RadioGroup>
+                                <div className="flex justify-between mt-1">
+                                  <p className="text-sm text-muted-foreground">
+                                    Entrega em {option.days} dias úteis
+                                  </p>
+                                  <p className="text-sm font-medium bg-agro-beige px-2 py-0.5 rounded">
+                                    {option.type}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </RadioGroup>
+                      </div>
+                      
+                      {!selectedShipping && (
+                        <p className="text-red-500 text-sm mt-2 flex items-center">
+                          <Info className="h-4 w-4 mr-1" />
+                          Por favor, selecione uma opção de frete para continuar.
+                        </p>
+                      )}
+                    </div>
+                  )}
+                  
+                  {/* Show insurance and storage options only after shipping is selected */}
+                  {selectedShipping && (
+                    <>
+                      {/* Insurance Option */}
+                      <div className="bg-white border rounded-lg p-6 mb-6">
+                        <div className="flex items-start">
+                          <div className="mr-4 mt-1">
+                            <Shield className="h-6 w-6 text-agro-green" />
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <h2 className="text-xl font-semibold">Seguro do Produto</h2>
+                                <p className="text-sm text-muted-foreground mt-1">
+                                  Proteja sua carga contra danos, roubo e extravios durante o transporte
+                                </p>
+                              </div>
+                              <div className="flex items-center">
+                                <Checkbox 
+                                  id="insurance" 
+                                  checked={needsInsurance}
+                                  onCheckedChange={(checked) => setNeedsInsurance(checked === true)}
+                                />
+                                <Label htmlFor="insurance" className="ml-2">
+                                  R$ {(subtotal * 0.02).toFixed(2)}
+                                </Label>
+                              </div>
+                            </div>
                             
-                            {needsStorage && (!selectedStorage || !selectedStoragePeriod) && (
-                              <p className="text-amber-600 text-sm mt-2 flex items-center">
-                                <Info className="h-4 w-4 mr-1" />
-                                Por favor, selecione um armazém e período para continuar com armazenagem.
-                              </p>
+                            {needsInsurance && (
+                              <div className="mt-4 p-3 bg-muted rounded-md flex items-start gap-2">
+                                <Info className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-0.5" />
+                                <p className="text-sm">
+                                  O seguro cobre 100% do valor dos produtos e frete em caso de danos, roubo ou extravios durante o transporte.
+                                  <a href="#" className="text-agro-green ml-1 hover:underline">
+                                    Ver termos e condições do seguro
+                                  </a>
+                                </p>
+                              </div>
                             )}
                           </div>
-                        )}
+                        </div>
                       </div>
-                    </div>
-                  </div>
+                      
+                      {/* Storage Option */}
+                      <div className="bg-white border rounded-lg p-6 mb-6">
+                        <div className="flex items-start">
+                          <div className="mr-4 mt-1">
+                            <Warehouse className="h-6 w-6 text-agro-green" />
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <h2 className="text-xl font-semibold">Armazenagem Temporária</h2>
+                                <p className="text-sm text-muted-foreground mt-1">
+                                  Precisa armazenar os produtos antes da entrega final?
+                                </p>
+                              </div>
+                              <div>
+                                <Checkbox 
+                                  id="storage" 
+                                  checked={needsStorage}
+                                  onCheckedChange={(checked) => {
+                                    setNeedsStorage(checked === true);
+                                    if (checked !== true) {
+                                      setSelectedStorage(null);
+                                      setSelectedStoragePeriod(null);
+                                    }
+                                  }}
+                                />
+                                <Label htmlFor="storage" className="ml-2">
+                                  Sim, preciso
+                                </Label>
+                              </div>
+                            </div>
+                            
+                            {needsStorage && (
+                              <div className="mt-4">
+                                <div className="mb-4">
+                                  <h3 className="font-medium mb-2 flex items-center">
+                                    <Clock className="mr-2 h-4 w-4" />
+                                    Período de Armazenagem
+                                  </h3>
+                                  <RadioGroup 
+                                    value={selectedStoragePeriod || ''} 
+                                    onValueChange={setSelectedStoragePeriod}
+                                    className="flex flex-wrap gap-2"
+                                  >
+                                    {STORAGE_PERIODS.map((period) => (
+                                      <div key={period.id} className="flex items-center">
+                                        <RadioGroupItem 
+                                          value={period.id} 
+                                          id={period.id} 
+                                          className="sr-only" 
+                                        />
+                                        <Label 
+                                          htmlFor={period.id}
+                                          className={`px-4 py-2 border rounded-md cursor-pointer transition-colors ${
+                                            selectedStoragePeriod === period.id 
+                                              ? 'bg-agro-green text-white border-agro-green' 
+                                              : 'hover:bg-muted'
+                                          }`}
+                                        >
+                                          {period.label}
+                                        </Label>
+                                      </div>
+                                    ))}
+                                  </RadioGroup>
+                                </div>
+                                
+                                {/* Show storage facilities only after period is selected */}
+                                {selectedStoragePeriod && (
+                                  <div>
+                                    <h3 className="font-medium mb-2 flex items-center">
+                                      <Warehouse className="mr-2 h-4 w-4" />
+                                      Armazém
+                                    </h3>
+                                    <RadioGroup value={selectedStorage || ''} onValueChange={setSelectedStorage}>
+                                      {STORAGE_FACILITIES.map((facility) => (
+                                        <div 
+                                          key={facility.id}
+                                          className="flex items-start border rounded-md p-4 hover:bg-muted/50 cursor-pointer"
+                                          onClick={() => setSelectedStorage(facility.id)}
+                                        >
+                                          <RadioGroupItem value={facility.id} id={facility.id} className="mt-1" />
+                                          <div className="ml-3 flex-1">
+                                            <div className="flex justify-between">
+                                              <Label htmlFor={facility.id} className="font-medium">
+                                                {facility.name}
+                                              </Label>
+                                              <p className="font-semibold">
+                                                R$ {(facility.pricePerDay * 
+                                                  STORAGE_PERIODS.find(p => p.id === selectedStoragePeriod)!.days).toFixed(2)}
+                                              </p>
+                                            </div>
+                                            <div className="flex justify-between mt-1">
+                                              <p className="text-sm text-muted-foreground">
+                                                {facility.location}
+                                              </p>
+                                              <p className="text-sm text-muted-foreground">
+                                                R$ {facility.pricePerDay}/dia
+                                              </p>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </RadioGroup>
+                                  </div>
+                                )}
+                                
+                                {needsStorage && (!selectedStorage || !selectedStoragePeriod) && (
+                                  <p className="text-amber-600 text-sm mt-2 flex items-center">
+                                    <Info className="h-4 w-4 mr-1" />
+                                    Por favor, selecione um armazém e período para continuar com armazenagem.
+                                  </p>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
               )}
               
