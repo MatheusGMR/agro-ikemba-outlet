@@ -8,7 +8,7 @@
   
   <!-- Homepage -->
   <url>
-    <loc>https://agroikemba.com.br/</loc>
+    <loc>https://www.agroikemba.com.br/</loc>
     <lastmod>2025-01-07T00:00:00+00:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
@@ -16,7 +16,7 @@
   
   <!-- Blog Main Page -->
   <url>
-    <loc>https://agroikemba.com.br/blog</loc>
+    <loc>https://www.agroikemba.com.br/blog</loc>
     <lastmod>2025-01-07T00:00:00+00:00</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
@@ -24,7 +24,7 @@
   
   <!-- Products Page -->
   <url>
-    <loc>https://agroikemba.com.br/products</loc>
+    <loc>https://www.agroikemba.com.br/products</loc>
     <lastmod>2025-01-07T00:00:00+00:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -32,7 +32,7 @@
   
   <!-- Registration Page -->
   <url>
-    <loc>https://agroikemba.com.br/register</loc>
+    <loc>https://www.agroikemba.com.br/register</loc>
     <lastmod>2025-01-07T00:00:00+00:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -40,7 +40,7 @@
   
   <!-- Dashboard Page -->
   <url>
-    <loc>https://agroikemba.com.br/dashboard</loc>
+    <loc>https://www.agroikemba.com.br/dashboard</loc>
     <lastmod>2025-01-07T00:00:00+00:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
@@ -48,7 +48,7 @@
   
   <!-- Blog Articles -->
   <url>
-    <loc>https://agroikemba.com.br/blog/importancia-insumos-agricolas-genericos</loc>
+    <loc>https://www.agroikemba.com.br/blog/importancia-insumos-agricolas-genericos</loc>
     <lastmod>2024-01-20T08:00:00+00:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -60,7 +60,7 @@
   </url>
   
   <url>
-    <loc>https://agroikemba.com.br/blog/gestao-distribuidoras-insumos-agricolas-riscos-estrategias</loc>
+    <loc>https://www.agroikemba.com.br/blog/gestao-distribuidoras-insumos-agricolas-riscos-estrategias</loc>
     <lastmod>2025-01-07T08:00:00+00:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
