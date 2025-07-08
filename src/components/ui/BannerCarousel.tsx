@@ -75,7 +75,7 @@ export default function BannerCarousel() {
 
   return (
     <div 
-      className="relative w-full h-64 md:h-80 lg:h-96 overflow-hidden bg-gray-100"
+      className="relative w-full h-32 md:h-40 lg:h-48 overflow-hidden bg-gray-100"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
