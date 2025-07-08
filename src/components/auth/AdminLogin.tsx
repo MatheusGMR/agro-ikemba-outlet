@@ -60,11 +60,11 @@ export default function AdminLogin() {
         
         toast.success('Login realizado com sucesso!');
         
-        // Dar um tempo para o storage ser persistido
+        // Dar um tempo para o storage ser persistido e força recarga
         setTimeout(() => {
           console.log('Redirecionando para /admin');
-          navigate('/admin');
-        }, 100);
+          window.location.href = '/admin'; // Força uma recarga completa
+        }, 200);
       } else {
         console.log('Credenciais inválidas');
         setError('Credenciais inválidas. Verifique email e senha.');

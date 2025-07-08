@@ -14,6 +14,7 @@ export const useAdminAuth = () => {
 
   useEffect(() => {
     checkAuthStatus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const checkAuthStatus = () => {

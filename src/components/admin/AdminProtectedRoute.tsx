@@ -14,10 +14,8 @@ export default function AdminProtectedRoute({ children }: AdminProtectedRoutePro
   useEffect(() => {
     console.log('AdminProtectedRoute montado');
     console.log('Estado atual:', { isAuthenticated, isLoading });
-    
-    // Re-verificar autenticação quando o componente monta
-    checkAuthStatus();
-  }, [checkAuthStatus]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   console.log('AdminProtectedRoute render:', { isAuthenticated, isLoading });
 
