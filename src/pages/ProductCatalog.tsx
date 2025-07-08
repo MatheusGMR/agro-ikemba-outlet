@@ -9,6 +9,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
+import BannerCarousel from '@/components/ui/BannerCarousel';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 
@@ -292,6 +293,9 @@ const ProductCatalog = () => {
     <div className="min-h-screen flex flex-col">
       <Navbar />
       <main className="flex-1 bg-background">
+        {/* Banner Carousel */}
+        <BannerCarousel />
+        
         {/* Search Bar Section */}
         <div className="bg-agro-green py-6">
           <div className="container-custom">
