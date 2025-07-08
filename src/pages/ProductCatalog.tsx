@@ -479,8 +479,8 @@ const ProductCatalog = () => {
                   : "flex flex-col gap-4"
                 }>
                   {filteredProducts.map((product) => (
-                    <Card key={product.id} className={viewMode === 'list' ? "overflow-hidden" : ""}>
-                      <CardContent className={`p-0 ${viewMode === 'list' ? 'flex' : ''}`}>
+                    <Card key={product.id} className={`${viewMode === 'list' ? "overflow-hidden" : ""} h-full flex flex-col`}>
+                      <CardContent className={`p-0 ${viewMode === 'list' ? 'flex' : 'flex flex-col'} h-full`}>
                         <div className={`${viewMode === 'list' ? 'w-1/3' : 'w-full'}`}>
                           <img 
                             src={product.image} 
@@ -489,29 +489,31 @@ const ProductCatalog = () => {
                           />
                         </div>
                         
-                        <div className={`p-4 ${viewMode === 'list' ? 'w-2/3' : ''}`}>
-                          <h3 className="font-semibold text-lg mb-1">{product.name}</h3>
-                          <p className="text-sm text-muted-foreground mb-1">{product.manufacturer}</p>
-                          <p className="text-sm mb-2">
-                            {product.activeIngredient} - {product.concentration} - {product.formulation}
-                          </p>
-                          
-                          <div className="flex items-center mb-2">
-                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${
-                              product.inStock 
-                                ? 'bg-green-100 text-green-800' 
-                                : 'bg-red-100 text-red-800'
-                            }`}>
-                              {product.inStock ? 'Em estoque' : 'Sob consulta'}
-                            </span>
+                        <div className={`p-4 ${viewMode === 'list' ? 'w-2/3' : 'flex-1'} flex flex-col`}>
+                          <div className="flex-1">
+                            <h3 className="font-semibold text-lg mb-1 line-clamp-2">{product.name}</h3>
+                            <p className="text-sm text-muted-foreground mb-1">{product.manufacturer}</p>
+                            <p className="text-sm mb-2 line-clamp-1">
+                              {product.activeIngredient} - {product.concentration} - {product.formulation}
+                            </p>
+                            
+                            <div className="flex items-center mb-2">
+                              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${
+                                product.inStock 
+                                  ? 'bg-green-100 text-green-800' 
+                                  : 'bg-red-100 text-red-800'
+                              }`}>
+                                {product.inStock ? 'Em estoque' : 'Sob consulta'}
+                              </span>
+                            </div>
+                            
+                            <div className="mb-3">
+                              <p className="text-sm">{product.unit}</p>
+                            </div>
                           </div>
                           
-                          <div className="mb-2">
-                            <p className="text-sm">{product.unit}</p>
-                          </div>
-                          
-                          <div className="flex items-end justify-between mt-4">
-                            <div>
+                          <div className="flex items-end justify-between mt-auto pt-2">
+                            <div className="flex-1">
                               {product.inStock ? (
                                 <>
                                   <p className="text-lg font-bold">
@@ -520,19 +522,19 @@ const ProductCatalog = () => {
                                   <p className="text-xs text-muted-foreground">por unidade</p>
                                 </>
                               ) : (
-                                <Button variant="outline" size="sm">
+                                <Button variant="outline" size="sm" className="mb-2">
                                   Solicitar Cotação
                                 </Button>
                               )}
                             </div>
                             
-                            <div className="flex gap-2">
-                              <Button size="sm" variant="outline">
+                            <div className="flex gap-2 ml-2">
+                              <Button size="sm" variant="outline" className="p-2">
                                 <Star className="h-4 w-4" />
                               </Button>
                               
-                              <Button asChild size="sm">
-                                <Link to={`/product/${product.id}`}>Ver Detalhes</Link>
+                              <Button asChild size="sm" className="whitespace-nowrap">
+                                <Link to={`/product/${product.id}`}>Detalhes</Link>
                               </Button>
                             </div>
                           </div>
