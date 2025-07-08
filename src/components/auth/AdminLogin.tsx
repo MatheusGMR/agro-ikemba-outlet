@@ -137,14 +137,6 @@ export default function AdminLogin() {
               {isLoading ? 'Entrando...' : 'Entrar'}
             </Button>
           </form>
-          
-          <div className="mt-4 text-center">
-            <p className="text-sm text-gray-500">
-              Credenciais de teste:<br />
-              Email: admin@agroikemba.com<br />
-              Senha: AgroIkemba2024!
-            </p>
-          </div>
         </CardContent>
       </Card>
     </div>
