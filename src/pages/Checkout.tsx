@@ -199,12 +199,13 @@ const Checkout = () => {
   
   // Handler for continuing to the next step
   const handleContinue = () => {
-    if (currentStep === 1 && selectedShipping) {
+    if (currentStep === 1 && selectedAddress && selectedShipping) {
       setCurrentStep(2);
       window.scrollTo(0, 0);
     } else if (currentStep === 2 && selectedPaymentMethod && termsAccepted) {
       // Generate a random order number
-      setOrderNumber(Math.random().toString(36).substring(2, 10).toUpperCase());
+      const orderNum = Math.random().toString(36).substring(2, 10).toUpperCase();
+      setOrderNumber(orderNum);
       setCurrentStep(3);
       setOrderComplete(true);
       // Clear cart after successful order
@@ -213,10 +214,14 @@ const Checkout = () => {
       
       toast({
         title: "Pedido realizado com sucesso!",
-        description: `Seu pedido ${Math.random().toString(36).substring(2, 10).toUpperCase()} foi confirmado.`,
+        description: `Seu pedido ${orderNum} foi confirmado.`,
       });
     }
   };
+  
+  // Check if current step requirements are met
+  const canProceedFromStep1 = selectedAddress && selectedShipping;
+  const canProceedFromStep2 = selectedPaymentMethod && termsAccepted;
   
   // Handler for going back to the previous step
   const handleBack = () => {
@@ -350,7 +355,8 @@ const Checkout = () => {
                     </div>
                     
                     {!selectedShipping && (
-                      <p className="text-red-500 text-sm mt-2">
+                      <p className="text-red-500 text-sm mt-2 flex items-center">
+                        <Info className="h-4 w-4 mr-1" />
                         Por favor, selecione uma opção de frete para continuar.
                       </p>
                     )}
@@ -732,8 +738,8 @@ const Checkout = () => {
                   <Button 
                     onClick={handleContinue}
                     disabled={
-                      (currentStep === 1 && !selectedShipping) || 
-                      (currentStep === 2 && (!selectedPaymentMethod || !termsAccepted)) ||
+                      (currentStep === 1 && !canProceedFromStep1) || 
+                      (currentStep === 2 && !canProceedFromStep2) ||
                       (needsStorage && (!selectedStorage || !selectedStoragePeriod))
                     }
                   >
