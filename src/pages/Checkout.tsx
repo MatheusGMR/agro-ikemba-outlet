@@ -1,6 +1,6 @@
 
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { 
   Check, 
   ChevronRight, 
@@ -23,6 +23,8 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
+import { useCart } from '@/contexts/CartContext';
+import { useToast } from '@/hooks/use-toast';
 
 // Mock cart data
 const CART_ITEMS = [
@@ -147,6 +149,10 @@ const Step = ({ number, title, isActive, isCompleted }: {
 );
 
 const Checkout = () => {
+  const { items, getTotalPrice, clearCart } = useCart();
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedAddress, setSelectedAddress] = useState<number>(ADDRESSES[0].id);
   const [selectedShipping, setSelectedShipping] = useState<string | null>(null);
@@ -159,8 +165,20 @@ const Checkout = () => {
   const [orderComplete, setOrderComplete] = useState<boolean>(false);
   const [orderNumber, setOrderNumber] = useState<string>('');
   
-  // Calculate subtotal
-  const subtotal = CART_ITEMS.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+  // Check if cart is empty
+  useEffect(() => {
+    if (items.length === 0) {
+      toast({
+        title: "Carrinho vazio",
+        description: "Adicione produtos ao carrinho antes de finalizar a compra.",
+        variant: "destructive"
+      });
+      navigate('/products');
+    }
+  }, [items, navigate, toast]);
+  
+  // Calculate subtotal from cart items
+  const subtotal = items.reduce((acc, item) => acc + (item.price * item.quantity), 0);
   
   // Calculate shipping cost
   const shipping = selectedShipping 
@@ -189,7 +207,14 @@ const Checkout = () => {
       setOrderNumber(Math.random().toString(36).substring(2, 10).toUpperCase());
       setCurrentStep(3);
       setOrderComplete(true);
+      // Clear cart after successful order
+      clearCart();
       window.scrollTo(0, 0);
+      
+      toast({
+        title: "Pedido realizado com sucesso!",
+        description: `Seu pedido ${Math.random().toString(36).substring(2, 10).toUpperCase()} foi confirmado.`,
+      });
     }
   };
   
@@ -725,7 +750,7 @@ const Checkout = () => {
                   <h2 className="text-lg font-semibold mb-4">Resumo do Pedido</h2>
                   
                   <div className="space-y-4">
-                    {CART_ITEMS.map((item) => (
+                    {items.map((item) => (
                       <div key={item.id} className="flex gap-3">
                         <img 
                           src={item.image} 

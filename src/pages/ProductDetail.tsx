@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { useToast } from '@/hooks/use-toast';
+import { useCart } from '@/contexts/CartContext';
 
 // Mock product data
 const PRODUCT = {
@@ -108,6 +109,7 @@ const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { addToCart } = useCart();
   const [selectedImage, setSelectedImage] = useState(PRODUCT.mainImage);
   const [selectedPackage, setSelectedPackage] = useState(PRODUCT.packaging[0]);
   const [quantity, setQuantity] = useState(1);
@@ -146,6 +148,10 @@ const ProductDetail = () => {
     if (quantity > 1) {
       setQuantity(prev => prev - 1);
     }
+  };
+  
+  const handleAddToCart = () => {
+    addToCart(PRODUCT, selectedPackage, quantity);
   };
   
   const totalPrice = selectedPackage.price * quantity;
@@ -298,7 +304,11 @@ const ProductDetail = () => {
                 </div>
                 
                 <div className="flex flex-wrap gap-3">
-                  <Button size="lg" className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90">
+                  <Button 
+                    size="lg" 
+                    className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
+                    onClick={handleAddToCart}
+                  >
                     <ShoppingCart className="mr-2 h-5 w-5" />
                     Adicionar ao Carrinho
                   </Button>

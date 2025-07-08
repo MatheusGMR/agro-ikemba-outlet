@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Menu, X, Shield, Crown } from 'lucide-react';
+import { Menu, X, Shield, Crown, ShoppingCart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
+import { useCart } from '@/contexts/CartContext';
+import CartDrawer from '@/components/ui/CartDrawer';
 interface NavItemProps {
   href: string;
   children: React.ReactNode;
@@ -21,6 +23,7 @@ const NavItem = ({
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [user, setUser] = useState(null);
+  const { getTotalItems, toggleCart } = useCart();
   const {
     isAuthenticated: isAdminAuthenticated,
     logout
@@ -67,7 +70,22 @@ export default function Navbar() {
             </Link>
           </div>
           <div className="flex items-center gap-2">
-            {user?.verified ? <div className="flex items-center gap-2">
+            {user?.verified ? <div className="flex items-center gap-3">
+                {/* Cart Icon */}
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="relative"
+                  onClick={toggleCart}
+                >
+                  <ShoppingCart className="w-4 h-4" />
+                  {getTotalItems() > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                      {getTotalItems()}
+                    </span>
+                  )}
+                </Button>
+                
                 <span className="text-sm flex items-center gap-1">
                   Olá, {user.name.split(' ')[0]}
                   {isAdminAuthenticated && <Crown className="w-4 h-4 ml-1 text-yellow-500" />}
@@ -139,5 +157,8 @@ export default function Navbar() {
             </div>
           </nav>
         </div>}
+      
+      {/* Cart Drawer */}
+      <CartDrawer />
     </header>;
 }
