@@ -154,6 +154,12 @@ const ProductDetail = () => {
     addToCart(PRODUCT, selectedPackage, quantity);
   };
   
+  const handleBuyNow = () => {
+    // Add to cart and go directly to checkout
+    addToCart(PRODUCT, selectedPackage, quantity);
+    navigate('/checkout');
+  };
+  
   const totalPrice = selectedPackage.price * quantity;
   
   const user = JSON.parse(localStorage.getItem('user') || 'null');
@@ -303,25 +309,36 @@ const ProductDetail = () => {
                   </div>
                 </div>
                 
-                <div className="flex flex-wrap gap-3">
-                  <Button 
-                    size="lg" 
-                    className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
-                    onClick={handleAddToCart}
-                  >
-                    <ShoppingCart className="mr-2 h-5 w-5" />
-                    Adicionar ao Carrinho
-                  </Button>
+                <div className="flex flex-col gap-3">
+                  <div className="flex gap-3">
+                    <Button 
+                      size="lg" 
+                      className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
+                      onClick={handleAddToCart}
+                    >
+                      <ShoppingCart className="mr-2 h-5 w-5" />
+                      Adicionar ao Carrinho
+                    </Button>
+                    
+                    <Button 
+                      variant="outline" 
+                      size="icon" 
+                      className="h-12 w-12"
+                      onClick={() => setIsFavorite(!isFavorite)}
+                    >
+                      <Heart 
+                        className={isFavorite ? "h-5 w-5 fill-red-500 stroke-red-500" : "h-5 w-5"} 
+                      />
+                    </Button>
+                  </div>
                   
                   <Button 
-                    variant="outline" 
-                    size="icon" 
-                    className="h-12 w-12"
-                    onClick={() => setIsFavorite(!isFavorite)}
+                    size="lg" 
+                    variant="outline"
+                    className="w-full border-primary text-primary hover:bg-primary hover:text-primary-foreground"
+                    onClick={handleBuyNow}
                   >
-                    <Heart 
-                      className={isFavorite ? "h-5 w-5 fill-red-500 stroke-red-500" : "h-5 w-5"} 
-                    />
+                    Comprar Agora
                   </Button>
                 </div>
                 
