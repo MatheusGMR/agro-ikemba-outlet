@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Calculator, TrendingUp, TrendingDown, Target, BarChart3, ArrowUpDown } from 'lucide-react';
+import { Calculator, TrendingUp, TrendingDown, Target, BarChart3, ArrowUpDown, RefreshCw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -94,6 +94,31 @@ const Simulador = () => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  const updateMarketData = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('fetch-market-data');
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Sucesso",
+        description: "Dados de mercado atualizados com sucesso!"
+      });
+      
+      console.log('Dados de mercado atualizados:', data);
+    } catch (error) {
+      console.error('Erro ao atualizar dados de mercado:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao atualizar dados de mercado",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const calculateSimulation = async () => {
     // Validações
     if (!formData.inputId || !formData.simulationName || !formData.purchaseCost || 
@@ -155,12 +180,25 @@ const Simulador = () => {
 
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-foreground mb-2">
-            Simulador de Preços
-          </h1>
-          <p className="text-xl text-muted-foreground">
-            Análise estratégica de preços de insumos agrícolas com benchmarking de mercado
-          </p>
+          <div className="flex justify-between items-start">
+            <div>
+              <h1 className="text-4xl font-bold text-foreground mb-2">
+                Simulador de Preços
+              </h1>
+              <p className="text-xl text-muted-foreground">
+                Análise estratégica de preços de insumos agrícolas com benchmarking de mercado
+              </p>
+            </div>
+            <Button 
+              variant="outline" 
+              onClick={updateMarketData}
+              disabled={loading}
+              className="flex items-center gap-2"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Atualizar Dados de Mercado
+            </Button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -386,13 +424,19 @@ const Simulador = () => {
                       <div>
                         <p className="text-sm text-muted-foreground">Preço Regional (Tático)</p>
                         <p className="text-lg font-semibold">
-                          R$ {result.marketMetrics.regionalPrice.toFixed(2)}
+                          {result.marketMetrics.regionalPrice > 0 
+                            ? `R$ ${result.marketMetrics.regionalPrice.toFixed(2)}`
+                            : <span className="text-muted-foreground">N/D</span>
+                          }
                         </p>
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground">Preço de Cotação</p>
                         <p className="text-lg font-semibold">
-                          R$ {result.marketMetrics.quotationPrice.toFixed(2)}
+                          {result.marketMetrics.quotationPrice > 0 
+                            ? `R$ ${result.marketMetrics.quotationPrice.toFixed(2)}`
+                            : <span className="text-muted-foreground">N/D</span>
+                          }
                         </p>
                       </div>
                     </div>
@@ -466,7 +510,10 @@ const Simulador = () => {
                     <div className="text-center">
                       <p className="text-sm text-muted-foreground">Preço da Commodity</p>
                       <p className="text-lg font-semibold">
-                        R$ {result.marketMetrics.commodityPrice.toFixed(2)}/saca
+                        {result.marketMetrics.commodityPrice > 0 
+                          ? `R$ ${result.marketMetrics.commodityPrice.toFixed(2)}/saca`
+                          : <span className="text-muted-foreground">N/D</span>
+                        }
                       </p>
                     </div>
                   </CardContent>
