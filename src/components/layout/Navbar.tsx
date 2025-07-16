@@ -68,6 +68,9 @@ export default function Navbar() {
             <Link to="/blog" className="text-foreground hover:text-primary transition-colors">
               Blog
             </Link>
+            <Link to="/simulador" className="text-foreground hover:text-primary transition-colors">
+              Simulador
+            </Link>
           </div>
           <div className="flex items-center gap-2">
             {user?.verified ? <div className="flex items-center gap-3">
@@ -122,6 +125,7 @@ export default function Navbar() {
             <ul className="space-y-4 text-lg">
               <NavItem href="/">Início</NavItem>
               <NavItem href="/blog">Blog</NavItem>
+              <NavItem href="/simulador">Simulador</NavItem>
               {user?.verified && <>
                   <NavItem href="/products">Produtos</NavItem>
                   <NavItem href="/for-manufacturers">Para Fabricantes</NavItem>

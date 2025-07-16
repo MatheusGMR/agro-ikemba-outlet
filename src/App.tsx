@@ -16,6 +16,7 @@ import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
 import AdminProtectedRoute from "./components/admin/AdminProtectedRoute";
 import TestPage from '@/pages/TestPage';
+import Simulador from './pages/Simulador';
 import { TooltipProvider } from '@radix-ui/react-tooltip';
 import { CartProvider } from '@/contexts/CartContext';
 
@@ -45,6 +46,7 @@ function App() {
                     <Admin />
                   </AdminProtectedRoute>
                 } />
+                <Route path="/simulador" element={<Simulador />} />
                 <Route path="/test-openai" element={<TestPage />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>

@@ -6,3 +6,9 @@ verify_jwt = false
 
 [functions.send-pre-registration]
 verify_jwt = false
+
+[functions.calculate-simulation]
+verify_jwt = false
+
+[functions.fetch-market-data]
+verify_jwt = false
