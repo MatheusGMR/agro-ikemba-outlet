@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useCart } from '@/contexts/CartContext';
 import CartDrawer from '@/components/ui/CartDrawer';
+import { supabase } from '@/integrations/supabase/client';
 
 interface NavItemProps {
   href: string;
@@ -28,6 +29,12 @@ export default function Navbar() {
   const [logoError, setLogoError] = useState(false);
   const { getTotalItems, toggleCart } = useCart();
   const { isAuthenticated: isAdminAuthenticated, logout } = useAdminAuth();
+
+  // Get the public URL for the logo from Supabase Storage
+  const getLogoUrl = () => {
+    const { data } = supabase.storage.from('media-assets').getPublicUrl('Logo.png');
+    return data.publicUrl;
+  };
 
   useEffect(() => {
     // Verificar usuário logado
@@ -57,7 +64,6 @@ export default function Navbar() {
   };
 
   const handleLogoError = () => {
-    console.log('Logo failed to load');
     setLogoError(true);
   };
 
@@ -70,7 +76,7 @@ export default function Navbar() {
               {!logoError ? (
                 <img 
                   alt="Agro Ikemba" 
-                  src="https://agroikemba.com.br/wp-content/uploads/2025/05/Add-a-heading-3.png" 
+                  src={getLogoUrl()}
                   loading="eager" 
                   decoding="async" 
                   className="h-20 w-auto object-contain" 

@@ -7,7 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 export default function Hero() {
   // Get the public URL for the video from Supabase Storage
   const getVideoUrl = () => {
-    const { data } = supabase.storage.from('media-assets').getPublicUrl('pitch-deck.mp4');
+    const { data } = supabase.storage.from('media-assets').getPublicUrl('pitchdeck.mp4');
     return data.publicUrl;
   };
 
