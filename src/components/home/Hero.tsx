@@ -2,47 +2,20 @@
 import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { useState, useRef, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function Hero() {
-  const [videoError, setVideoError] = useState(false);
-  const [videoLoaded, setVideoLoaded] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const videoRef = useRef<HTMLVideoElement>(null);
-
-  console.log('Hero component mounted');
-
-  // Preload video only when component is visible
-  useEffect(() => {
-    const video = videoRef.current;
-    if (video) {
-      // Only start loading video after initial render
-      const timer = setTimeout(() => {
-        video.load();
-      }, 100);
-      return () => clearTimeout(timer);
-    }
-  }, []);
-
-  const handleVideoError = (e: React.SyntheticEvent<HTMLVideoElement, Event>) => {
-    console.log('Video error occurred');
-    const video = e.target as HTMLVideoElement;
-    console.log('Video error code:', video.error?.code);
-    console.log('Video error message:', video.error?.message);
-    setVideoError(true);
-    setIsLoading(false);
+  // Get the public URL for the video from Supabase Storage
+  const getVideoUrl = () => {
+    const { data } = supabase.storage.from('media-assets').getPublicUrl('pitch-deck.mp4');
+    return data.publicUrl;
   };
 
-  const handleVideoLoad = () => {
-    console.log('Video loaded successfully');
-    setVideoLoaded(true);
-    setIsLoading(false);
-  };
-
-  const handleCanPlay = () => {
-    console.log('Video can start playing');
-    setIsLoading(false);
-  };
+  // Fallback URLs if Supabase video is not available
+  const fallbackVideoUrls = [
+    'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+    'https://filesamples.com/samples/video/mp4/sample_1280x720_surfing_with_audio.mp4'
+  ];
 
   const handleSaibaMais = () => {
     const featuresSection = document.querySelector('section.py-20.bg-gray-50');
@@ -86,65 +59,35 @@ export default function Hero() {
             </div>
           </div>
           
-          {/* Video section with improved error handling and fallback */}
+          {/* Video section with Supabase Storage */}
           <div className="relative flex-1 min-w-[300px] max-w-[600px]">
-            <div className="relative">
-              {(isLoading || videoError) && (
-                <div className="absolute inset-0 bg-gradient-to-br from-green-50 to-green-100 rounded-xl flex items-center justify-center shadow-lg" style={{
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
-                }}>
-                  <div className="text-center p-8">
-                    {isLoading && !videoError ? (
-                      <>
-                        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                        <p className="text-gray-600 mb-2">Carregando vídeo...</p>
-                      </>
-                    ) : (
-                      <>
-                        <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                          <ArrowRight className="w-8 h-8 text-primary" />
-                        </div>
-                        <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                          Conheça a AgroIkemba
-                        </h3>
-                        <p className="text-gray-600 mb-4">
-                          Revolucionando o mercado de insumos agrícolas com economia de até 25%
-                        </p>
-                        <Button className="bg-primary hover:bg-primary/90" asChild>
-                          <Link to="/register">Saiba mais</Link>
-                        </Button>
-                      </>
-                    )}
-                  </div>
-                </div>
-              )}
-              
-              {!videoError && (
-                <video 
-                  ref={videoRef}
-                  width="100%" 
-                  controls 
-                  muted 
-                  loop 
-                  playsInline 
-                  preload="metadata"
-                  poster="https://images.unsplash.com/photo-1574943320219-553eb213f72d?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3"
-                  className="rounded-xl shadow-lg bg-gray-50" 
-                  style={{
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
-                    display: videoError ? 'none' : 'block'
-                  }}
-                  onError={handleVideoError} 
-                  onLoadedData={handleVideoLoad} 
-                  onCanPlay={handleCanPlay}
-                >
-                  {/* Try multiple video sources */}
-                  <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4" />
-                  <source src="https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4" type="video/mp4" />
-                  Seu navegador não suporta o elemento de vídeo.
-                </video>
-              )}
-            </div>
+            <video 
+              width="100%" 
+              controls 
+              muted 
+              loop 
+              playsInline 
+              autoPlay
+              poster="https://images.unsplash.com/photo-1574943320219-553eb213f72d?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3"
+              className="rounded-xl shadow-lg bg-gray-50" 
+              style={{
+                boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+              }}
+            >
+              {/* Primary source: Supabase Storage */}
+              <source src={getVideoUrl()} type="video/mp4" />
+              {/* Fallback sources */}
+              {fallbackVideoUrls.map((url, index) => (
+                <source key={index} src={url} type="video/mp4" />
+              ))}
+              <p className="text-center p-8 text-gray-600">
+                Seu navegador não suporta o elemento de vídeo.
+                <br />
+                <Link to="/register" className="text-primary hover:underline">
+                  Clique aqui para se cadastrar
+                </Link>
+              </p>
+            </video>
           </div>
         </div>
       </div>
