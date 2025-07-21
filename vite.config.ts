@@ -49,8 +49,12 @@ export default defineConfig(({ mode }) => ({
   publicDir: 'public',
   esbuild: {
     drop: mode === 'production' ? ['console', 'debugger'] : [],
+    pure: mode === 'production' ? ['console.log', 'console.warn', 'console.info'] : [],
   },
   optimizeDeps: {
     include: ['react', 'react-dom', 'react-router-dom', 'lucide-react'],
+  },
+  define: {
+    'process.env.NODE_ENV': JSON.stringify(mode),
   },
 }));

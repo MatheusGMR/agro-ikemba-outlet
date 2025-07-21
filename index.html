@@ -8,6 +8,14 @@
     <meta name="description" content="Plataforma B2B líder em insumos agrícolas genéricos. Fertilizantes e defensivos com mesma qualidade, preços 25% menores. Compare fornecedores na AgroIkemba." />
     <meta name="keywords" content="insumos agrícolas genéricos, fertilizantes baratos, defensivos genéricos preço, distribuidora insumos, fornecedores fertilizantes, economia rural, agronegócio B2B" />
     <meta name="author" content="Agro Ikemba" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="bingbot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    
+    <!-- Geo tags for Brazil -->
+    <meta name="geo.region" content="BR" />
+    <meta name="geo.country" content="Brasil" />
+    <meta name="DC.title" content="AgroIkemba - Insumos Agrícolas Genéricos" />
 
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-581KNBJ29G"></script>
@@ -15,14 +23,14 @@
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-
       gtag('config', 'G-581KNBJ29G');
     </script>
 
     <!-- DNS prefetch for external domains -->
     <link rel="dns-prefetch" href="//fonts.googleapis.com">
     <link rel="dns-prefetch" href="//fonts.gstatic.com">
-    <link rel="dns-prefetch" href="//agroikemba.com.br">
+    <link rel="dns-prefetch" href="//www.agroikemba.com.br">
+    <link rel="dns-prefetch" href="//images.unsplash.com">
     
     <!-- Preconnect to external domains for faster loading -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -36,19 +44,30 @@
     <meta property="og:description" content="Plataforma B2B líder em insumos agrícolas genéricos. Fertilizantes e defensivos com mesma qualidade, preços 25% menores." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://www.agroikemba.com.br" />
-    <meta property="og:image" content="https://www.agroikemba.com.br/assets/og-image.png" />
+    <meta property="og:site_name" content="AgroIkemba" />
+    <meta property="og:locale" content="pt_BR" />
+    <meta property="og:image" content="https://www.agroikemba.com.br/wp-content/uploads/2025/05/Add-a-heading-3.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="AgroIkemba - Plataforma B2B de Insumos Agrícolas Genéricos" />
 
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@agroikemba" />
     <meta name="twitter:title" content="Insumos Agrícolas Genéricos - Economize 25% | AgroIkemba B2B" />
     <meta name="twitter:description" content="Plataforma B2B líder em insumos agrícolas genéricos. Fertilizantes e defensivos com mesma qualidade, preços 25% menores." />
-    <meta name="twitter:image" content="https://www.agroikemba.com.br/assets/og-image.png" />
+    <meta name="twitter:image" content="https://www.agroikemba.com.br/wp-content/uploads/2025/05/Add-a-heading-3.png" />
+    <meta name="twitter:image:alt" content="AgroIkemba - Plataforma B2B de Insumos Agrícolas Genéricos" />
 
     <!-- Canonical URL -->
     <link rel="canonical" href="https://www.agroikemba.com.br" />
 
+    <!-- Alternative language versions -->
+    <link rel="alternate" hreflang="pt-br" href="https://www.agroikemba.com.br" />
+    <link rel="alternate" hreflang="x-default" href="https://www.agroikemba.com.br" />
+
     <!-- Favicons -->
     <link rel="icon" href="https://www.agroikemba.com.br/wp-content/uploads/2025/05/Add-a-heading-3.png" type="image/png" />
+    <link rel="apple-touch-icon" href="https://www.agroikemba.com.br/wp-content/uploads/2025/05/Add-a-heading-3.png" />
     
     <!-- Preload critical resources -->
     <link rel="modulepreload" href="/src/main.tsx" />
@@ -81,7 +100,10 @@
       "address": {
         "@type": "PostalAddress",
         "addressCountry": "BR"
-      }
+      },
+      "foundingDate": "2024",
+      "industry": "Agronegócio",
+      "keywords": "insumos agrícolas genéricos, fertilizantes, defensivos, agronegócio, B2B"
     }
     </script>
     <script type="application/ld+json">
@@ -106,10 +128,41 @@
     <meta name="theme-color" content="#22c55e" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="AgroIkemba" />
+    
+    <!-- Critical CSS inlined -->
+    <style>
+      /* Critical above-the-fold styles */
+      body {
+        margin: 0;
+        font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+        line-height: 1.5;
+        font-weight: 400;
+        background-color: #ffffff;
+      }
+      
+      .loading-fallback {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #f9fafb;
+      }
+    </style>
   </head>
 
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Fallback content for when JavaScript is disabled -->
+      <noscript>
+        <div style="padding: 20px; text-align: center; font-family: Arial, sans-serif;">
+          <h1>AgroIkemba - Insumos Agrícolas Genéricos</h1>
+          <p>Plataforma B2B líder em insumos agrícolas genéricos. Fertilizantes e defensivos com mesma qualidade, preços 25% menores.</p>
+          <p><strong>Para uma melhor experiência, ative o JavaScript em seu navegador.</strong></p>
+          <p><strong>Contato:</strong> +55 43 98406-4141</p>
+        </div>
+      </noscript>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
