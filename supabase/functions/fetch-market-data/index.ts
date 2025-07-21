@@ -347,23 +347,40 @@ serve(async (req) => {
 
     console.log('=== INSERINDO DADOS NO BANCO ===');
 
-    // Inserir dados de commodities
+    // Inserir dados de commodities com tratamento robusto
     let commoditiesInserted = 0;
     for (const commodity of allCommodityData) {
       try {
-        const { error } = await supabase
+        // Tentar UPSERT primeiro
+        const { error: upsertError } = await supabase
           .from('commodity_prices')
           .upsert(commodity, {
-            onConflict: 'commodity_name,source,region,date'
+            onConflict: 'commodity_name,source,region,date',
+            ignoreDuplicates: false
           });
         
-        if (!error) commoditiesInserted++;
+        if (!upsertError) {
+          commoditiesInserted++;
+        } else {
+          console.log(`UPSERT falhou para commodity ${commodity.commodity_name}, tentando INSERT simples:`, upsertError.message);
+          
+          // Fallback para INSERT simples se UPSERT falhar
+          const { error: insertError } = await supabase
+            .from('commodity_prices')
+            .insert(commodity);
+          
+          if (!insertError) {
+            commoditiesInserted++;
+          } else {
+            console.error(`Erro ao inserir commodity ${commodity.commodity_name}:`, insertError.message);
+          }
+        }
       } catch (error) {
-        console.error('Erro ao inserir commodity:', error);
+        console.error(`Erro geral ao processar commodity ${commodity.commodity_name}:`, error);
       }
     }
 
-    // Inserir preços de insumos
+    // Inserir preços de insumos com tratamento robusto
     let inputPricesInserted = 0;
     for (const input of inputs || []) {
       const relevantPrices = inputPricesData.filter(price => 
@@ -373,24 +390,43 @@ serve(async (req) => {
 
       for (const price of relevantPrices) {
         try {
-          const { error } = await supabase
+          const marketPrice = {
+            input_id: input.id,
+            source: price.source,
+            source_name: price.source_name,
+            region: price.region,
+            price: price.price,
+            unit: price.unit,
+            date: price.date,
+            currency: price.currency
+          };
+
+          // Tentar UPSERT primeiro
+          const { error: upsertError } = await supabase
             .from('market_prices')
-            .upsert({
-              input_id: input.id,
-              source: price.source,
-              source_name: price.source_name,
-              region: price.region,
-              price: price.price,
-              unit: price.unit,
-              date: price.date,
-              currency: price.currency
-            }, {
-              onConflict: 'input_id,source,source_name,region,date'
+            .upsert(marketPrice, {
+              onConflict: 'input_id,source,source_name,region,date',
+              ignoreDuplicates: false
             });
           
-          if (!error) inputPricesInserted++;
+          if (!upsertError) {
+            inputPricesInserted++;
+          } else {
+            console.log(`UPSERT falhou para input ${input.name}, tentando INSERT simples:`, upsertError.message);
+            
+            // Fallback para INSERT simples se UPSERT falhar
+            const { error: insertError } = await supabase
+              .from('market_prices')
+              .insert(marketPrice);
+            
+            if (!insertError) {
+              inputPricesInserted++;
+            } else {
+              console.error(`Erro ao inserir preço de insumo ${input.name}:`, insertError.message);
+            }
+          }
         } catch (error) {
-          console.error('Erro ao inserir preço de insumo:', error);
+          console.error(`Erro geral ao processar preço do insumo ${input.name}:`, error);
         }
       }
     }

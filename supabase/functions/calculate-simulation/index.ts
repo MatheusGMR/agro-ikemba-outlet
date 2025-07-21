@@ -63,37 +63,56 @@ serve(async (req) => {
 
     const commodityPrice = commodityPrices?.[0]?.price || 0;
 
-    // 4. Calcular médias de preços de mercado por fonte
-    const regionalPrice = marketPrices
-      ?.filter(p => p.source === 'regional')
-      ?.reduce((acc, p) => acc + p.price, 0) / 
-      (marketPrices?.filter(p => p.source === 'regional')?.length || 1) || 0;
-
-    const quotationPrice = marketPrices
-      ?.filter(p => p.source === 'quotation')
-      ?.reduce((acc, p) => acc + p.price, 0) / 
-      (marketPrices?.filter(p => p.source === 'quotation')?.length || 1) || 0;
-
-    const historicalPrice = marketPrices
-      ?.filter(p => p.source === 'historical')
-      ?.reduce((acc, p) => acc + p.price, 0) / 
-      (marketPrices?.filter(p => p.source === 'historical')?.length || 1) || 0;
-
-    // 5. Calcular métricas de análise
-    const marketPositioningPercentage = regionalPrice > 0 
-      ? ((calculatedPrice / regionalPrice) - 1) * 100 
+    // 4. Calcular médias de preços de mercado por fonte com fallbacks
+    const regionalPrices = marketPrices?.filter(p => p.source === 'regional') || [];
+    const quotationPrices = marketPrices?.filter(p => p.source === 'quotation') || [];
+    const internationalPrices = marketPrices?.filter(p => p.source === 'international') || [];
+    
+    const regionalPrice = regionalPrices.length > 0 
+      ? regionalPrices.reduce((acc, p) => acc + p.price, 0) / regionalPrices.length
       : 0;
+
+    const quotationPrice = quotationPrices.length > 0 
+      ? quotationPrices.reduce((acc, p) => acc + p.price, 0) / quotationPrices.length
+      : 0;
+
+    const internationalPrice = internationalPrices.length > 0 
+      ? internationalPrices.reduce((acc, p) => acc + p.price, 0) / internationalPrices.length
+      : 0;
+
+    // Buscar preço histórico ou usar média geral como fallback
+    const allMarketPrices = marketPrices || [];
+    const historicalPrice = allMarketPrices.length > 0 
+      ? allMarketPrices.reduce((acc, p) => acc + p.price, 0) / allMarketPrices.length
+      : calculatedPrice * 1.05; // Fallback: preço calculado + 5%
+
+    console.log(`Preços encontrados - Regional: ${regionalPrice}, Cotação: ${quotationPrice}, Internacional: ${internationalPrice}, Histórico: ${historicalPrice}`);
+
+    // 5. Calcular métricas de análise com fallbacks inteligentes
+    let marketPositioningPercentage = 0;
+    let referencePrice = regionalPrice;
+    
+    // Se não tem preço regional, usar cotação ou internacional como referência
+    if (referencePrice === 0) {
+      referencePrice = quotationPrice > 0 ? quotationPrice : internationalPrice;
+    }
+    
+    if (referencePrice > 0) {
+      marketPositioningPercentage = ((calculatedPrice / referencePrice) - 1) * 100;
+    }
 
     const competitiveDifference = quotationPrice > 0 
       ? calculatedPrice - quotationPrice 
-      : 0;
+      : (referencePrice > 0 ? calculatedPrice - referencePrice : 0);
 
-    // Calcular margem de mercado (qual seria a margem se vendesse ao preço regional)
+    // Calcular margem de mercado usando melhor preço de referência disponível
     let marketMarginPercentage = 0;
-    if (regionalPrice > 0) {
-      const marketRevenue = regionalPrice / (1 + totalTaxesCommissions / 100);
+    const bestMarketPrice = regionalPrice > 0 ? regionalPrice : (quotationPrice > 0 ? quotationPrice : referencePrice);
+    
+    if (bestMarketPrice > 0) {
+      const marketRevenue = bestMarketPrice / (1 + totalTaxesCommissions / 100);
       const totalCost = data.purchaseCost + data.operationalExpenses;
-      marketMarginPercentage = ((marketRevenue - totalCost) / totalCost) * 100;
+      marketMarginPercentage = totalCost > 0 ? ((marketRevenue - totalCost) / totalCost) * 100 : 0;
     }
 
     // Calcular relação de troca
