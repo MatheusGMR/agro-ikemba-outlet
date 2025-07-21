@@ -1,6 +1,7 @@
 
 import { Link } from 'react-router-dom';
 import { Mail, MapPin, Phone } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function Footer() {
   return (
@@ -10,7 +11,14 @@ export default function Footer() {
           {/* Company info and contact */}
           <div>
             <div className="flex items-center gap-1 mb-4">
-              <img alt="Agro Ikemba Logo" src="http://agroikemba.com.br/wp-content/uploads/2025/05/Add-a-heading-3.png" className="h-16 w-auto object-contain" />
+              <img 
+                alt="Agro Ikemba Logo" 
+                src={supabase.storage.from('media-assets').getPublicUrl('Logo.png').data.publicUrl}
+                onError={(e) => {
+                  e.currentTarget.src = "http://agroikemba.com.br/wp-content/uploads/2025/05/Add-a-heading-3.png";
+                }}
+                className="h-16 w-auto object-contain" 
+              />
             </div>
             <p className="text-gray-300 mb-6 max-w-xs">
               Simplificando e otimizando todo o processo de compra e venda de genéricos.
