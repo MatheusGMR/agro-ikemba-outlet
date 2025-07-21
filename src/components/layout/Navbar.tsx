@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, X, Shield, Crown, ShoppingCart } from 'lucide-react';
@@ -8,34 +7,40 @@ import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useCart } from '@/contexts/CartContext';
 import CartDrawer from '@/components/ui/CartDrawer';
 import { supabase } from '@/integrations/supabase/client';
-
 interface NavItemProps {
   href: string;
   children: React.ReactNode;
   className?: string;
 }
-
-const NavItem = ({ href, children, className }: NavItemProps) => (
-  <li>
+const NavItem = ({
+  href,
+  children,
+  className
+}: NavItemProps) => <li>
     <Link to={href} className={cn('text-foreground hover:text-primary transition-colors duration-200 py-2 block', className)}>
       {children}
     </Link>
-  </li>
-);
-
+  </li>;
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [logoError, setLogoError] = useState(false);
-  const { getTotalItems, toggleCart } = useCart();
-  const { isAuthenticated: isAdminAuthenticated, logout } = useAdminAuth();
+  const {
+    getTotalItems,
+    toggleCart
+  } = useCart();
+  const {
+    isAuthenticated: isAdminAuthenticated,
+    logout
+  } = useAdminAuth();
 
   // Get the public URL for the logo from Supabase Storage
   const getLogoUrl = () => {
-    const { data } = supabase.storage.from('media-assets').getPublicUrl('Logo.png');
+    const {
+      data
+    } = supabase.storage.from('media-assets').getPublicUrl('Logo.png');
     return data.publicUrl;
   };
-
   useEffect(() => {
     // Verificar usuário logado
     const storedUser = localStorage.getItem('user');
@@ -52,44 +57,28 @@ export default function Navbar() {
       isAdminAuthenticated
     });
   }, [isAdminAuthenticated]);
-
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
-
   const handleLogout = () => {
     logout();
     setUser(null);
     window.location.href = '/';
   };
-
   const handleLogoError = () => {
     setLogoError(true);
   };
-
-  return (
-    <header className="sticky top-0 z-40 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+  return <header className="sticky top-0 z-40 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container-custom flex h-16 items-center justify-between">
         <div className="flex items-center gap-2">
           <Link to="/" className="flex items-center gap-2">
             <div className="flex items-center gap-1 py-2 px-0">
-              {!logoError ? (
-                <img 
-                  alt="Agro Ikemba" 
-                  src={getLogoUrl()}
-                  loading="eager" 
-                  decoding="async" 
-                  className="h-20 w-auto object-contain" 
-                  onError={handleLogoError}
-                />
-              ) : (
-                <div className="h-20 w-32 bg-gradient-to-r from-primary to-primary/80 rounded-lg flex items-center justify-center">
+              {!logoError ? <img alt="Agro Ikemba" src={getLogoUrl()} loading="eager" decoding="async" className="h-20 w-auto object-contain" onError={handleLogoError} /> : <div className="h-20 w-32 bg-gradient-to-r from-primary to-primary/80 rounded-lg flex items-center justify-center">
                   <span className="text-white font-bold text-lg">
                     <span className="text-white">Agro</span>
                     <span className="text-green-200">Ikemba</span>
                   </span>
-                </div>
-              )}
+                </div>}
             </div>
           </Link>
         </div>
@@ -100,54 +89,39 @@ export default function Navbar() {
             <Link to="/blog" className="text-foreground hover:text-primary transition-colors">
               Blog
             </Link>
-            <Link to="/simulador" className="text-foreground hover:text-primary transition-colors">
-              Simulador
-            </Link>
+            
           </div>
           <div className="flex items-center gap-2">
-            {user?.verified ? (
-              <div className="flex items-center gap-3">
+            {user?.verified ? <div className="flex items-center gap-3">
                 {/* Cart Icon */}
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="relative"
-                  onClick={toggleCart}
-                >
+                <Button variant="outline" size="sm" className="relative" onClick={toggleCart}>
                   <ShoppingCart className="w-4 h-4" />
-                  {getTotalItems() > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                  {getTotalItems() > 0 && <span className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center">
                       {getTotalItems()}
-                    </span>
-                  )}
+                    </span>}
                 </Button>
                 
                 <span className="text-sm flex items-center gap-1">
                   Olá, {user.name.split(' ')[0]}
                   {isAdminAuthenticated && <Crown className="w-4 h-4 ml-1 text-yellow-500" />}
                 </span>
-                {isAdminAuthenticated && (
-                  <Button variant="outline" size="sm" asChild className="bg-yellow-50 border-yellow-200 text-yellow-800 hover:bg-yellow-100">
+                {isAdminAuthenticated && <Button variant="outline" size="sm" asChild className="bg-yellow-50 border-yellow-200 text-yellow-800 hover:bg-yellow-100">
                     <Link to="/admin">
                       <Shield className="w-4 h-4 mr-1" />
                       Painel Admin
                     </Link>
-                  </Button>
-                )}
+                  </Button>}
                 <Button variant="outline" onClick={handleLogout}>
                   Sair
                 </Button>
-              </div>
-            ) : (
-              <>
+              </div> : <>
                 <Button variant="outline" asChild>
                   <Link to="/login">Entrar</Link>
                 </Button>
                 <Button className="bg-primary hover:bg-primary/90" asChild>
                   <Link to="/register">Cadastrar</Link>
                 </Button>
-              </>
-            )}
+              </>}
           </div>
         </nav>
         
@@ -158,64 +132,53 @@ export default function Navbar() {
       </div>
       
       {/* Mobile menu */}
-      {isMenuOpen && (
-        <div className="fixed inset-0 z-50 bg-background md:hidden pt-16">
+      {isMenuOpen && <div className="fixed inset-0 z-50 bg-background md:hidden pt-16">
           <nav className="container-custom py-4">
             <ul className="space-y-4 text-lg">
               <NavItem href="/">Início</NavItem>
               <NavItem href="/blog">Blog</NavItem>
               <NavItem href="/simulador">Simulador</NavItem>
-              {user?.verified && (
-                <>
+              {user?.verified && <>
                   <NavItem href="/products">Produtos</NavItem>
                   <NavItem href="/for-manufacturers">Para Fabricantes</NavItem>
                   <NavItem href="/for-distributors">Para Distribuidores</NavItem>
                   <NavItem href="/financial-services">Serviços Financeiros</NavItem>
                   <NavItem href="/logistics">Logística</NavItem>
-                </>
-              )}
+                </>}
               <NavItem href="/about">Sobre Nós</NavItem>
               {isAdminAuthenticated && <NavItem href="/admin">Painel Admin</NavItem>}
             </ul>
             
             <div className="mt-8 flex flex-col gap-2">
-              {user?.verified ? (
-                <>
+              {user?.verified ? <>
                   <div className="flex items-center gap-2 mb-2">
                     <span className="text-sm flex items-center gap-1">
                       Olá, {user.name.split(' ')[0]}
                       {isAdminAuthenticated && <Crown className="w-4 h-4 text-yellow-500" />}
                     </span>
                   </div>
-                  {isAdminAuthenticated && (
-                    <Button variant="outline" className="w-full mb-2 bg-yellow-50 border-yellow-200 text-yellow-800" asChild>
+                  {isAdminAuthenticated && <Button variant="outline" className="w-full mb-2 bg-yellow-50 border-yellow-200 text-yellow-800" asChild>
                       <Link to="/admin">
                         <Shield className="w-4 h-4 mr-1" />
                         Painel Admin
                       </Link>
-                    </Button>
-                  )}
+                    </Button>}
                   <Button variant="outline" className="w-full" onClick={handleLogout}>
                     Sair
                   </Button>
-                </>
-              ) : (
-                <>
+                </> : <>
                   <Button variant="outline" className="w-full" asChild>
                     <Link to="/login">Entrar</Link>
                   </Button>
                   <Button className="w-full bg-primary hover:bg-primary/90" asChild>
                     <Link to="/register">Cadastrar</Link>
                   </Button>
-                </>
-              )}
+                </>}
             </div>
           </nav>
-        </div>
-      )}
+        </div>}
       
       {/* Cart Drawer */}
       <CartDrawer />
-    </header>
-  );
+    </header>;
 }
