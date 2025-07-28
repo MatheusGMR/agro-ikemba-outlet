@@ -512,33 +512,39 @@ export type Database = {
       users: {
         Row: {
           cnpj: string | null
+          company: string | null
           conheceu: string | null
           created_at: string
           email: string
           id: string
           name: string
+          phone: string | null
           status: string
           tipo: string
           updated_at: string
         }
         Insert: {
           cnpj?: string | null
+          company?: string | null
           conheceu?: string | null
           created_at?: string
           email: string
           id?: string
           name: string
+          phone?: string | null
           status?: string
           tipo: string
           updated_at?: string
         }
         Update: {
           cnpj?: string | null
+          company?: string | null
           conheceu?: string | null
           created_at?: string
           email?: string
           id?: string
           name?: string
+          phone?: string | null
           status?: string
           tipo?: string
           updated_at?: string
