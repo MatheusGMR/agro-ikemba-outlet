@@ -8,6 +8,8 @@ export interface UserData {
   tipo: string;
   conheceu?: string;
   cnpj?: string;
+  phone?: string;
+  company?: string;
 }
 
 export const userService = {
@@ -24,6 +26,8 @@ export const userService = {
           tipo: userData.tipo,
           conheceu: userData.conheceu,
           cnpj: userData.cnpj,
+          phone: userData.phone,
+          company: userData.company,
           status: 'pending'
         })
         .select()
@@ -65,6 +69,8 @@ export const userService = {
         tipo: user.tipo,
         conheceu: user.conheceu,
         cnpj: user.cnpj,
+        phone: user.phone,
+        company: user.company,
         createdAt: user.created_at,
         status: user.status as 'pending' | 'approved' | 'rejected'
       }));
@@ -85,7 +91,7 @@ export const userService = {
       // Primeiro, buscar os dados do usuário para envio do WhatsApp
       const { data: userData, error: fetchError } = await supabase
         .from('users')
-        .select('name, email, cnpj')
+        .select('name, email, phone, company, cnpj')
         .eq('id', userId)
         .single();
 
@@ -107,11 +113,11 @@ export const userService = {
 
       console.log('Status atualizado com sucesso');
 
-      // Tentar enviar WhatsApp (não crítico)
+       // Tentar enviar WhatsApp (não crítico)
       try {
-        // Extrair telefone do campo CNPJ se disponível
-        let phoneNumber = '';
-        if (userData.cnpj && userData.cnpj.includes('Tel:')) {
+        // Usar telefone do campo phone ou extrair do campo CNPJ (dados migrados)
+        let phoneNumber = userData.phone || '';
+        if (!phoneNumber && userData.cnpj && userData.cnpj.includes('Tel:')) {
           const telMatch = userData.cnpj.match(/Tel:\s*(.+?)(?:\s|$)/);
           if (telMatch) {
             phoneNumber = telMatch[1].trim();

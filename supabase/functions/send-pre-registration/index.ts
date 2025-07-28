@@ -16,6 +16,7 @@ interface PreRegistrationRequest {
   empresa: string;
   tipo: string;
   conheceu?: string;
+  cnpj?: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -46,10 +47,11 @@ const handler = async (req: Request): Promise<Response> => {
           <p><strong>Nome:</strong> ${data.nome}</p>
           <p><strong>Email:</strong> ${data.email}</p>
           <p><strong>Telefone:</strong> ${data.telefone}</p>
-          <p><strong>Empresa:</strong> ${data.empresa}</p>
-          <p><strong>Tipo:</strong> ${data.tipo}</p>
-          ${data.conheceu ? `<p><strong>Como conheceu:</strong> ${data.conheceu}</p>` : ''}
-          <p><strong>Data/Hora:</strong> ${new Date().toLocaleString('pt-BR')}</p>
+           <p><strong>Empresa:</strong> ${data.empresa}</p>
+           <p><strong>Tipo:</strong> ${data.tipo}</p>
+           ${data.cnpj ? `<p><strong>CNPJ:</strong> ${data.cnpj}</p>` : ''}
+           ${data.conheceu ? `<p><strong>Como conheceu:</strong> ${data.conheceu}</p>` : ''}
+           <p><strong>Data/Hora:</strong> ${new Date().toLocaleString('pt-BR')}</p>
         </div>
       `,
     });
@@ -65,12 +67,13 @@ const handler = async (req: Request): Promise<Response> => {
           
           <p>Recebemos seu pré-cadastro na <strong>Agro Ikemba</strong> e em breve entraremos em contato para apresentar nossa plataforma de insumos agrícolas.</p>
           
-          <div style="background-color: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <h3 style="color: #075e54; margin-top: 0;">Dados do seu pré-cadastro:</h3>
-            <p><strong>Empresa:</strong> ${data.empresa}</p>
-            <p><strong>Tipo:</strong> ${data.tipo}</p>
-            <p><strong>Telefone:</strong> ${data.telefone}</p>
-          </div>
+           <div style="background-color: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
+             <h3 style="color: #075e54; margin-top: 0;">Dados do seu pré-cadastro:</h3>
+             <p><strong>Empresa:</strong> ${data.empresa}</p>
+             <p><strong>Tipo:</strong> ${data.tipo}</p>
+             <p><strong>Telefone:</strong> ${data.telefone}</p>
+             ${data.cnpj ? `<p><strong>CNPJ:</strong> ${data.cnpj}</p>` : ''}
+           </div>
           
           <p>Enquanto isso, você pode:</p>
           <ul>

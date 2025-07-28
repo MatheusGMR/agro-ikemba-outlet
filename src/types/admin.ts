@@ -6,6 +6,8 @@ export interface PendingUser {
   tipo: string;
   conheceu?: string;
   cnpj?: string;
+  phone?: string;
+  company?: string;
   createdAt: string;
   status: 'pending' | 'approved' | 'rejected';
 }
