@@ -291,6 +291,8 @@ export default function PreRegistration() {
                         <SelectItem value="Indicação">Indicação</SelectItem>
                         <SelectItem value="Google">Busca na Internet</SelectItem>
                         <SelectItem value="Evento">Evento</SelectItem>
+                        <SelectItem value="FarmNews">FarmNews</SelectItem>
+                        <SelectItem value="AgroLend">AgroLend</SelectItem>
                         <SelectItem value="Outro">Outro</SelectItem>
                       </SelectContent>
                     </Select>

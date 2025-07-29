@@ -163,6 +163,8 @@ export function RegistrationFormFields({ form, showCNPJ, formatCNPJ }: Registrat
                     <SelectItem value="Google">Google</SelectItem>
                     <SelectItem value="Indicação">Indicação</SelectItem>
                     <SelectItem value="Evento">Evento</SelectItem>
+                    <SelectItem value="FarmNews">FarmNews</SelectItem>
+                    <SelectItem value="AgroLend">AgroLend</SelectItem>
                     <SelectItem value="Outro">Outro</SelectItem>
                   </SelectContent>
                 </Select>
