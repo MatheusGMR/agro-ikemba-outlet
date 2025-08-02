@@ -6,11 +6,10 @@ import { UseFormReturn } from 'react-hook-form';
 
 interface RegistrationFormFieldsProps {
   form: UseFormReturn<any>;
-  showCNPJ: boolean;
   formatCNPJ: (value: string) => string;
 }
 
-export function RegistrationFormFields({ form, showCNPJ, formatCNPJ }: RegistrationFormFieldsProps) {
+export function RegistrationFormFields({ form, formatCNPJ }: RegistrationFormFieldsProps) {
   return (
     <>
       <FormField
@@ -43,11 +42,6 @@ export function RegistrationFormFields({ form, showCNPJ, formatCNPJ }: Registrat
               </div>
             </FormControl>
             <FormMessage />
-            {!showCNPJ && field.value && (
-              <p className="text-sm text-green-600">
-                Email corporativo identificado. CNPJ não é necessário.
-              </p>
-            )}
           </FormItem>
         )}
       />
@@ -86,35 +80,36 @@ export function RegistrationFormFields({ form, showCNPJ, formatCNPJ }: Registrat
         )}
       />
 
-      {showCNPJ && (
-        <FormField
-          control={form.control}
-          name="cnpj"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>CNPJ da Empresa *</FormLabel>
-              <FormControl>
-                <div className="relative">
-                  <Building className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                  <Input
-                    placeholder="XX.XXX.XXX/XXXX-XX"
-                    className="pl-10"
-                    {...field}
-                    onChange={(e) => {
-                      const formatted = formatCNPJ(e.target.value);
-                      field.onChange(formatted);
-                    }}
-                  />
-                </div>
-              </FormControl>
-              <FormMessage />
-              <p className="text-sm text-gray-500">
-                Necessário apenas para emails pessoais (Gmail, Hotmail, etc.)
-              </p>
-            </FormItem>
-          )}
-        />
-      )}
+      <FormField
+        control={form.control}
+        name="cnpj"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>CNPJ (opcional)</FormLabel>
+            <FormControl>
+              <div className="relative">
+                <Building className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="XX.XXX.XXX/XXXX-XX"
+                  className="pl-10"
+                  {...field}
+                  onChange={(e) => {
+                    const formatted = formatCNPJ(e.target.value);
+                    field.onChange(formatted);
+                  }}
+                />
+              </div>
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+      
+      <div className="text-sm text-muted-foreground bg-blue-50 p-3 rounded-md">
+        <p className="text-blue-800">
+          ℹ️ O CNPJ não é obrigatório para o cadastro, mas será necessário para validação e aprovação da conta.
+        </p>
+      </div>
 
       <FormField
         control={form.control}

@@ -17,13 +17,6 @@ import { userService } from '@/services/userService';
 
 type FormValues = z.infer<typeof formSchema>;
 
-const corporateEmailDomains = ['gmail.com', 'hotmail.com', 'outlook.com', 'yahoo.com', 'live.com', 'icloud.com'];
-
-const isCorporateEmail = (email: string) => {
-  const domain = email.split('@')[1]?.toLowerCase();
-  return domain && !corporateEmailDomains.includes(domain);
-};
-
 const formatCNPJ = (value: string) => {
   const cleanValue = value.replace(/\D/g, '');
   return cleanValue.replace(/^(\d{2})(\d)/, '$1.$2').replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3').replace(/\.(\d{3})(\d)/, '.$1/$2').replace(/(\d{4})(\d)/, '$1-$2').slice(0, 18);
@@ -33,7 +26,6 @@ export default function RegistrationForm() {
   const navigate = useNavigate();
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showCNPJ, setShowCNPJ] = useState(false);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -49,18 +41,6 @@ export default function RegistrationForm() {
       cnpj: ''
     }
   });
-
-  const watchEmail = form.watch('email');
-
-  useEffect(() => {
-    if (watchEmail) {
-      const needsCNPJ = !isCorporateEmail(watchEmail);
-      setShowCNPJ(needsCNPJ);
-      if (!needsCNPJ) {
-        form.setValue('cnpj', '');
-      }
-    }
-  }, [watchEmail, form]);
 
   const onSubmit = async (data: FormValues) => {
     setIsSubmitting(true);
@@ -93,7 +73,7 @@ export default function RegistrationForm() {
         email: data.email,
         tipo: data.tipo,
         conheceu: data.conheceu,
-        cnpj: showCNPJ ? data.cnpj : undefined,
+        cnpj: data.cnpj || undefined,
         phone: data.phone,
         company: data.company
       });
@@ -122,7 +102,7 @@ export default function RegistrationForm() {
           email: data.email,
           tipo: data.tipo,
           conheceu: data.conheceu,
-          cnpj: showCNPJ ? data.cnpj : undefined,
+          cnpj: data.cnpj || undefined,
           phone: data.phone,
           company: data.company
         };
@@ -167,11 +147,10 @@ export default function RegistrationForm() {
     <>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <RegistrationFormFields 
-            form={form} 
-            showCNPJ={showCNPJ} 
-            formatCNPJ={formatCNPJ} 
-          />
+        <RegistrationFormFields 
+          form={form} 
+          formatCNPJ={formatCNPJ}
+        />
 
           <Button
             type="submit"

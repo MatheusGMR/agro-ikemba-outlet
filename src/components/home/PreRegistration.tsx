@@ -10,15 +10,6 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { userService } from '@/services/userService';
 
-const corporateEmailDomains = ['gmail.com', 'hotmail.com', 'outlook.com', 'yahoo.com', 'live.com', 'icloud.com'];
-
-const isCorporateEmail = (email: string) => {
-  const domain = email.split('@')[1]?.toLowerCase();
-  return domain && !corporateEmailDomains.includes(domain);
-};
-
-const cnpjRegex = /^\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}$/;
-
 const formatCNPJ = (value: string) => {
   const cleanValue = value.replace(/\D/g, '');
   return cleanValue.replace(/^(\d{2})(\d)/, '$1.$2').replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3').replace(/\.(\d{3})(\d)/, '.$1/$2').replace(/(\d{4})(\d)/, '$1-$2').slice(0, 18);
@@ -31,24 +22,22 @@ const preRegistrationSchema = z.object({
   empresa: z.string().min(1, 'Empresa é obrigatória'),
   tipo: z.string().min(1, 'Tipo é obrigatório'),
   conheceu: z.string().optional(),
-  cnpj: z.string().optional()
-}).refine((data) => {
-  // CNPJ is required ONLY for non-corporate emails (gmail, hotmail, etc.)
-  if (!isCorporateEmail(data.email)) {
-    return data.cnpj && cnpjRegex.test(data.cnpj);
-  }
-  // For corporate emails, CNPJ is not required
-  return true;
-}, {
-  message: "CNPJ é obrigatório para emails não corporativos (Gmail, Hotmail, Outlook, etc.) e deve seguir o formato XX.XXX.XXX/XXXX-XX",
-  path: ["cnpj"],
+  cnpj: z.string().optional().refine((cnpj) => {
+    // If CNPJ is provided, it must match the format
+    if (cnpj && cnpj.trim() !== '') {
+      const cnpjRegex = /^\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}$/;
+      return cnpjRegex.test(cnpj);
+    }
+    return true;
+  }, {
+    message: "CNPJ deve seguir o formato XX.XXX.XXX/XXXX-XX",
+  }),
 });
 
 type PreRegistrationFormValues = z.infer<typeof preRegistrationSchema>;
 
 export default function PreRegistration() {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showCNPJ, setShowCNPJ] = useState(false);
 
   const form = useForm<PreRegistrationFormValues>({
     resolver: zodResolver(preRegistrationSchema),
@@ -62,18 +51,6 @@ export default function PreRegistration() {
       cnpj: ''
     }
   });
-
-  const watchEmail = form.watch('email');
-
-  useEffect(() => {
-    if (watchEmail) {
-      const needsCNPJ = !isCorporateEmail(watchEmail);
-      setShowCNPJ(needsCNPJ);
-      if (!needsCNPJ) {
-        form.setValue('cnpj', '');
-      }
-    }
-  }, [watchEmail, form]);
 
   const onSubmit = async (data: PreRegistrationFormValues) => {
     setIsSubmitting(true);
@@ -100,7 +77,7 @@ export default function PreRegistration() {
         email: data.email,
         tipo: data.tipo,
         conheceu: data.conheceu,
-        cnpj: showCNPJ ? data.cnpj : undefined,
+        cnpj: data.cnpj || undefined,
         phone: data.telefone,
         company: data.empresa
       });
@@ -120,7 +97,7 @@ export default function PreRegistration() {
             empresa: data.empresa,
             tipo: data.tipo,
             conheceu: data.conheceu,
-            cnpj: showCNPJ ? data.cnpj : undefined
+            cnpj: data.cnpj || undefined
           }
         });
 
@@ -200,16 +177,6 @@ export default function PreRegistration() {
                     <Input type="email" placeholder="seu@email.com" {...field} />
                   </FormControl>
                   <FormMessage />
-                  {watchEmail && !isCorporateEmail(watchEmail) && (
-                    <p className="text-sm text-amber-600">
-                      Como você está usando um email pessoal (Gmail, Hotmail, etc.), será necessário informar o CNPJ da empresa.
-                    </p>
-                  )}
-                  {watchEmail && isCorporateEmail(watchEmail) && (
-                    <p className="text-sm text-green-600">
-                      Email corporativo identificado. CNPJ não é necessário.
-                    </p>
-                  )}
                 </FormItem>
               )} />
 
@@ -233,28 +200,29 @@ export default function PreRegistration() {
                 </FormItem>
               )} />
 
-              {showCNPJ && (
-                <FormField control={form.control} name="cnpj" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>CNPJ da Empresa *</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="XX.XXX.XXX/XXXX-XX"
-                        {...field}
-                        onChange={(e) => {
-                          const formatted = formatCNPJ(e.target.value);
-                          field.onChange(formatted);
-                        }}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                    <p className="text-sm text-gray-500">
-                      Necessário apenas para emails pessoais (Gmail, Hotmail, etc.)
-                    </p>
-                  </FormItem>
-                )}
-                />
+              <FormField control={form.control} name="cnpj" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>CNPJ (opcional)</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="XX.XXX.XXX/XXXX-XX"
+                      {...field}
+                      onChange={(e) => {
+                        const formatted = formatCNPJ(e.target.value);
+                        field.onChange(formatted);
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
               )}
+              />
+              
+              <div className="text-sm text-muted-foreground bg-blue-50 p-3 rounded-md">
+                <p className="text-blue-800">
+                  ℹ️ O CNPJ não é obrigatório para o cadastro, mas será necessário para validação e aprovação da conta.
+                </p>
+              </div>
 
               <FormField control={form.control} name="tipo" render={({ field }) => (
                 <FormItem>
