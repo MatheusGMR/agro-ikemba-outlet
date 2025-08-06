@@ -130,6 +130,39 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="AgroIkemba" />
     
+    <!-- Domain redirect script - CRITICAL FIX -->
+    <script>
+      // Immediate redirect from non-www to www domain
+      (function() {
+        var currentHost = window.location.hostname;
+        var currentUrl = window.location.href;
+        
+        // If accessing without www, redirect to www version
+        if (currentHost === 'agroikemba.com.br' && !currentUrl.includes('www.')) {
+          var newUrl = currentUrl.replace('://agroikemba.com.br', '://www.agroikemba.com.br');
+          window.location.replace(newUrl);
+          return;
+        }
+        
+        // Log domain access for monitoring
+        try {
+          console.log('[Domain Monitor] Accessing from:', currentHost);
+          if (typeof gtag !== 'undefined') {
+            gtag('event', 'domain_access', {
+              'custom_map': {'custom_parameter_1': 'domain'},
+              'domain': currentHost,
+              'url': currentUrl
+            });
+          }
+        } catch(e) {
+          // Silent fail for logging
+        }
+      })();
+    </script>
+
+    <!-- Meta refresh as fallback -->
+    <meta http-equiv="refresh" content="0; url=https://www.agroikemba.com.br" />
+
     <!-- Critical CSS inlined -->
     <style>
       /* Critical above-the-fold styles */
