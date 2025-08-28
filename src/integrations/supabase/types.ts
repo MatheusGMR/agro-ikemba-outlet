@@ -113,6 +113,63 @@ export type Database = {
         }
         Relationships: []
       }
+      commissions: {
+        Row: {
+          base_value: number
+          commission_amount: number
+          commission_percentage: number
+          created_at: string
+          due_date: string | null
+          id: string
+          order_id: string | null
+          paid_date: string | null
+          representative_id: string
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          base_value: number
+          commission_amount: number
+          commission_percentage: number
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          order_id?: string | null
+          paid_date?: string | null
+          representative_id: string
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          base_value?: number
+          commission_amount?: number
+          commission_percentage?: number
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          order_id?: string | null
+          paid_date?: string | null
+          representative_id?: string
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "commissions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "sales_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "commissions_representative_id_fkey"
+            columns: ["representative_id"]
+            isOneToOne: false
+            referencedRelation: "representatives"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       commodity_prices: {
         Row: {
           commodity_name: string
@@ -423,6 +480,122 @@ export type Database = {
           },
         ]
       }
+      opportunities: {
+        Row: {
+          client_id: string
+          created_at: string
+          description: string | null
+          estimated_commission: number | null
+          estimated_value: number | null
+          expected_close_date: string | null
+          id: string
+          next_action: string | null
+          next_action_date: string | null
+          probability: number | null
+          representative_id: string
+          stage: string | null
+          status: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          description?: string | null
+          estimated_commission?: number | null
+          estimated_value?: number | null
+          expected_close_date?: string | null
+          id?: string
+          next_action?: string | null
+          next_action_date?: string | null
+          probability?: number | null
+          representative_id: string
+          stage?: string | null
+          status?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          description?: string | null
+          estimated_commission?: number | null
+          estimated_value?: number | null
+          expected_close_date?: string | null
+          id?: string
+          next_action?: string | null
+          next_action_date?: string | null
+          probability?: number | null
+          representative_id?: string
+          stage?: string | null
+          status?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "opportunities_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "rep_clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "opportunities_representative_id_fkey"
+            columns: ["representative_id"]
+            isOneToOne: false
+            referencedRelation: "representatives"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      opportunity_items: {
+        Row: {
+          commission_unit: number
+          created_at: string
+          id: string
+          opportunity_id: string
+          product_name: string
+          product_sku: string
+          quantity: number
+          total_commission: number
+          total_price: number
+          unit_price: number
+        }
+        Insert: {
+          commission_unit: number
+          created_at?: string
+          id?: string
+          opportunity_id: string
+          product_name: string
+          product_sku: string
+          quantity: number
+          total_commission: number
+          total_price: number
+          unit_price: number
+        }
+        Update: {
+          commission_unit?: number
+          created_at?: string
+          id?: string
+          opportunity_id?: string
+          product_name?: string
+          product_sku?: string
+          quantity?: number
+          total_commission?: number
+          total_price?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "opportunity_items_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "opportunities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       patients: {
         Row: {
           address: string | null
@@ -581,6 +754,68 @@ export type Database = {
         }
         Relationships: []
       }
+      proposals: {
+        Row: {
+          client_approved_at: string | null
+          client_comments: string | null
+          created_at: string
+          delivery_terms: string | null
+          id: string
+          observations: string | null
+          opportunity_id: string
+          payment_terms: string | null
+          proposal_number: string
+          shipping_cost: number | null
+          status: string | null
+          total_commission: number
+          total_value: number
+          updated_at: string
+          validity_date: string
+        }
+        Insert: {
+          client_approved_at?: string | null
+          client_comments?: string | null
+          created_at?: string
+          delivery_terms?: string | null
+          id?: string
+          observations?: string | null
+          opportunity_id: string
+          payment_terms?: string | null
+          proposal_number: string
+          shipping_cost?: number | null
+          status?: string | null
+          total_commission: number
+          total_value: number
+          updated_at?: string
+          validity_date: string
+        }
+        Update: {
+          client_approved_at?: string | null
+          client_comments?: string | null
+          created_at?: string
+          delivery_terms?: string | null
+          id?: string
+          observations?: string | null
+          opportunity_id?: string
+          payment_terms?: string | null
+          proposal_number?: string
+          shipping_cost?: number | null
+          status?: string | null
+          total_commission?: number
+          total_value?: number
+          updated_at?: string
+          validity_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "proposals_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "opportunities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       regional_data: {
         Row: {
           created_at: string
@@ -613,6 +848,294 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      rep_activities: {
+        Row: {
+          activity_type: string
+          client_id: string | null
+          completed: boolean | null
+          completed_at: string | null
+          created_at: string
+          description: string | null
+          due_date: string | null
+          id: string
+          opportunity_id: string | null
+          representative_id: string
+          title: string
+        }
+        Insert: {
+          activity_type: string
+          client_id?: string | null
+          completed?: boolean | null
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          opportunity_id?: string | null
+          representative_id: string
+          title: string
+        }
+        Update: {
+          activity_type?: string
+          client_id?: string | null
+          completed?: boolean | null
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          opportunity_id?: string | null
+          representative_id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rep_activities_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "rep_clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rep_activities_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "opportunities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rep_activities_representative_id_fkey"
+            columns: ["representative_id"]
+            isOneToOne: false
+            referencedRelation: "representatives"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rep_clients: {
+        Row: {
+          address: string | null
+          city: string | null
+          cnpj_cpf: string | null
+          company_name: string
+          contact_name: string | null
+          created_at: string
+          credit_limit: number | null
+          email: string | null
+          id: string
+          payment_terms: string | null
+          phone: string | null
+          postal_code: string | null
+          representative_id: string
+          state: string | null
+          state_registration: string | null
+          updated_at: string
+          whatsapp: string | null
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          cnpj_cpf?: string | null
+          company_name: string
+          contact_name?: string | null
+          created_at?: string
+          credit_limit?: number | null
+          email?: string | null
+          id?: string
+          payment_terms?: string | null
+          phone?: string | null
+          postal_code?: string | null
+          representative_id: string
+          state?: string | null
+          state_registration?: string | null
+          updated_at?: string
+          whatsapp?: string | null
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          cnpj_cpf?: string | null
+          company_name?: string
+          contact_name?: string | null
+          created_at?: string
+          credit_limit?: number | null
+          email?: string | null
+          id?: string
+          payment_terms?: string | null
+          phone?: string | null
+          postal_code?: string | null
+          representative_id?: string
+          state?: string | null
+          state_registration?: string | null
+          updated_at?: string
+          whatsapp?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rep_clients_representative_id_fkey"
+            columns: ["representative_id"]
+            isOneToOne: false
+            referencedRelation: "representatives"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rep_notifications: {
+        Row: {
+          created_at: string
+          id: string
+          link: string | null
+          message: string
+          read: boolean | null
+          representative_id: string
+          title: string
+          type: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          link?: string | null
+          message: string
+          read?: boolean | null
+          representative_id: string
+          title: string
+          type?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          link?: string | null
+          message?: string
+          read?: boolean | null
+          representative_id?: string
+          title?: string
+          type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rep_notifications_representative_id_fkey"
+            columns: ["representative_id"]
+            isOneToOne: false
+            referencedRelation: "representatives"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      representatives: {
+        Row: {
+          commission_percentage: number | null
+          cpf: string | null
+          created_at: string
+          email: string
+          id: string
+          name: string
+          phone: string | null
+          region: string | null
+          status: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          commission_percentage?: number | null
+          cpf?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+          phone?: string | null
+          region?: string | null
+          status?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          commission_percentage?: number | null
+          cpf?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          phone?: string | null
+          region?: string | null
+          status?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      sales_orders: {
+        Row: {
+          actual_delivery: string | null
+          client_id: string
+          created_at: string
+          expected_delivery: string | null
+          id: string
+          invoice_date: string | null
+          order_number: string
+          proposal_id: string
+          representative_id: string
+          status: string | null
+          total_commission: number
+          total_value: number
+          tracking_code: string | null
+          updated_at: string
+        }
+        Insert: {
+          actual_delivery?: string | null
+          client_id: string
+          created_at?: string
+          expected_delivery?: string | null
+          id?: string
+          invoice_date?: string | null
+          order_number: string
+          proposal_id: string
+          representative_id: string
+          status?: string | null
+          total_commission: number
+          total_value: number
+          tracking_code?: string | null
+          updated_at?: string
+        }
+        Update: {
+          actual_delivery?: string | null
+          client_id?: string
+          created_at?: string
+          expected_delivery?: string | null
+          id?: string
+          invoice_date?: string | null
+          order_number?: string
+          proposal_id?: string
+          representative_id?: string
+          status?: string | null
+          total_commission?: number
+          total_value?: number
+          tracking_code?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_orders_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "rep_clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_orders_proposal_id_fkey"
+            columns: ["proposal_id"]
+            isOneToOne: false
+            referencedRelation: "proposals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_orders_representative_id_fkey"
+            columns: ["representative_id"]
+            isOneToOne: false
+            referencedRelation: "representatives"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       users: {
         Row: {
@@ -661,7 +1184,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_order_number: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      generate_proposal_number: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
