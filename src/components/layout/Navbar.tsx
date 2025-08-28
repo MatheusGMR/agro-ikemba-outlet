@@ -7,6 +7,7 @@ import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useCart } from '@/contexts/CartContext';
 import CartDrawer from '@/components/ui/CartDrawer';
 import { supabase } from '@/integrations/supabase/client';
+import type { User } from '@supabase/supabase-js';
 interface NavItemProps {
   href: string;
   children: React.ReactNode;
@@ -24,6 +25,7 @@ const NavItem = ({
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [user, setUser] = useState(null);
+  const [supaUser, setSupaUser] = useState<User | null>(null);
   const [logoError, setLogoError] = useState(false);
   const {
     getTotalItems,
@@ -42,29 +44,99 @@ export default function Navbar() {
     return data.publicUrl;
   };
   useEffect(() => {
-    // Verificar usuário logado
+    // Set up Supabase auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      const authUser = session?.user ?? null;
+      setSupaUser(authUser);
+      
+      // Compatibility bridge: sync with localStorage
+      if (authUser) {
+        const bridgeUser = {
+          email: authUser.email,
+          name: authUser.email?.split('@')[0] || 'Usuário',
+          verified: true,
+          isAdmin: false
+        };
+        setUser(bridgeUser);
+        localStorage.setItem('user', JSON.stringify(bridgeUser));
+      } else {
+        // Clear localStorage user if Supabase session is gone
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+          try {
+            const parsedUser = JSON.parse(storedUser);
+            // Only clear if this was a Supabase-synced user (has verified: true)
+            if (parsedUser.verified) {
+              localStorage.removeItem('user');
+              setUser(null);
+            }
+          } catch (error) {
+            console.error('Erro ao parsear usuário:', error);
+            localStorage.removeItem('user');
+            setUser(null);
+          }
+        }
+      }
+    });
+
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      const authUser = session?.user ?? null;
+      setSupaUser(authUser);
+      
+      if (authUser) {
+        const bridgeUser = {
+          email: authUser.email,
+          name: authUser.email?.split('@')[0] || 'Usuário', 
+          verified: true,
+          isAdmin: false
+        };
+        setUser(bridgeUser);
+        localStorage.setItem('user', JSON.stringify(bridgeUser));
+      }
+    });
+
+    // Also check localStorage for non-Supabase users
     const storedUser = localStorage.getItem('user');
-    if (storedUser) {
+    if (storedUser && !supaUser) {
       try {
-        setUser(JSON.parse(storedUser));
+        const parsedUser = JSON.parse(storedUser);
+        setUser(parsedUser);
       } catch (error) {
         console.error('Erro ao parsear usuário:', error);
+        localStorage.removeItem('user');
         setUser(null);
       }
     }
+
     console.log('Navbar - Estado atual:', {
-      user: storedUser ? JSON.parse(storedUser) : null,
+      user,
+      supaUser,
       isAdminAuthenticated
     });
+
+    return () => subscription.unsubscribe();
   }, [isAdminAuthenticated]);
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    // Logout from Supabase
+    await supabase.auth.signOut();
+    
+    // Logout from admin auth
     logout();
+    
+    // Clear all local state
     setUser(null);
+    setSupaUser(null);
+    localStorage.removeItem('user');
+    
     window.location.href = '/';
   };
+
+  // Determine if user is logged in (either Supabase or localStorage)
+  const isLoggedIn = !!supaUser || !!(user?.verified);
   const handleLogoError = () => {
     setLogoError(true);
   };
@@ -98,7 +170,7 @@ export default function Navbar() {
             
           </div>
           <div className="flex items-center gap-2">
-            {user?.verified ? <div className="flex items-center gap-3">
+            {isLoggedIn ? <div className="flex items-center gap-3">
                 {/* Cart Icon */}
                 <Button variant="outline" size="sm" className="relative" onClick={toggleCart}>
                   <ShoppingCart className="w-4 h-4" />
@@ -108,7 +180,7 @@ export default function Navbar() {
                 </Button>
                 
                 <span className="text-sm flex items-center gap-1">
-                  Olá, {user.name.split(' ')[0]}
+                  Olá, {user?.name?.split(' ')[0] || supaUser?.email?.split('@')[0] || 'Usuário'}
                   {isAdminAuthenticated && <Crown className="w-4 h-4 ml-1 text-yellow-500" />}
                 </span>
                 {isAdminAuthenticated && <Button variant="outline" size="sm" asChild className="bg-yellow-50 border-yellow-200 text-yellow-800 hover:bg-yellow-100">
@@ -145,7 +217,7 @@ export default function Navbar() {
               <NavItem href="/sobre">Sobre Nós</NavItem>
               <NavItem href="/blog">Blog</NavItem>
               <NavItem href="/simulador">Simulador</NavItem>
-              {user?.verified && <>
+              {isLoggedIn && <>
                   <NavItem href="/for-manufacturers">Para Fabricantes</NavItem>
                   <NavItem href="/for-distributors">Para Distribuidores</NavItem>
                   <NavItem href="/financial-services">Serviços Financeiros</NavItem>
@@ -155,10 +227,10 @@ export default function Navbar() {
             </ul>
             
             <div className="mt-8 flex flex-col gap-2">
-              {user?.verified ? <>
+              {isLoggedIn ? <>
                   <div className="flex items-center gap-2 mb-2">
                     <span className="text-sm flex items-center gap-1">
-                      Olá, {user.name.split(' ')[0]}
+                      Olá, {user?.name?.split(' ')[0] || supaUser?.email?.split('@')[0] || 'Usuário'}
                       {isAdminAuthenticated && <Crown className="w-4 h-4 text-yellow-500" />}
                     </span>
                   </div>
