@@ -34,7 +34,7 @@ function App() {
             <Sonner />
             <BrowserRouter>
               <Routes>
-                <Route path="/" element={<ProductCatalog />} />
+                <Route path="/" element={<Index />} />
                 <Route path="/sobre" element={<About />} />
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/products" element={<ProductCatalog />} />
