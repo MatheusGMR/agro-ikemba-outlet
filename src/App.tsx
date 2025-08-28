@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from 'react-helmet-async';
 import Index from "./pages/Index";
+import About from "./pages/About";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 import ProductCatalog from "./pages/ProductCatalog";
@@ -33,7 +34,8 @@ function App() {
             <Sonner />
             <BrowserRouter>
               <Routes>
-                <Route path="/" element={<Index />} />
+                <Route path="/" element={<ProductCatalog />} />
+                <Route path="/sobre" element={<About />} />
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/products" element={<ProductCatalog />} />
                 <Route path="/product/:id" element={<ProductDetail />} />
@@ -51,7 +53,7 @@ function App() {
                 <Route path="/simulador" element={<Simulador />} />
                 <Route path="/test-openai" element={<TestPage />} />
                 <Route path="*" element={<NotFound />} />
-              </Routes>
+              </Routes>  
             </BrowserRouter>
           </TooltipProvider>
         </HelmetProvider>

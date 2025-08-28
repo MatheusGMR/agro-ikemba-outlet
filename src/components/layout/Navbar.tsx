@@ -86,6 +86,12 @@ export default function Navbar() {
         {/* Desktop Nav */}
         <nav className="hidden md:flex items-center gap-6">
           <div className="flex items-center gap-4 mr-4">
+            <Link to="/products" className="text-foreground hover:text-primary transition-colors">
+              Produtos
+            </Link>
+            <Link to="/sobre" className="text-foreground hover:text-primary transition-colors">
+              Sobre Nós
+            </Link>
             <Link to="/blog" className="text-foreground hover:text-primary transition-colors">
               Blog
             </Link>
@@ -135,17 +141,16 @@ export default function Navbar() {
       {isMenuOpen && <div className="fixed inset-0 z-50 bg-background md:hidden pt-16">
           <nav className="container-custom py-4">
             <ul className="space-y-4 text-lg">
-              <NavItem href="/">Início</NavItem>
+              <NavItem href="/products">Produtos</NavItem>
+              <NavItem href="/sobre">Sobre Nós</NavItem>
               <NavItem href="/blog">Blog</NavItem>
               <NavItem href="/simulador">Simulador</NavItem>
               {user?.verified && <>
-                  <NavItem href="/products">Produtos</NavItem>
                   <NavItem href="/for-manufacturers">Para Fabricantes</NavItem>
                   <NavItem href="/for-distributors">Para Distribuidores</NavItem>
                   <NavItem href="/financial-services">Serviços Financeiros</NavItem>
                   <NavItem href="/logistics">Logística</NavItem>
                 </>}
-              <NavItem href="/about">Sobre Nós</NavItem>
               {isAdminAuthenticated && <NavItem href="/admin">Painel Admin</NavItem>}
             </ul>
             
