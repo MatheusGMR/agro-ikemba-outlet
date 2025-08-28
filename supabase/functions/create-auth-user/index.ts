@@ -63,19 +63,21 @@ const handler = async (req: Request): Promise<Response> => {
     if (error) {
       console.error('Error creating user:', error);
       
-      // Handle specific error for existing email
+      // Email already exists: return 200 with status so the frontend can handle gracefully
       if (error.message?.includes('already been registered') || error.message?.includes('email_exists')) {
         return new Response(
           JSON.stringify({ 
-            error: error.message,
-            code: 'email_exists' 
+            success: false,
+            status: 'email_exists',
+            message: error.message
           }),
-          { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
       
+      // Other errors
       return new Response(
-        JSON.stringify({ error: error.message }),
+        JSON.stringify({ success: false, status: 'error', error: error.message }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -84,7 +86,8 @@ const handler = async (req: Request): Promise<Response> => {
 
     return new Response(
       JSON.stringify({ 
-        success: true, 
+        success: true,
+        status: 'created', 
         message: 'Usuário criado com sucesso',
         user_id: user.user?.id 
       }),

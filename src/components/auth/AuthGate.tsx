@@ -119,10 +119,34 @@ export default function AuthGate({ children }: AuthGateProps) {
           }
         });
 
-        if (error) throw error;
+        // Handle non-2xx as graceful email_exists when applicable
+        if (error) {
+          const msg = (error as any)?.message || '';
+          if (msg.includes('email_exists') || msg.includes('409')) {
+            setIsForgotPassword(true);
+            setFormData(prev => ({ ...prev, emailOrPhone: formData.email }));
+            toast({
+              title: "E-mail já cadastrado",
+              description: "Enviando link de recuperação de senha...",
+              variant: "default"
+            });
+            const { error: resetError } = await supabase.auth.resetPasswordForEmail(formData.email, {
+              redirectTo: `${window.location.origin}/`
+            });
+            if (!resetError) {
+              setResendCooldown(35);
+              toast({
+                title: "E-mail de recuperação enviado",
+                description: "Verifique sua caixa de entrada para redefinir sua senha"
+              });
+            }
+            return;
+          }
+          throw error;
+        }
         
-        // Handle email already exists - trigger forgot password flow
-        if (data?.error && data?.code === 'email_exists') {
+        // New normalized statuses
+        if (data?.status === 'email_exists' || data?.code === 'email_exists' || data?.error?.includes?.('email_exists')) {
           setIsForgotPassword(true);
           setFormData(prev => ({ ...prev, emailOrPhone: formData.email }));
           toast({
@@ -130,12 +154,9 @@ export default function AuthGate({ children }: AuthGateProps) {
             description: "Enviando link de recuperação de senha...",
             variant: "default"
           });
-          
-          // Automatically trigger password reset
           const { error: resetError } = await supabase.auth.resetPasswordForEmail(formData.email, {
             redirectTo: `${window.location.origin}/`
           });
-          
           if (!resetError) {
             setResendCooldown(35);
             toast({
@@ -146,8 +167,8 @@ export default function AuthGate({ children }: AuthGateProps) {
           return;
         }
         
-        if (data?.error) throw new Error(data.error);
-
+        if (data?.error && !data?.status) throw new Error(data.error);
+        
         // Now sign in with the created credentials
         const { error: signInError } = await supabase.auth.signInWithPassword({
           email: formData.email,
