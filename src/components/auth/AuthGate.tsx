@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { ShieldCheck, Users, Zap, Star } from 'lucide-react';
+import { ShieldCheck, Users, Zap, Star, Eye, EyeOff } from 'lucide-react';
 interface AuthGateProps {
   children: React.ReactNode;
 }
@@ -16,8 +16,10 @@ export default function AuthGate({
 }: AuthGateProps) {
   const [isOpen, setIsOpen] = useState(true);
   const [isLogin, setIsLogin] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [user, setUser] = useState(null);
+  const [isFirstAccess, setIsFirstAccess] = useState(false);
   const {
     toast
   } = useToast();
@@ -26,46 +28,105 @@ export default function AuthGate({
     email: '',
     phone: '',
     company: '',
+    password: '',
+    confirmPassword: '',
     tipo: 'produtor',
     conheceu: ''
   });
   useEffect(() => {
     const checkUser = async () => {
-      // Verificar se há usuário no localStorage
-      const savedUser = localStorage.getItem('currentUser');
-      if (savedUser) {
-        setUser(JSON.parse(savedUser));
+      // Verificar autenticação do Supabase
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setUser(user);
         setIsOpen(false);
+      } else {
+        // Verificar se há usuário no localStorage (cadastro sem senha)
+        const savedUser = localStorage.getItem('currentUser');
+        if (savedUser) {
+          setUser(JSON.parse(savedUser));
+          setIsOpen(false);
+        }
       }
     };
     checkUser();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user) {
+        setUser(session.user);
+        setIsOpen(false);
+      } else {
+        const savedUser = localStorage.getItem('currentUser');
+        if (!savedUser) {
+          setUser(null);
+          setIsOpen(true);
+        }
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     try {
       if (isLogin) {
-        // Para login, usar email como identificador
-        const { data: userData, error: userError } = await supabase
+        // Primeiro tentar login com Supabase Auth
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email: formData.email,
+          password: formData.password
+        });
+
+        if (!signInError) {
+          toast({
+            title: "Login realizado com sucesso!",
+            description: "Bem-vindo de volta à AgroIkemba"
+          });
+          return;
+        }
+
+        // Se falhou, verificar se é primeiro acesso
+        const { data: userData } = await supabase
           .from('users')
           .select('*')
           .eq('email', formData.email)
+          .eq('status', 'active')
           .single();
 
-        if (userError || !userData) {
-          throw new Error('Usuário não encontrado');
+        if (userData) {
+          // Usuário existe mas não tem senha criada - primeiro acesso
+          setIsFirstAccess(true);
+          toast({
+            title: "Primeiro acesso detectado",
+            description: "Por favor, crie sua senha para acessar o sistema"
+          });
+        } else {
+          throw new Error('Email ou senha incorretos');
+        }
+      } else if (isFirstAccess) {
+        // Criar senha no primeiro acesso
+        if (formData.password !== formData.confirmPassword) {
+          throw new Error('As senhas não coincidem');
         }
 
-        // Simular login sem senha - apenas definir o usuário como logado
-        setUser({ email: userData.email } as any);
-        setIsOpen(false);
-        
-        toast({
-          title: "Login realizado com sucesso!",
-          description: "Bem-vindo de volta à AgroIkemba"
+        const { error } = await supabase.auth.signUp({
+          email: formData.email,
+          password: formData.password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/`
+          }
         });
+
+        if (error) throw error;
+
+        toast({
+          title: "Senha criada com sucesso!",
+          description: "Verifique seu email para confirmar sua conta"
+        });
+        setIsFirstAccess(false);
+        setIsLogin(true);
       } else {
-        // Adicionar usuário à tabela users sem autenticação do Supabase
+        // Cadastro sem senha
         const { error } = await supabase.from('users').insert({
           name: formData.name,
           email: formData.email,
@@ -77,14 +138,15 @@ export default function AuthGate({
         
         if (error) throw error;
 
-        // Simular cadastro sem autenticação
-        setUser({ email: formData.email });
-        localStorage.setItem('currentUser', JSON.stringify({ email: formData.email }));
+        // Simular login temporário até aprovação
+        const tempUser = { email: formData.email, isTemp: true };
+        setUser(tempUser);
+        localStorage.setItem('currentUser', JSON.stringify(tempUser));
         setIsOpen(false);
         
         toast({
           title: "Cadastro realizado com sucesso!",
-          description: "Bem-vindo à AgroIkemba!"
+          description: "Sua solicitação será analisada e você receberá um email para criar sua senha"
         });
       }
     } catch (error: any) {
@@ -186,10 +248,15 @@ export default function AuthGate({
               <Card className="border-none shadow-none">
                 <CardHeader className="text-center pb-4">
                   <CardTitle className="text-xl">
-                    {isLogin ? 'Fazer Login' : 'Criar Conta'}
+                    {isFirstAccess ? 'Criar Senha' : isLogin ? 'Fazer Login' : 'Criar Conta'}
                   </CardTitle>
                   <p className="text-sm text-muted-foreground">
-                    {isLogin ? 'Acesse sua conta para ver nossos produtos' : 'Cadastre-se gratuitamente e tenha acesso completo'}
+                    {isFirstAccess 
+                      ? 'Crie sua senha para acessar o sistema'
+                      : isLogin 
+                        ? 'Acesse sua conta para ver nossos produtos' 
+                        : 'Cadastre-se gratuitamente e tenha acesso completo'
+                    }
                   </p>
                 </CardHeader>
 
@@ -227,6 +294,37 @@ export default function AuthGate({
                       <Input id="email" type="email" value={formData.email} onChange={e => handleInputChange('email', e.target.value)} placeholder="seu@email.com" required />
                     </div>
 
+                    {(isLogin || isFirstAccess) && <div className="space-y-2">
+                      <Label htmlFor="password">{isFirstAccess ? 'Nova Senha' : 'Senha'}</Label>
+                      <div className="relative">
+                        <Input 
+                          id="password" 
+                          type={showPassword ? "text" : "password"} 
+                          value={formData.password} 
+                          onChange={e => handleInputChange('password', e.target.value)} 
+                          placeholder={isFirstAccess ? "Crie sua senha" : "Sua senha"} 
+                          required 
+                        />
+                        <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      </div>
+                    </div>}
+
+                    {isFirstAccess && <div className="space-y-2">
+                      <Label htmlFor="confirmPassword">Confirmar Senha</Label>
+                      <div className="relative">
+                        <Input 
+                          id="confirmPassword" 
+                          type={showPassword ? "text" : "password"} 
+                          value={formData.confirmPassword} 
+                          onChange={e => handleInputChange('confirmPassword', e.target.value)} 
+                          placeholder="Confirme sua senha" 
+                          required 
+                        />
+                      </div>
+                    </div>}
+
                     {!isLogin && <div className="space-y-2">
                         <Label htmlFor="conheceu">Como nos conheceu? (opcional)</Label>
                         <select id="conheceu" value={formData.conheceu} onChange={e => handleInputChange('conheceu', e.target.value)} className="w-full px-3 py-2 border border-input bg-background rounded-md">
@@ -242,14 +340,21 @@ export default function AuthGate({
                       </div>}
 
                     <Button type="submit" className="w-full" disabled={isLoading}>
-                      {isLoading ? 'Processando...' : isLogin ? 'Entrar' : 'Criar Conta'}
+                      {isLoading 
+                        ? 'Processando...' 
+                        : isFirstAccess 
+                          ? 'Criar Senha' 
+                          : isLogin 
+                            ? 'Entrar' 
+                            : 'Criar Conta'
+                      }
                     </Button>
 
-                    <div className="text-center">
+                    {!isFirstAccess && <div className="text-center">
                       <button type="button" onClick={() => setIsLogin(!isLogin)} className="text-sm text-primary hover:underline">
                         {isLogin ? 'Não tem conta? Cadastre-se grátis' : 'Já tem conta? Fazer login'}
                       </button>
-                    </div>
+                    </div>}
                   </form>
                 </CardContent>
               </Card>
