@@ -183,6 +183,34 @@ export default function AuthGate({ children }: AuthGateProps) {
             return;
           }
 
+          // Handle email not confirmed: resend confirmation email automatically
+          if (
+            signInError.message?.includes('Email not confirmed') ||
+            (signInError as any)?.error_description?.includes?.('Email not confirmed') ||
+            (signInError as any)?.code === 'email_not_confirmed'
+          ) {
+            const redirectUrl = `${window.location.origin}/`;
+            const { error: resendError } = await supabase.auth.resend({
+              type: 'signup',
+              email: emailOrPhone,
+              options: { emailRedirectTo: redirectUrl }
+            });
+
+            if (!resendError) {
+              toast({
+                title: 'Confirmação necessária',
+                description: 'Reenviamos o e-mail de confirmação. Verifique sua caixa de entrada.'
+              });
+            } else {
+              toast({
+                title: 'Confirmação pendente',
+                description: 'Seu e-mail ainda não foi confirmado. Tente novamente em instantes.',
+                variant: 'destructive'
+              });
+            }
+            return;
+          }
+
           // If login failed with invalid credentials, check if user exists for first access
           if (signInError.message.includes('Invalid login credentials')) {
             const { data: userData } = await supabase
