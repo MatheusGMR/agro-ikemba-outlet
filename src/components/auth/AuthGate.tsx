@@ -569,7 +569,7 @@ export default function AuthGate({
                               try {
                                 setIsLoading(true);
                                 
-                                // Enviar email de redefinição
+                                // Enviar email de redefinição usando método nativo
                                 const { error } = await supabase.auth.resetPasswordForEmail(
                                   email,
                                   {
@@ -578,19 +578,6 @@ export default function AuthGate({
                                 );
 
                                 if (error) throw error;
-
-                                // Enviar email personalizado via edge function
-                                await fetch('/functions/v1/send-auth-email', {
-                                  method: 'POST',
-                                  headers: {
-                                    'Content-Type': 'application/json',
-                                    'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
-                                  },
-                                  body: JSON.stringify({
-                                    email,
-                                    type: 'recovery'
-                                  })
-                                });
 
                                 toast({
                                   title: "Email de redefinição enviado",
