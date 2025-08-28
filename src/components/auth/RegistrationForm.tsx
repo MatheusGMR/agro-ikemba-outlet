@@ -34,8 +34,6 @@ export default function RegistrationForm() {
       email: '',
       phone: '',
       company: '',
-      password: '',
-      confirmPassword: '',
       tipo: '',
       conheceu: '',
       cnpj: ''
