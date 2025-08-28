@@ -31,7 +31,8 @@ export default function AuthGate({
     password: '',
     confirmPassword: '',
     tipo: 'produtor',
-    conheceu: ''
+    conheceu: '',
+    emailOrPhone: '' // Campo para login com email ou telefone
   });
   useEffect(() => {
     const checkUser = async () => {
@@ -71,37 +72,56 @@ export default function AuthGate({
     setIsLoading(true);
     try {
       if (isLogin) {
-        // Primeiro tentar login com Supabase Auth
-        const { error: signInError } = await supabase.auth.signInWithPassword({
-          email: formData.email,
-          password: formData.password
-        });
-
-        if (!signInError) {
-          toast({
-            title: "Login realizado com sucesso!",
-            description: "Bem-vindo de volta à AgroIkemba"
-          });
-          return;
+        // Verificar se é primeiro acesso buscando por email ou telefone
+        const emailOrPhone = formData.emailOrPhone;
+        const isEmail = emailOrPhone.includes('@');
+        
+        let userData;
+        if (isEmail) {
+          const { data } = await supabase
+            .from('users')
+            .select('*')
+            .eq('email', emailOrPhone)
+            .eq('status', 'active')
+            .single();
+          userData = data;
+        } else {
+          const { data } = await supabase
+            .from('users')
+            .select('*')
+            .eq('phone', emailOrPhone)
+            .eq('status', 'active')
+            .single();
+          userData = data;
         }
 
-        // Se falhou, verificar se é primeiro acesso
-        const { data: userData } = await supabase
-          .from('users')
-          .select('*')
-          .eq('email', formData.email)
-          .eq('status', 'active')
-          .single();
-
         if (userData) {
-          // Usuário existe mas não tem senha criada - primeiro acesso
+          // Verificar se já tem conta no Supabase Auth
+          if (isEmail) {
+            const { error: signInError } = await supabase.auth.signInWithPassword({
+              email: emailOrPhone,
+              password: formData.password
+            });
+
+            if (!signInError) {
+              toast({
+                title: "Login realizado com sucesso!",
+                description: "Bem-vindo de volta à AgroIkemba"
+              });
+              return;
+            }
+          }
+          
+          // Se não conseguiu fazer login, é primeiro acesso
           setIsFirstAccess(true);
+          // Preencher o email do usuário encontrado
+          setFormData(prev => ({ ...prev, email: userData.email }));
           toast({
             title: "Primeiro acesso detectado",
             description: "Por favor, crie sua senha para acessar o sistema"
           });
         } else {
-          throw new Error('Email ou senha incorretos');
+          throw new Error('Usuário não encontrado ou não aprovado');
         }
       } else if (isFirstAccess) {
         // Criar senha no primeiro acesso
@@ -279,6 +299,11 @@ export default function AuthGate({
                         </div>
 
                         <div className="space-y-2">
+                          <Label htmlFor="email">E-mail</Label>
+                          <Input id="email" type="email" value={formData.email} onChange={e => handleInputChange('email', e.target.value)} placeholder="seu@email.com" required />
+                        </div>
+
+                        <div className="space-y-2">
                           <Label htmlFor="tipo">Você é:</Label>
                           <select id="tipo" value={formData.tipo} onChange={e => handleInputChange('tipo', e.target.value)} className="w-full px-3 py-2 border border-input bg-background rounded-md" required={!isLogin}>
                             <option value="produtor">Produtor Rural</option>
@@ -289,10 +314,19 @@ export default function AuthGate({
                         </div>
                       </>}
 
-                    <div className="space-y-2">
-                      <Label htmlFor="email">E-mail</Label>
-                      <Input id="email" type="email" value={formData.email} onChange={e => handleInputChange('email', e.target.value)} placeholder="seu@email.com" required />
-                    </div>
+                    {isLogin && !isFirstAccess && (
+                      <div className="space-y-2">
+                        <Label htmlFor="emailOrPhone">E-mail ou Telefone</Label>
+                        <Input 
+                          id="emailOrPhone" 
+                          type="text" 
+                          value={formData.emailOrPhone} 
+                          onChange={e => handleInputChange('emailOrPhone', e.target.value)} 
+                          placeholder="seu@email.com ou (11) 99999-9999" 
+                          required 
+                        />
+                      </div>
+                    )}
 
                     {(isLogin || isFirstAccess) && <div className="space-y-2">
                       <Label htmlFor="password">{isFirstAccess ? 'Nova Senha' : 'Senha'}</Label>
