@@ -9,20 +9,21 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Eye, EyeOff, ShieldCheck, Users, Zap, Star } from 'lucide-react';
-
 interface AuthGateProps {
   children: React.ReactNode;
 }
-
-export default function AuthGate({ children }: AuthGateProps) {
+export default function AuthGate({
+  children
+}: AuthGateProps) {
   const [isOpen, setIsOpen] = useState(true);
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
-  const { toast } = useToast();
-
+  const {
+    toast
+  } = useToast();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -30,19 +31,24 @@ export default function AuthGate({ children }: AuthGateProps) {
     tipo: 'produtor',
     conheceu: ''
   });
-
   useEffect(() => {
     const checkUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: {
+          user
+        }
+      } = await supabase.auth.getUser();
       if (user) {
         setUser(user);
         setIsOpen(false);
       }
     };
-
     checkUser();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const {
+      data: {
+        subscription
+      }
+    } = supabase.auth.onAuthStateChange((event, session) => {
       if (session?.user) {
         setUser(session.user);
         setIsOpen(false);
@@ -51,36 +57,34 @@ export default function AuthGate({ children }: AuthGateProps) {
         setIsOpen(true);
       }
     });
-
     return () => subscription.unsubscribe();
   }, []);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-
     try {
       if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({
+        const {
+          error
+        } = await supabase.auth.signInWithPassword({
           email: formData.email,
           password: formData.password
         });
-
         if (error) throw error;
-
         toast({
           title: "Login realizado com sucesso!",
           description: "Bem-vindo de volta à AgroIkemba"
         });
       } else {
-        const { error } = await supabase.auth.signUp({
+        const {
+          error
+        } = await supabase.auth.signUp({
           email: formData.email,
           password: formData.password,
           options: {
             emailRedirectTo: `${window.location.origin}/`
           }
         });
-
         if (error) throw error;
 
         // Adicionar usuário à tabela users
@@ -90,7 +94,6 @@ export default function AuthGate({ children }: AuthGateProps) {
           tipo: formData.tipo,
           conheceu: formData.conheceu
         });
-
         toast({
           title: "Cadastro realizado com sucesso!",
           description: "Verifique seu email para confirmar sua conta"
@@ -106,17 +109,16 @@ export default function AuthGate({ children }: AuthGateProps) {
       setIsLoading(false);
     }
   };
-
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
-
   if (!isOpen) {
     return <>{children}</>;
   }
-
-  return (
-    <div className="relative">
+  return <div className="relative">
       {/* Blurred background */}
       <div className="filter blur-sm pointer-events-none select-none">
         {children}
@@ -132,9 +134,7 @@ export default function AuthGate({ children }: AuthGateProps) {
               <div className="space-y-6">
                 <div className="text-center">
                   <h2 className="text-2xl font-bold mb-2">Bem-vindo à AgroIkemba</h2>
-                  <p className="text-primary-foreground/90">
-                    O único Outlet de insumos agricolas do Brasil
-                  </p>
+                  <p className="text-primary-foreground/90">O Outlet de insumos agricolas do Brasil</p>
                 </div>
 
                 <div className="space-y-4">
@@ -144,9 +144,7 @@ export default function AuthGate({ children }: AuthGateProps) {
                     </div>
                     <div>
                       <h4 className="font-semibold">Produtos Certificados</h4>
-                      <p className="text-sm text-primary-foreground/80">
-                        Todos os produtos com registro MAPA
-                      </p>
+                      <p className="text-sm text-primary-foreground/80">Produtos originais e com registro MAPA</p>
                     </div>
                   </div>
 
@@ -203,89 +201,47 @@ export default function AuthGate({ children }: AuthGateProps) {
                     {isLogin ? 'Fazer Login' : 'Criar Conta'}
                   </CardTitle>
                   <p className="text-sm text-muted-foreground">
-                    {isLogin 
-                      ? 'Acesse sua conta para ver nossos produtos'
-                      : 'Cadastre-se gratuitamente e tenha acesso completo'
-                    }
+                    {isLogin ? 'Acesse sua conta para ver nossos produtos' : 'Cadastre-se gratuitamente e tenha acesso completo'}
                   </p>
                 </CardHeader>
 
                 <CardContent>
                   <form onSubmit={handleSubmit} className="space-y-4">
-                    {!isLogin && (
-                      <>
+                    {!isLogin && <>
                         <div className="space-y-2">
                           <Label htmlFor="name">Nome Completo</Label>
-                          <Input
-                            id="name"
-                            type="text"
-                            value={formData.name}
-                            onChange={(e) => handleInputChange('name', e.target.value)}
-                            placeholder="Seu nome completo"
-                            required={!isLogin}
-                          />
+                          <Input id="name" type="text" value={formData.name} onChange={e => handleInputChange('name', e.target.value)} placeholder="Seu nome completo" required={!isLogin} />
                         </div>
 
                         <div className="space-y-2">
                           <Label htmlFor="tipo">Você é:</Label>
-                          <select
-                            id="tipo"
-                            value={formData.tipo}
-                            onChange={(e) => handleInputChange('tipo', e.target.value)}
-                            className="w-full px-3 py-2 border border-input bg-background rounded-md"
-                            required={!isLogin}
-                          >
+                          <select id="tipo" value={formData.tipo} onChange={e => handleInputChange('tipo', e.target.value)} className="w-full px-3 py-2 border border-input bg-background rounded-md" required={!isLogin}>
                             <option value="produtor">Produtor Rural</option>
                             <option value="distribuidor">Distribuidor</option>
                             <option value="cooperativa">Cooperativa</option>
                             <option value="representante">Representante Comercial</option>
                           </select>
                         </div>
-                      </>
-                    )}
+                      </>}
 
                     <div className="space-y-2">
                       <Label htmlFor="email">E-mail</Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        value={formData.email}
-                        onChange={(e) => handleInputChange('email', e.target.value)}
-                        placeholder="seu@email.com"
-                        required
-                      />
+                      <Input id="email" type="email" value={formData.email} onChange={e => handleInputChange('email', e.target.value)} placeholder="seu@email.com" required />
                     </div>
 
                     <div className="space-y-2">
                       <Label htmlFor="password">Senha</Label>
                       <div className="relative">
-                        <Input
-                          id="password"
-                          type={showPassword ? "text" : "password"}
-                          value={formData.password}
-                          onChange={(e) => handleInputChange('password', e.target.value)}
-                          placeholder="Sua senha"
-                          required
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-1/2 transform -translate-y-1/2"
-                        >
+                        <Input id="password" type={showPassword ? "text" : "password"} value={formData.password} onChange={e => handleInputChange('password', e.target.value)} placeholder="Sua senha" required />
+                        <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 transform -translate-y-1/2">
                           {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                         </button>
                       </div>
                     </div>
 
-                    {!isLogin && (
-                      <div className="space-y-2">
+                    {!isLogin && <div className="space-y-2">
                         <Label htmlFor="conheceu">Como nos conheceu? (opcional)</Label>
-                        <select
-                          id="conheceu"
-                          value={formData.conheceu}
-                          onChange={(e) => handleInputChange('conheceu', e.target.value)}
-                          className="w-full px-3 py-2 border border-input bg-background rounded-md"
-                        >
+                        <select id="conheceu" value={formData.conheceu} onChange={e => handleInputChange('conheceu', e.target.value)} className="w-full px-3 py-2 border border-input bg-background rounded-md">
                           <option value="">Selecione uma opção</option>
                           <option value="google">Google</option>
                           <option value="facebook">Facebook</option>
@@ -295,23 +251,15 @@ export default function AuthGate({ children }: AuthGateProps) {
                           <option value="evento">Evento/Feira</option>
                           <option value="outros">Outros</option>
                         </select>
-                      </div>
-                    )}
+                      </div>}
 
                     <Button type="submit" className="w-full" disabled={isLoading}>
-                      {isLoading ? 'Processando...' : (isLogin ? 'Entrar' : 'Criar Conta')}
+                      {isLoading ? 'Processando...' : isLogin ? 'Entrar' : 'Criar Conta'}
                     </Button>
 
                     <div className="text-center">
-                      <button
-                        type="button"
-                        onClick={() => setIsLogin(!isLogin)}
-                        className="text-sm text-primary hover:underline"
-                      >
-                        {isLogin 
-                          ? 'Não tem conta? Cadastre-se grátis'
-                          : 'Já tem conta? Fazer login'
-                        }
+                      <button type="button" onClick={() => setIsLogin(!isLogin)} className="text-sm text-primary hover:underline">
+                        {isLogin ? 'Não tem conta? Cadastre-se grátis' : 'Já tem conta? Fazer login'}
                       </button>
                     </div>
                   </form>
@@ -321,6 +269,5 @@ export default function AuthGate({ children }: AuthGateProps) {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
-  );
+    </div>;
 }
