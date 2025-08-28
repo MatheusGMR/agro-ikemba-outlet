@@ -82,7 +82,7 @@ export default function AuthGate({
             .from('users')
             .select('*')
             .eq('email', emailOrPhone)
-            .eq('status', 'active')
+            .eq('status', 'approved')
             .single();
           userData = data;
         } else {
@@ -90,7 +90,7 @@ export default function AuthGate({
             .from('users')
             .select('*')
             .eq('phone', emailOrPhone)
-            .eq('status', 'active')
+            .eq('status', 'approved')
             .single();
           userData = data;
         }
@@ -166,7 +166,7 @@ export default function AuthGate({
         
         toast({
           title: "Cadastro realizado com sucesso!",
-          description: "Sua solicitação será analisada e você receberá um email para criar sua senha"
+          description: "Você já pode fazer login no sistema!"
         });
       }
     } catch (error: any) {
