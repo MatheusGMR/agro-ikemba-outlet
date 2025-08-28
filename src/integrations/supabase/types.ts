@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.3 (519615d)"
@@ -149,6 +149,81 @@ export type Database = {
           source?: string
           unit?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      inventory: {
+        Row: {
+          active_ingredient: string | null
+          base_price: number
+          city: string
+          client_price: number
+          commission_percentage: number
+          commission_unit: number
+          created_at: string
+          expiry_date: string
+          id: string
+          manufacturer: string
+          mapa_number: string | null
+          net_commission: number
+          packaging: string
+          price_tier: string
+          product_name: string
+          product_sku: string
+          rep_percentage: number
+          state: string
+          supplier_net: number
+          unit: string
+          updated_at: string
+          volume_available: number
+        }
+        Insert: {
+          active_ingredient?: string | null
+          base_price: number
+          city: string
+          client_price: number
+          commission_percentage: number
+          commission_unit: number
+          created_at?: string
+          expiry_date: string
+          id?: string
+          manufacturer: string
+          mapa_number?: string | null
+          net_commission: number
+          packaging?: string
+          price_tier: string
+          product_name: string
+          product_sku: string
+          rep_percentage: number
+          state: string
+          supplier_net: number
+          unit?: string
+          updated_at?: string
+          volume_available: number
+        }
+        Update: {
+          active_ingredient?: string | null
+          base_price?: number
+          city?: string
+          client_price?: number
+          commission_percentage?: number
+          commission_unit?: number
+          created_at?: string
+          expiry_date?: string
+          id?: string
+          manufacturer?: string
+          mapa_number?: string | null
+          net_commission?: number
+          packaging?: string
+          price_tier?: string
+          product_name?: string
+          product_sku?: string
+          rep_percentage?: number
+          state?: string
+          supplier_net?: number
+          unit?: string
+          updated_at?: string
+          volume_available?: number
         }
         Relationships: []
       }
@@ -475,6 +550,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      product_documents: {
+        Row: {
+          created_at: string
+          document_name: string
+          document_type: string
+          document_url: string
+          id: string
+          product_sku: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          document_name: string
+          document_type: string
+          document_url: string
+          id?: string
+          product_sku: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          document_name?: string
+          document_type?: string
+          document_url?: string
+          id?: string
+          product_sku?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       regional_data: {
         Row: {
