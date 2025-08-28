@@ -120,6 +120,32 @@ export default function AuthGate({ children }: AuthGateProps) {
         });
 
         if (error) throw error;
+        
+        // Handle email already exists - trigger forgot password flow
+        if (data?.error && data?.code === 'email_exists') {
+          setIsForgotPassword(true);
+          setFormData(prev => ({ ...prev, emailOrPhone: formData.email }));
+          toast({
+            title: "E-mail já cadastrado",
+            description: "Enviando link de recuperação de senha...",
+            variant: "default"
+          });
+          
+          // Automatically trigger password reset
+          const { error: resetError } = await supabase.auth.resetPasswordForEmail(formData.email, {
+            redirectTo: `${window.location.origin}/`
+          });
+          
+          if (!resetError) {
+            setResendCooldown(35);
+            toast({
+              title: "E-mail de recuperação enviado",
+              description: "Verifique sua caixa de entrada para redefinir sua senha"
+            });
+          }
+          return;
+        }
+        
         if (data?.error) throw new Error(data.error);
 
         // Now sign in with the created credentials
