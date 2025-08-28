@@ -115,6 +115,9 @@ export default function Navbar() {
                   Sair
                 </Button>
               </div> : <>
+                <Button variant="outline" asChild>
+                  <Link to="/login">Entrar</Link>
+                </Button>
                 <Button className="bg-primary hover:bg-primary/90" asChild>
                   <Link to="/register">Cadastrar</Link>
                 </Button>
@@ -164,6 +167,9 @@ export default function Navbar() {
                     Sair
                   </Button>
                 </> : <>
+                  <Button variant="outline" className="w-full mb-2" asChild>
+                    <Link to="/login">Entrar</Link>
+                  </Button>
                   <Button className="w-full bg-primary hover:bg-primary/90" asChild>
                     <Link to="/register">Cadastrar</Link>
                   </Button>

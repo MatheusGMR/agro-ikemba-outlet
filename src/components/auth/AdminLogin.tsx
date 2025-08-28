@@ -34,8 +34,17 @@ export default function AdminLogin() {
     clearStorageAndStart();
 
     try {
-      // Verificar credenciais específicas do admin
-      if (email === 'admin@agroikemba.com' && password === 'AgroIkemba2024!') {
+      // Lista de credenciais administrativas
+      const adminCredentials = [
+        { email: 'admin@agroikemba.com', password: 'AgroIkemba2024!' },
+        { email: 'matheusmotaroldan@hotmail.com', password: 'AgroIkemba2024!' }
+      ];
+      
+      const validCredentials = adminCredentials.find(
+        cred => cred.email === email && cred.password === password
+      );
+      
+      if (validCredentials) {
         console.log('Credenciais válidas, criando sessão...');
         
         // Armazenar token de admin com timestamp

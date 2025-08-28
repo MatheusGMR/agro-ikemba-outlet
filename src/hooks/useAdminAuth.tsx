@@ -40,9 +40,12 @@ export const useAdminAuth = () => {
         console.log('Idade da sessão (ms):', sessionAge);
         console.log('Idade máxima (ms):', maxAge);
         
+        // Lista de emails administrativos
+        const adminEmails = ['admin@agroikemba.com', 'matheusmotaroldan@hotmail.com'];
+        
         if (sessionAge < maxAge && 
             session.isAdmin && 
-            session.email === 'admin@agroikemba.com' &&
+            adminEmails.includes(session.email) &&
             user.isAdmin) {
           console.log('Sessão válida, autenticando...');
           setIsAuthenticated(true);
