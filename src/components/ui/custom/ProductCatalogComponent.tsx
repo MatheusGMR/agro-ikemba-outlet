@@ -1,173 +1,101 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, Filter, ShoppingCart, Bell, ChevronDown, GridIcon, List, Star, X } from 'lucide-react';
+import { Search, Filter, ShoppingCart, Bell, ChevronDown, GridIcon, List, Star, X, MapPin, Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Badge } from '@/components/ui/badge';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import BannerCarousel from '@/components/ui/BannerCarousel';
 import { Label } from '@/components/ui/label';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
+import { useProductsWithInventory } from '@/hooks/useInventory';
+import type { ProductWithInventory } from '@/types/inventory';
 
-// Mock data for products
-const MOCK_PRODUCTS = [
-  {
-    id: 1,
-    name: 'Glifosato Premium 480',
-    manufacturer: 'AgroTech',
-    activeIngredient: 'Glifosato',
-    concentration: '480 g/L',
-    formulation: 'SL',
-    price: 85.90,
-    unit: 'Galão 20L',
-    image: '/placeholder.svg',
-    inStock: true,
-    category: 'Herbicidas'
-  },
-  {
-    id: 2,
-    name: 'Mancozeb Plus',
-    manufacturer: 'FarmChem',
-    activeIngredient: 'Mancozeb',
-    concentration: '800 g/kg',
-    formulation: 'WP',
-    price: 45.50,
-    unit: 'Saco 25kg',
-    image: '/placeholder.svg',
-    inStock: true,
-    category: 'Fungicidas'
-  },
-  {
-    id: 3,
-    name: 'Clorpirifós Gold',
-    manufacturer: 'BestCrop',
-    activeIngredient: 'Clorpirifós',
-    concentration: '480 g/L',
-    formulation: 'EC',
-    price: 120.00,
-    unit: 'Galão 5L',
-    image: '/placeholder.svg',
-    inStock: false,
-    category: 'Inseticidas'
-  },
-  {
-    id: 4,
-    name: 'NPK Supreme 20-05-20',
-    manufacturer: 'NutriSoil',
-    activeIngredient: 'N-P-K',
-    concentration: '20-05-20',
-    formulation: 'GR',
-    price: 130.75,
-    unit: 'Saco 50kg',
-    image: '/placeholder.svg',
-    inStock: true,
-    category: 'Fertilizantes'
-  },
-  {
-    id: 5,
-    name: 'Atrazina Max',
-    manufacturer: 'AgroTech',
-    activeIngredient: 'Atrazina',
-    concentration: '500 g/L',
-    formulation: 'SC',
-    price: 68.20,
-    unit: 'Galão 20L',
-    image: '/placeholder.svg',
-    inStock: true,
-    category: 'Herbicidas'
-  },
-  {
-    id: 6,
-    name: 'Azoxistrobina Plus',
-    manufacturer: 'FarmChem',
-    activeIngredient: 'Azoxistrobina',
-    concentration: '250 g/L',
-    formulation: 'SC',
-    price: 210.90,
-    unit: 'Galão 5L',
-    image: '/placeholder.svg',
-    inStock: true,
-    category: 'Fungicidas'
-  },
-  {
-    id: 7,
-    name: 'Imidacloprid Power',
-    manufacturer: 'BestCrop',
-    activeIngredient: 'Imidacloprid',
-    concentration: '700 g/kg',
-    formulation: 'WG',
-    price: 188.30,
-    unit: 'Embalagem 1kg',
-    image: '/placeholder.svg',
-    inStock: true,
-    category: 'Inseticidas'
-  },
-  {
-    id: 8,
-    name: 'Uréia Premium',
-    manufacturer: 'NutriSoil',
-    activeIngredient: 'Nitrogênio',
-    concentration: '46-00-00',
-    formulation: 'GR',
-    price: 145.00,
-    unit: 'Saco 50kg',
-    image: '/placeholder.svg',
-    inStock: false,
-    category: 'Fertilizantes'
+// Helper function to get category from active ingredient
+const getProductCategory = (activeIngredient?: string): string => {
+  if (!activeIngredient) return 'Outros';
+  const ingredient = activeIngredient.toLowerCase();
+  
+  if (ingredient.includes('glifosato') || ingredient.includes('atrazina') || ingredient.includes('2,4-d')) {
+    return 'Herbicidas';
   }
-];
-
-// Categories for filters
-const CATEGORIES = [
-  'Herbicidas',
-  'Fungicidas',
-  'Inseticidas',
-  'Fertilizantes',
-  'Adjuvantes'
-];
-
-// Manufacturers for filters
-const MANUFACTURERS = [
-  'AgroTech',
-  'FarmChem',
-  'BestCrop',
-  'NutriSoil'
-];
-
-// Formulations for filters
-const FORMULATIONS = [
-  'SL', 'SC', 'EC', 'WP', 'WG', 'GR'
-];
+  if (ingredient.includes('mancozeb') || ingredient.includes('azoxistrobina') || ingredient.includes('tebuconazol')) {
+    return 'Fungicidas';
+  }
+  if (ingredient.includes('clorpirifós') || ingredient.includes('imidacloprid') || ingredient.includes('lambda')) {
+    return 'Inseticidas';
+  }
+  if (ingredient.includes('nitrogênio') || ingredient.includes('fósforo') || ingredient.includes('potássio') || ingredient.includes('npk')) {
+    return 'Fertilizantes';
+  }
+  
+  return 'Outros';
+};
 
 export default function ProductCatalogComponent() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { data: inventoryProducts = [], isLoading, error } = useProductsWithInventory();
+  
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilters, setShowFilters] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [filteredProducts, setFilteredProducts] = useState(MOCK_PRODUCTS);
   const [sortBy, setSortBy] = useState('relevance');
   const [filtersApplied, setFiltersApplied] = useState({
     manufacturers: [] as string[],
-    formulations: [] as string[],
     inStock: false,
   });
 
+  // Transform inventory data to display format
+  const transformedProducts = useMemo(() => {
+    return inventoryProducts.map((product) => ({
+      id: product.sku,
+      name: product.name,
+      manufacturer: product.manufacturer,
+      activeIngredient: product.active_ingredient || 'N/A',
+      sku: product.sku,
+      minPrice: Math.min(...product.price_tiers.map(tier => tier.price)),
+      maxPrice: Math.max(...product.price_tiers.map(tier => tier.price)),
+      priceTiers: product.price_tiers,
+      totalVolume: product.total_volume,
+      locations: product.locations,
+      inStock: product.total_volume > 0,
+      category: getProductCategory(product.active_ingredient),
+      documents: product.documents,
+      expiryDate: product.expiry_date,
+      image: '/placeholder.svg' // Default image for now
+    }));
+  }, [inventoryProducts]);
+
+  // Dynamic filter options from real data
+  const availableManufacturers = useMemo(() => {
+    const manufacturers = [...new Set(transformedProducts.map(p => p.manufacturer))];
+    return manufacturers.sort();
+  }, [transformedProducts]);
+
+  const availableCategories = useMemo(() => {
+    const categories = [...new Set(transformedProducts.map(p => p.category))];
+    return categories.sort();
+  }, [transformedProducts]);
+
   // Apply filters and search
-  useEffect(() => {
-    let result = MOCK_PRODUCTS;
+  const filteredProducts = useMemo(() => {
+    let result = transformedProducts;
     
     // Apply search term
     if (searchTerm) {
       result = result.filter(product => 
         product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         product.activeIngredient.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.manufacturer.toLowerCase().includes(searchTerm.toLowerCase())
+        product.manufacturer.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.sku.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
     
@@ -181,11 +109,6 @@ export default function ProductCatalogComponent() {
       result = result.filter(product => filtersApplied.manufacturers.includes(product.manufacturer));
     }
     
-    // Filter by formulation
-    if (filtersApplied.formulations.length > 0) {
-      result = result.filter(product => filtersApplied.formulations.includes(product.formulation));
-    }
-    
     // Filter by stock
     if (filtersApplied.inStock) {
       result = result.filter(product => product.inStock);
@@ -194,10 +117,10 @@ export default function ProductCatalogComponent() {
     // Apply sorting
     switch(sortBy) {
       case 'price-asc':
-        result = [...result].sort((a, b) => a.price - b.price);
+        result = [...result].sort((a, b) => a.minPrice - b.minPrice);
         break;
       case 'price-desc':
-        result = [...result].sort((a, b) => b.price - a.price);
+        result = [...result].sort((a, b) => b.maxPrice - a.maxPrice);
         break;
       case 'name':
         result = [...result].sort((a, b) => a.name.localeCompare(b.name));
@@ -205,11 +128,14 @@ export default function ProductCatalogComponent() {
       case 'manufacturer':
         result = [...result].sort((a, b) => a.manufacturer.localeCompare(b.manufacturer));
         break;
+      case 'volume':
+        result = [...result].sort((a, b) => b.totalVolume - a.totalVolume);
+        break;
       // Default is relevance, no sorting needed
     }
     
-    setFilteredProducts(result);
-  }, [searchTerm, selectedCategory, filtersApplied, sortBy]);
+    return result;
+  }, [transformedProducts, searchTerm, selectedCategory, filtersApplied, sortBy]);
 
   // Toggle manufacturer filter
   const toggleManufacturer = (manufacturer: string) => {
@@ -224,18 +150,6 @@ export default function ProductCatalogComponent() {
     });
   };
   
-  // Toggle formulation filter
-  const toggleFormulation = (formulation: string) => {
-    setFiltersApplied(prev => {
-      const isSelected = prev.formulations.includes(formulation);
-      return {
-        ...prev,
-        formulations: isSelected
-          ? prev.formulations.filter(f => f !== formulation)
-          : [...prev.formulations, formulation]
-      };
-    });
-  };
   
   // Toggle in-stock filter
   const toggleInStock = () => {
@@ -251,11 +165,53 @@ export default function ProductCatalogComponent() {
     setSelectedCategory(null);
     setFiltersApplied({
       manufacturers: [],
-      formulations: [],
       inStock: false,
     });
     setSortBy('relevance');
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <main className="flex-1 bg-background">
+          <BannerCarousel />
+          <div className="container-custom py-8">
+            <Skeleton className="h-8 w-64 mb-6" />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[...Array(6)].map((_, i) => (
+                <Card key={i} className="h-96">
+                  <CardContent className="p-4">
+                    <Skeleton className="h-48 w-full mb-4" />
+                    <Skeleton className="h-4 w-3/4 mb-2" />
+                    <Skeleton className="h-4 w-1/2" />
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <main className="flex-1 bg-background">
+          <div className="container-custom py-8">
+            <div className="text-center py-10">
+              <p className="text-red-500 mb-4">Erro ao carregar produtos: {error.message}</p>
+              <Button onClick={() => window.location.reload()}>Tentar Novamente</Button>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -316,6 +272,7 @@ export default function ProductCatalogComponent() {
                   <option value="price-desc">Maior Preço</option>
                   <option value="name">Nome (A-Z)</option>
                   <option value="manufacturer">Fabricante (A-Z)</option>
+                  <option value="volume">Maior Volume</option>
                 </select>
               </div>
               
@@ -351,7 +308,7 @@ export default function ProductCatalogComponent() {
                 <div className="mb-6">
                   <h3 className="font-medium mb-2">Categorias</h3>
                   <div className="space-y-2">
-                    {CATEGORIES.map((category) => (
+                    {availableCategories.map((category) => (
                       <div key={category} className="flex items-center">
                         <button
                           onClick={() => setSelectedCategory(category === selectedCategory ? null : category)}
@@ -372,7 +329,7 @@ export default function ProductCatalogComponent() {
                 <div className="mb-6">
                   <h3 className="font-medium mb-2">Fabricante</h3>
                   <div className="space-y-2">
-                    {MANUFACTURERS.map((manufacturer) => (
+                    {availableManufacturers.map((manufacturer) => (
                       <div key={manufacturer} className="flex items-center">
                         <Checkbox 
                           id={`manufacturer-${manufacturer}`}
@@ -384,30 +341,6 @@ export default function ProductCatalogComponent() {
                           className="ml-2 text-sm cursor-pointer"
                         >
                           {manufacturer}
-                        </label>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                
-                <div className="border-t my-4"></div>
-                
-                {/* Formulations */}
-                <div className="mb-6">
-                  <h3 className="font-medium mb-2">Formulação</h3>
-                  <div className="space-y-2">
-                    {FORMULATIONS.map((formulation) => (
-                      <div key={formulation} className="flex items-center">
-                        <Checkbox 
-                          id={`formulation-${formulation}`}
-                          checked={filtersApplied.formulations.includes(formulation)}
-                          onCheckedChange={() => toggleFormulation(formulation)}
-                        />
-                        <label 
-                          htmlFor={`formulation-${formulation}`}
-                          className="ml-2 text-sm cursor-pointer"
-                        >
-                          {formulation}
                         </label>
                       </div>
                     ))}
@@ -462,51 +395,93 @@ export default function ProductCatalogComponent() {
                             <h3 className="font-semibold text-lg mb-1 line-clamp-2">{product.name}</h3>
                             <p className="text-sm text-muted-foreground mb-1">{product.manufacturer}</p>
                             <p className="text-sm mb-2 line-clamp-1">
-                              {product.activeIngredient} - {product.concentration} - {product.formulation}
+                              SKU: {product.sku} {product.activeIngredient && `• ${product.activeIngredient}`}
                             </p>
                             
-                            <div className="flex items-center mb-2">
-                              <span className={`px-2 py-1 text-xs rounded-full ${
-                                product.inStock 
-                                  ? 'bg-green-100 text-green-800' 
-                                  : 'bg-red-100 text-red-800'
-                              }`}>
+                            <div className="flex items-center gap-2 mb-2 flex-wrap">
+                              <Badge variant={product.inStock ? "default" : "destructive"} className="text-xs">
                                 {product.inStock ? 'Em estoque' : 'Indisponível'}
-                              </span>
+                              </Badge>
+                              <Badge variant="outline" className="text-xs">
+                                {product.category}
+                              </Badge>
                             </div>
                             
-                            <p className="text-xs text-muted-foreground mb-2">
-                              Embalagem: {product.unit}
-                            </p>
+                            <div className="flex items-center gap-4 text-xs text-muted-foreground mb-2">
+                              <div className="flex items-center gap-1">
+                                <Package className="h-3 w-3" />
+                                {product.totalVolume.toLocaleString('pt-BR')} L
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <MapPin className="h-3 w-3" />
+                                {product.locations.length} {product.locations.length === 1 ? 'local' : 'locais'}
+                              </div>
+                            </div>
+
+                            {product.locations.length > 0 && (
+                              <div className="text-xs text-muted-foreground mb-2">
+                                Disponível em: {product.locations.slice(0, 2).map(loc => `${loc.city}/${loc.state}`).join(', ')}
+                                {product.locations.length > 2 && ` +${product.locations.length - 2} locais`}
+                              </div>
+                            )}
                           </div>
                           
                           <div className="mt-auto">
-                            <div className="flex justify-between items-end mb-3">
-                              <div>
-                                <p className="text-2xl font-bold text-agro-green">
-                                  R$ {product.price.toFixed(2).replace('.', ',')}
-                                </p>
-                                <p className="text-xs text-muted-foreground">
-                                  por {product.unit}
-                                </p>
+                            <div className="mb-3">
+                              <div className="flex justify-between items-center mb-1">
+                                <span className="text-sm font-medium">Preços por volume:</span>
+                                <span className="text-xs text-muted-foreground">{product.priceTiers.length} opções</span>
                               </div>
+                              
+                              {product.minPrice === product.maxPrice ? (
+                                <p className="text-xl font-bold text-agro-green">
+                                  R$ {product.minPrice.toFixed(2).replace('.', ',')}
+                                </p>
+                              ) : (
+                                <div>
+                                  <p className="text-lg font-bold text-agro-green">
+                                    R$ {product.minPrice.toFixed(2).replace('.', ',')} - R$ {product.maxPrice.toFixed(2).replace('.', ',')}
+                                  </p>
+                                  <div className="flex gap-1 mt-1">
+                                    {product.priceTiers.slice(0, 3).map((tier, index) => (
+                                      <Badge key={index} variant="secondary" className="text-xs">
+                                        {tier.tier}: R$ {tier.price.toFixed(2)}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                              
+                              <p className="text-xs text-muted-foreground mt-1">
+                                Vencimento: {new Date(product.expiryDate).toLocaleDateString('pt-BR')}
+                              </p>
                             </div>
                             
                             <div className="flex gap-2">
                               <Button 
-                                className="flex-1 bg-agro-green hover:bg-agro-green/90" 
-                                size="sm"
-                                disabled={!product.inStock}
+                                variant="outline" 
+                                size="sm" 
+                                className="flex-1"
+                                onClick={() => {
+                                  navigate(`/product/${product.sku}`);
+                                }}
                               >
-                                <ShoppingCart className="w-4 h-4 mr-1" />
-                                Comprar
+                                Ver Detalhes
                               </Button>
                               <Button 
-                                variant="outline" 
-                                size="sm"
-                                onClick={() => navigate(`/product/${product.id}`)}
+                                variant="default" 
+                                size="sm" 
+                                className="flex-1"
+                                onClick={() => {
+                                  toast({
+                                    title: "Produto adicionado",
+                                    description: `${product.name} foi adicionado ao carrinho.`
+                                  });
+                                }}
+                                disabled={!product.inStock}
                               >
-                                Ver mais
+                                <ShoppingCart className="mr-1 h-3 w-3" />
+                                {product.inStock ? 'Comprar' : 'Indisponível'}
                               </Button>
                             </div>
                           </div>
