@@ -20,6 +20,8 @@ export default function AuthGate({
   const [isLoading, setIsLoading] = useState(false);
   const [user, setUser] = useState(null);
   const [isFirstAccess, setIsFirstAccess] = useState(false);
+  const [confirmationSent, setConfirmationSent] = useState(false);
+  const [confirmationEmail, setConfirmationEmail] = useState('');
   const {
     toast
   } = useToast();
@@ -72,50 +74,66 @@ export default function AuthGate({
     setIsLoading(true);
     try {
       if (isLogin) {
-        // Verificar se é primeiro acesso buscando por email ou telefone
-        const emailOrPhone = formData.emailOrPhone;
+        const emailOrPhone = formData.emailOrPhone.trim();
         const isEmail = emailOrPhone.includes('@');
-        
-        let userData;
+
+        // Tenta login direto se for email
         if (isEmail) {
-          const { data } = await supabase
-            .from('users')
-            .select('*')
-            .eq('email', emailOrPhone)
-            .eq('status', 'approved')
-            .single();
-          userData = data;
-        } else {
-          const { data } = await supabase
-            .from('users')
-            .select('*')
-            .eq('phone', emailOrPhone)
-            .eq('status', 'approved')
-            .single();
-          userData = data;
+          const { error: signInError } = await supabase.auth.signInWithPassword({
+            email: emailOrPhone,
+            password: formData.password
+          });
+
+          if (!signInError) {
+            toast({
+              title: "Login realizado com sucesso!",
+              description: "Bem-vindo de volta à AgroIkemba"
+            });
+            return;
+          }
+
+          // Se acabou de criar a senha e está aguardando confirmação de e-mail, evita loop de primeiro acesso
+          const awaiting = localStorage.getItem('awaiting_email_confirmation');
+          if (awaiting && awaiting === emailOrPhone) {
+            setConfirmationSent(true);
+            setConfirmationEmail(emailOrPhone);
+            toast({
+              title: "Confirme seu e-mail",
+              description: "Enviamos um link de confirmação. Verifique sua caixa de entrada."
+            });
+            return;
+          }
         }
 
-        if (userData) {
-          // Verificar se já tem conta no Supabase Auth
-          if (isEmail) {
-            const { error: signInError } = await supabase.auth.signInWithPassword({
-              email: emailOrPhone,
-              password: formData.password
-            });
+        // Buscar usuário por e-mail ou telefone
+        const query = supabase
+          .from('users')
+          .select('*')
+          .eq(isEmail ? 'email' : 'phone', emailOrPhone)
+          .eq('status', 'approved');
+        const { data: found, error: findError } = await query.maybeSingle();
+        if (findError) throw findError;
 
-            if (!signInError) {
-              toast({
-                title: "Login realizado com sucesso!",
-                description: "Bem-vindo de volta à AgroIkemba"
-              });
-              return;
-            }
+        if (found) {
+          // Para login por telefone, preencher o email para criação de senha
+          if (!isEmail) {
+            setFormData(prev => ({ ...prev, email: found.email, emailOrPhone: found.email }));
           }
-          
-          // Se não conseguiu fazer login, é primeiro acesso
+
+          const targetEmail = isEmail ? emailOrPhone : found.email;
+          const awaiting = localStorage.getItem('awaiting_email_confirmation');
+          if (awaiting && awaiting === targetEmail) {
+            setConfirmationSent(true);
+            setConfirmationEmail(targetEmail);
+            toast({
+              title: "Confirme seu e-mail",
+              description: "Enviamos um link de confirmação. Verifique sua caixa de entrada."
+            });
+            return;
+          }
+
+          // Usuário existe mas não tem senha criada - primeiro acesso
           setIsFirstAccess(true);
-          // Preencher o email do usuário encontrado
-          setFormData(prev => ({ ...prev, email: userData.email }));
           toast({
             title: "Primeiro acesso detectado",
             description: "Por favor, crie sua senha para acessar o sistema"
@@ -139,12 +157,18 @@ export default function AuthGate({
 
         if (error) throw error;
 
+        // Marca como aguardando confirmação para evitar loop
+        localStorage.setItem('awaiting_email_confirmation', formData.email);
+        setConfirmationSent(true);
+        setConfirmationEmail(formData.email);
+
         toast({
           title: "Senha criada com sucesso!",
           description: "Verifique seu email para confirmar sua conta"
         });
         setIsFirstAccess(false);
         setIsLogin(true);
+        setFormData(prev => ({ ...prev, emailOrPhone: formData.email }));
       } else {
         // Cadastro sem senha
         const { error } = await supabase.from('users').insert({
@@ -184,6 +208,32 @@ export default function AuthGate({
       ...prev,
       [field]: value
     }));
+  };
+
+  const handleResendConfirmation = async () => {
+    try {
+      setIsLoading(true);
+      const email = confirmationEmail || formData.email || formData.emailOrPhone;
+      if (!email || !email.includes('@')) {
+        toast({
+          title: "Informe um e-mail válido",
+          description: "Para reenviar a confirmação, precisamos do e-mail.",
+          variant: "destructive"
+        });
+        return;
+      }
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email,
+        options: { emailRedirectTo: `${window.location.origin}/` }
+      });
+      if (error) throw error;
+      toast({ title: "E-mail reenviado", description: "Verifique sua caixa de entrada." });
+    } catch (err: any) {
+      toast({ title: "Erro ao reenviar", description: err.message, variant: "destructive" });
+    } finally {
+      setIsLoading(false);
+    }
   };
   if (!isOpen) {
     return <>{children}</>;
@@ -268,14 +318,16 @@ export default function AuthGate({
               <Card className="border-none shadow-none">
                 <CardHeader className="text-center pb-4">
                   <CardTitle className="text-xl">
-                    {isFirstAccess ? 'Criar Senha' : isLogin ? 'Fazer Login' : 'Criar Conta'}
+                    {isFirstAccess ? 'Criar Senha' : confirmationSent ? 'Confirme seu e-mail' : isLogin ? 'Fazer Login' : 'Criar Conta'}
                   </CardTitle>
                   <p className="text-sm text-muted-foreground">
                     {isFirstAccess 
                       ? 'Crie sua senha para acessar o sistema'
-                      : isLogin 
-                        ? 'Acesse sua conta para ver nossos produtos' 
-                        : 'Cadastre-se gratuitamente e tenha acesso completo'
+                      : confirmationSent
+                        ? `Enviamos um link de confirmação para ${confirmationEmail || formData.email}. Confirme para prosseguir.`
+                        : isLogin 
+                          ? 'Acesse sua conta para ver nossos produtos' 
+                          : 'Cadastre-se gratuitamente e tenha acesso completo'
                     }
                   </p>
                 </CardHeader>
@@ -383,6 +435,16 @@ export default function AuthGate({
                             : 'Criar Conta'
                       }
                     </Button>
+
+                    {confirmationSent && (
+                      <div className="text-sm text-muted-foreground text-center space-y-2">
+                        <p>Não recebeu o e-mail? Verifique a caixa de spam ou reenvie.</p>
+                        <div className="flex gap-2 justify-center">
+                          <Button type="button" variant="secondary" onClick={handleResendConfirmation} disabled={isLoading}>Reenviar e-mail</Button>
+                          <Button type="button" variant="ghost" onClick={() => setConfirmationSent(false)}>Já confirmei, tentar entrar</Button>
+                        </div>
+                      </div>
+                    )}
 
                     {!isFirstAccess && <div className="text-center">
                       <button type="button" onClick={() => setIsLogin(!isLogin)} className="text-sm text-primary hover:underline">
