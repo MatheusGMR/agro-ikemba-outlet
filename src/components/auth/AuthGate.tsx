@@ -133,7 +133,7 @@ export default function AuthGate({ children }: AuthGateProps) {
                 <div className="text-center">
                   <h2 className="text-2xl font-bold mb-2">Bem-vindo à AgroIkemba</h2>
                   <p className="text-primary-foreground/90">
-                    A maior plataforma de defensivos agrícolas do Brasil
+                    O único Outlet de insumos agricolas do Brasil
                   </p>
                 </div>
 
