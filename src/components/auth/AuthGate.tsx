@@ -84,11 +84,15 @@ export default function AuthGate({
           throw new Error('Email inválido para criação da conta');
         }
 
+        // Para primeiro acesso, criar conta sem confirmação de email
         const { error } = await supabase.auth.signUp({
           email: formData.email,
           password: formData.password,
           options: {
-            emailRedirectTo: `${window.location.origin}/`
+            emailRedirectTo: `${window.location.origin}/`,
+            data: {
+              email_confirm: false // Desabilita confirmação para primeiro acesso
+            }
           }
         });
 
@@ -101,9 +105,10 @@ export default function AuthGate({
             });
             
             if (!signInError) {
+              localStorage.removeItem('awaiting_email_confirmation');
               toast({
-                title: "Login realizado com sucesso!",
-                description: "Bem-vindo de volta à AgroIkemba"
+                title: "Senha criada e login realizado!",
+                description: "Bem-vindo à AgroIkemba"
               });
               return;
             }
@@ -111,16 +116,30 @@ export default function AuthGate({
           throw error;
         }
 
-        // Marca como aguardando confirmação
-        localStorage.setItem('awaiting_email_confirmation', formData.email);
-        setConfirmationSent(true);
-        setConfirmationEmail(formData.email);
+        // Limpar estados e tentar login automático
+        localStorage.removeItem('awaiting_email_confirmation');
         setIsFirstAccess(false);
+        setConfirmationSent(false);
 
-        toast({
-          title: "Senha criada com sucesso!",
-          description: "Verifique seu email para confirmar sua conta"
+        // Tentar login automático após criação da senha
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email: formData.email,
+          password: formData.password
         });
+
+        if (!signInError) {
+          toast({
+            title: "Senha criada e login realizado!",
+            description: "Bem-vindo à AgroIkemba"
+          });
+        } else {
+          toast({
+            title: "Senha criada com sucesso!",
+            description: "Agora você pode fazer login com suas credenciais"
+          });
+          setIsLogin(true);
+          setFormData(prev => ({ ...prev, emailOrPhone: formData.email, password: '' }));
+        }
         return;
       }
 
@@ -536,11 +555,56 @@ export default function AuthGate({
                         {isLogin && (
                           <button 
                             type="button" 
-                            onClick={() => {
-                              toast({
-                                title: "Esqueceu a senha?",
-                                description: "Entre em contato conosco para redefinir sua senha."
-                              });
+                            onClick={async () => {
+                              const email = formData.emailOrPhone;
+                              if (!email || !email.includes('@')) {
+                                toast({
+                                  title: "Informe seu e-mail",
+                                  description: "Digite seu e-mail para redefinir a senha.",
+                                  variant: "destructive"
+                                });
+                                return;
+                              }
+
+                              try {
+                                setIsLoading(true);
+                                
+                                // Enviar email de redefinição
+                                const { error } = await supabase.auth.resetPasswordForEmail(
+                                  email,
+                                  {
+                                    redirectTo: `${window.location.origin}/`
+                                  }
+                                );
+
+                                if (error) throw error;
+
+                                // Enviar email personalizado via edge function
+                                await fetch('/functions/v1/send-auth-email', {
+                                  method: 'POST',
+                                  headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
+                                  },
+                                  body: JSON.stringify({
+                                    email,
+                                    type: 'recovery'
+                                  })
+                                });
+
+                                toast({
+                                  title: "Email de redefinição enviado",
+                                  description: "Verifique sua caixa de entrada para redefinir sua senha."
+                                });
+                              } catch (error: any) {
+                                toast({
+                                  title: "Erro",
+                                  description: "Não foi possível enviar o email de redefinição.",
+                                  variant: "destructive"
+                                });
+                              } finally {
+                                setIsLoading(false);
+                              }
                             }}
                             className="text-xs text-muted-foreground hover:underline block w-full"
                           >
