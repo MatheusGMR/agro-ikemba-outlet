@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -72,55 +72,106 @@ export default function AuthGate({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    
     try {
+      // Prioridade 1: Criar senha no primeiro acesso
+      if (isFirstAccess) {
+        if (formData.password !== formData.confirmPassword) {
+          throw new Error('As senhas não coincidem');
+        }
+
+        if (!formData.email || !formData.email.includes('@')) {
+          throw new Error('Email inválido para criação da conta');
+        }
+
+        const { error } = await supabase.auth.signUp({
+          email: formData.email,
+          password: formData.password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/`
+          }
+        });
+
+        if (error) {
+          if (error.message.includes('User already registered')) {
+            // Usuário já existe, tentar login direto
+            const { error: signInError } = await supabase.auth.signInWithPassword({
+              email: formData.email,
+              password: formData.password
+            });
+            
+            if (!signInError) {
+              toast({
+                title: "Login realizado com sucesso!",
+                description: "Bem-vindo de volta à AgroIkemba"
+              });
+              return;
+            }
+          }
+          throw error;
+        }
+
+        // Marca como aguardando confirmação
+        localStorage.setItem('awaiting_email_confirmation', formData.email);
+        setConfirmationSent(true);
+        setConfirmationEmail(formData.email);
+        setIsFirstAccess(false);
+
+        toast({
+          title: "Senha criada com sucesso!",
+          description: "Verifique seu email para confirmar sua conta"
+        });
+        return;
+      }
+
+      // Prioridade 2: Login
       if (isLogin) {
         const emailOrPhone = formData.emailOrPhone.trim();
         const isEmail = emailOrPhone.includes('@');
 
+        // Normalizar telefone
+        const normalizedPhone = emailOrPhone.replace(/\D/g, '');
+
         // Tenta login direto se for email
-        if (isEmail) {
+        if (isEmail && formData.password) {
           const { error: signInError } = await supabase.auth.signInWithPassword({
             email: emailOrPhone,
             password: formData.password
           });
 
           if (!signInError) {
+            localStorage.removeItem('awaiting_email_confirmation');
             toast({
               title: "Login realizado com sucesso!",
               description: "Bem-vindo de volta à AgroIkemba"
             });
             return;
           }
-
-          // Se acabou de criar a senha e está aguardando confirmação de e-mail, evita loop de primeiro acesso
-          const awaiting = localStorage.getItem('awaiting_email_confirmation');
-          if (awaiting && awaiting === emailOrPhone) {
-            setConfirmationSent(true);
-            setConfirmationEmail(emailOrPhone);
-            toast({
-              title: "Confirme seu e-mail",
-              description: "Enviamos um link de confirmação. Verifique sua caixa de entrada."
-            });
-            return;
-          }
         }
 
         // Buscar usuário por e-mail ou telefone
-        const query = supabase
-          .from('users')
-          .select('*')
-          .eq(isEmail ? 'email' : 'phone', emailOrPhone)
-          .eq('status', 'approved');
+        let query = supabase.from('users').select('*').eq('status', 'approved');
+        
+        if (isEmail) {
+          query = query.eq('email', emailOrPhone);
+        } else {
+          // Buscar por telefone com diferentes formatações
+          query = query.or(`phone.eq.${emailOrPhone},phone.eq.${normalizedPhone}`);
+        }
+
         const { data: found, error: findError } = await query.maybeSingle();
         if (findError) throw findError;
 
         if (found) {
-          // Para login por telefone, preencher o email para criação de senha
-          if (!isEmail) {
-            setFormData(prev => ({ ...prev, email: found.email, emailOrPhone: found.email }));
-          }
+          // Definir email para criação de senha
+          const targetEmail = found.email;
+          setFormData(prev => ({ 
+            ...prev, 
+            email: targetEmail,
+            emailOrPhone: isEmail ? emailOrPhone : targetEmail 
+          }));
 
-          const targetEmail = isEmail ? emailOrPhone : found.email;
+          // Verificar se está aguardando confirmação
           const awaiting = localStorage.getItem('awaiting_email_confirmation');
           if (awaiting && awaiting === targetEmail) {
             setConfirmationSent(true);
@@ -132,45 +183,20 @@ export default function AuthGate({
             return;
           }
 
-          // Usuário existe mas não tem senha criada - primeiro acesso
+          // Primeiro acesso - precisa criar senha
           setIsFirstAccess(true);
           toast({
             title: "Primeiro acesso detectado",
             description: "Por favor, crie sua senha para acessar o sistema"
           });
+          return;
         } else {
-          throw new Error('Usuário não encontrado ou não aprovado');
+          throw new Error('Usuário não encontrado ou não aprovado. Verifique suas credenciais.');
         }
-      } else if (isFirstAccess) {
-        // Criar senha no primeiro acesso
-        if (formData.password !== formData.confirmPassword) {
-          throw new Error('As senhas não coincidem');
-        }
+      }
 
-        const { error } = await supabase.auth.signUp({
-          email: formData.email,
-          password: formData.password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/`
-          }
-        });
-
-        if (error) throw error;
-
-        // Marca como aguardando confirmação para evitar loop
-        localStorage.setItem('awaiting_email_confirmation', formData.email);
-        setConfirmationSent(true);
-        setConfirmationEmail(formData.email);
-
-        toast({
-          title: "Senha criada com sucesso!",
-          description: "Verifique seu email para confirmar sua conta"
-        });
-        setIsFirstAccess(false);
-        setIsLogin(true);
-        setFormData(prev => ({ ...prev, emailOrPhone: formData.email }));
-      } else {
-        // Cadastro sem senha
+      // Prioridade 3: Cadastro
+      if (!isLogin) {
         const { error } = await supabase.from('users').insert({
           name: formData.name,
           email: formData.email,
@@ -180,9 +206,14 @@ export default function AuthGate({
           conheceu: formData.conheceu
         });
         
-        if (error) throw error;
+        if (error) {
+          if (error.message.includes('duplicate key')) {
+            throw new Error('Este email ou telefone já está cadastrado.');
+          }
+          throw error;
+        }
 
-        // Simular login temporário até aprovação
+        // Login temporário
         const tempUser = { email: formData.email, isTemp: true };
         setUser(tempUser);
         localStorage.setItem('currentUser', JSON.stringify(tempUser));
@@ -190,13 +221,14 @@ export default function AuthGate({
         
         toast({
           title: "Cadastro realizado com sucesso!",
-          description: "Você já pode fazer login no sistema!"
+          description: "Você já pode acessar o sistema!"
         });
       }
     } catch (error: any) {
+      console.error('Auth error:', error);
       toast({
         title: "Erro",
-        description: error.message,
+        description: error.message || 'Ocorreu um erro inesperado',
         variant: "destructive"
       });
     } finally {
@@ -247,6 +279,19 @@ export default function AuthGate({
       {/* Auth Modal */}
       <Dialog open={isOpen} onOpenChange={() => {}}>
         <DialogContent className="max-w-4xl p-0 bg-transparent border-none shadow-none">
+          <DialogTitle className="sr-only">
+            {isFirstAccess ? 'Criar Senha' : confirmationSent ? 'Confirme seu e-mail' : isLogin ? 'Fazer Login' : 'Criar Conta'}
+          </DialogTitle>
+          <DialogDescription className="sr-only">
+            {isFirstAccess 
+              ? 'Crie sua senha para acessar o sistema'
+              : confirmationSent
+                ? 'Confirme seu email para continuar'
+                : isLogin 
+                  ? 'Digite suas credenciais para acessar' 
+                  : 'Preencha os dados para criar sua conta'
+            }
+          </DialogDescription>
           <div className="grid md:grid-cols-2 gap-0 bg-background rounded-lg overflow-hidden shadow-2xl">
             
             {/* Left side - Benefits */}
@@ -425,32 +470,85 @@ export default function AuthGate({
                         </select>
                       </div>}
 
-                    <Button type="submit" className="w-full" disabled={isLoading}>
-                      {isLoading 
-                        ? 'Processando...' 
-                        : isFirstAccess 
-                          ? 'Criar Senha' 
-                          : isLogin 
-                            ? 'Entrar' 
-                            : 'Criar Conta'
-                      }
-                    </Button>
-
                     {confirmationSent && (
-                      <div className="text-sm text-muted-foreground text-center space-y-2">
-                        <p>Não recebeu o e-mail? Verifique a caixa de spam ou reenvie.</p>
-                        <div className="flex gap-2 justify-center">
-                          <Button type="button" variant="secondary" onClick={handleResendConfirmation} disabled={isLoading}>Reenviar e-mail</Button>
-                          <Button type="button" variant="ghost" onClick={() => setConfirmationSent(false)}>Já confirmei, tentar entrar</Button>
+                      <div className="space-y-3">
+                        <div className="text-sm text-muted-foreground text-center">
+                          <p>Não recebeu o e-mail? Verifique a caixa de spam ou reenvie.</p>
                         </div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={handleResendConfirmation}
+                          disabled={isLoading}
+                          className="w-full"
+                        >
+                          Reenviar e-mail de confirmação
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          onClick={() => {
+                            setConfirmationSent(false);
+                            localStorage.removeItem('awaiting_email_confirmation');
+                            setIsFirstAccess(false);
+                            setIsLogin(true);
+                          }}
+                          className="w-full"
+                        >
+                          Voltar ao login
+                        </Button>
                       </div>
                     )}
 
-                    {!isFirstAccess && <div className="text-center">
-                      <button type="button" onClick={() => setIsLogin(!isLogin)} className="text-sm text-primary hover:underline">
-                        {isLogin ? 'Não tem conta? Cadastre-se grátis' : 'Já tem conta? Fazer login'}
-                      </button>
-                    </div>}
+                    {!confirmationSent && (
+                      <Button type="submit" className="w-full" disabled={isLoading}>
+                        {isLoading 
+                          ? 'Processando...' 
+                          : isFirstAccess 
+                            ? 'Criar Senha' 
+                            : isLogin 
+                              ? 'Entrar' 
+                              : 'Criar Conta'
+                        }
+                      </Button>
+                    )}
+
+                    {!isFirstAccess && !confirmationSent && (
+                      <div className="text-center space-y-2">
+                        <button 
+                          type="button" 
+                          onClick={() => {
+                            setIsLogin(!isLogin);
+                            setIsFirstAccess(false);
+                            setConfirmationSent(false);
+                            setFormData(prev => ({ 
+                              ...prev, 
+                              password: '', 
+                              confirmPassword: '',
+                              emailOrPhone: ''
+                            }));
+                          }}
+                          className="text-sm text-primary hover:underline block w-full"
+                        >
+                          {isLogin ? 'Não tem conta? Cadastre-se grátis' : 'Já tem conta? Fazer login'}
+                        </button>
+                        
+                        {isLogin && (
+                          <button 
+                            type="button" 
+                            onClick={() => {
+                              toast({
+                                title: "Esqueceu a senha?",
+                                description: "Entre em contato conosco para redefinir sua senha."
+                              });
+                            }}
+                            className="text-xs text-muted-foreground hover:underline block w-full"
+                          >
+                            Esqueci minha senha
+                          </button>
+                        )}
+                      </div>
+                    )}
                   </form>
                 </CardContent>
               </Card>
