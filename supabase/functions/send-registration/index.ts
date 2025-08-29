@@ -66,9 +66,27 @@ const handler = async (req: Request): Promise<Response> => {
       cnpj: data.cnpj ? "***CNPJ FORNECIDO***" : "Não fornecido"
     });
 
+    // Função para enviar email com fallback
+    const sendEmailWithFallback = async (emailData: any) => {
+      try {
+        // Tentar primeiro com domínio personalizado
+        console.log("Tentando enviar com domínio personalizado:", emailData.from);
+        return await resend.emails.send(emailData);
+      } catch (error) {
+        console.warn("Falha com domínio personalizado, tentando fallback:", error);
+        // Fallback para domínio padrão do Resend
+        const fallbackEmailData = {
+          ...emailData,
+          from: emailData.from.replace("noreply@agroikemba.com.br", "onboarding@resend.dev")
+        };
+        console.log("Tentando enviar com fallback:", fallbackEmailData.from);
+        return await resend.emails.send(fallbackEmailData);
+      }
+    };
+
     console.log("Enviando email para a empresa...");
     // Enviar email para a empresa
-    const companyEmailResponse = await resend.emails.send({
+    const companyEmailResponse = await sendEmailWithFallback({
       from: "Agro Ikemba <noreply@agroikemba.com.br>",
       to: ["matheus@agroikemba.com.br"],
       subject: "Nova Solicitação de Cadastro - Agro Ikemba",
@@ -110,7 +128,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Enviando email de confirmação para o usuário...");
     // Enviar email de confirmação para o usuário
-    const userEmailResponse = await resend.emails.send({
+    const userEmailResponse = await sendEmailWithFallback({
       from: "Agro Ikemba <noreply@agroikemba.com.br>",
       to: [data.email],
       subject: "Solicitação de Cadastro Recebida - Agro Ikemba",

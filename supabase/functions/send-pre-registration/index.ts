@@ -2,7 +2,13 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "npm:resend@2.0.0";
 
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+
+if (!RESEND_API_KEY) {
+  throw new Error("RESEND_API_KEY environment variable is required");
+}
+
+const resend = new Resend(RESEND_API_KEY);
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -35,9 +41,29 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const data: PreRegistrationRequest = await req.json();
     console.log("Dados do pré-cadastro recebidos:", data);
+    console.log("RESEND_API_KEY configurada:", !!RESEND_API_KEY);
+
+    // Função para enviar email com fallback
+    const sendEmailWithFallback = async (emailData: any) => {
+      try {
+        // Tentar primeiro com domínio personalizado
+        console.log("Tentando enviar com domínio personalizado:", emailData.from);
+        return await resend.emails.send(emailData);
+      } catch (error) {
+        console.warn("Falha com domínio personalizado, tentando fallback:", error);
+        // Fallback para domínio padrão do Resend
+        const fallbackEmailData = {
+          ...emailData,
+          from: emailData.from.replace("noreply@agroikemba.com.br", "onboarding@resend.dev")
+        };
+        console.log("Tentando enviar com fallback:", fallbackEmailData.from);
+        return await resend.emails.send(fallbackEmailData);
+      }
+    };
 
     // Enviar email para a empresa
-    const companyEmailResponse = await resend.emails.send({
+    console.log("Enviando email para a empresa...");
+    const companyEmailResponse = await sendEmailWithFallback({
       from: "Agro Ikemba <noreply@agroikemba.com.br>",
       to: ["matheus@agroikemba.com.br"],
       subject: "Novo Pré-cadastro - Agro Ikemba",
@@ -56,8 +82,11 @@ const handler = async (req: Request): Promise<Response> => {
       `,
     });
 
+    console.log("Email da empresa enviado:", companyEmailResponse);
+
     // Enviar email de confirmação para o usuário
-    const userEmailResponse = await resend.emails.send({
+    console.log("Enviando email de confirmação para o usuário...");
+    const userEmailResponse = await sendEmailWithFallback({
       from: "Agro Ikemba <noreply@agroikemba.com.br>",
       to: [data.email],
       subject: "Confirmação de Pré-cadastro - Agro Ikemba",
@@ -95,7 +124,17 @@ const handler = async (req: Request): Promise<Response> => {
       `,
     });
 
-    console.log("Emails enviados com sucesso:", { companyEmailResponse, userEmailResponse });
+    console.log("Email do usuário enviado:", userEmailResponse);
+    console.log("Emails enviados com sucesso:", { 
+      companyEmailResponse: { 
+        id: companyEmailResponse?.id, 
+        from: companyEmailResponse?.from 
+      }, 
+      userEmailResponse: { 
+        id: userEmailResponse?.id, 
+        from: userEmailResponse?.from 
+      } 
+    });
 
     return new Response(
       JSON.stringify({ 
@@ -111,12 +150,25 @@ const handler = async (req: Request): Promise<Response> => {
       }
     );
   } catch (error: any) {
-    console.error("Erro ao processar pré-cadastro:", error);
+    console.error("=== ERRO DETALHADO AO PROCESSAR PRÉ-CADASTRO ===");
+    console.error("Erro completo:", error);
+    console.error("Mensagem do erro:", error?.message);
+    console.error("Stack trace:", error?.stack);
+    
+    if (error?.response) {
+      console.error("Response do erro:", error.response);
+    }
+    
+    if (error?.name === 'validation_error') {
+      console.error("Erro de validação do Resend - possivelmente domínio não verificado");
+    }
+    
     return new Response(
       JSON.stringify({ 
         success: false, 
         error: "Erro interno do servidor",
-        message: "Não foi possível processar seu pré-cadastro. Tente novamente." 
+        message: "Não foi possível processar seu pré-cadastro. Tente novamente.",
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined
       }),
       {
         status: 500,
