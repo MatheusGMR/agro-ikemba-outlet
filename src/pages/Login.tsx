@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -16,6 +17,18 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { signIn, user, isRepresentative } = useAuth();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      if (isRepresentative) {
+        navigate('/representative');
+      } else {
+        navigate('/');
+      }
+    }
+  }, [user, isRepresentative, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,25 +36,29 @@ export default function Login() {
     setError('');
     
     try {
-      // Simular login de usuário regular (não admin)
-      if (email && password) {
-        const userSession = {
-          email: email,
-          name: email.split('@')[0],
-          verified: true,
-          isAdmin: false
-        };
-        
-        localStorage.setItem('user', JSON.stringify(userSession));
-        
-        toast.success('Login realizado com sucesso!');
-        
-        setTimeout(() => {
-          navigate('/');
-        }, 200);
-      } else {
+      if (!email || !password) {
         setError('Preencha todos os campos.');
         toast.error('Preencha todos os campos.');
+        setIsLoading(false);
+        return;
+      }
+
+      const { error: authError } = await signIn(email, password);
+      
+      if (authError) {
+        if (authError.message.includes('Invalid login credentials')) {
+          setError('Email ou senha incorretos.');
+          toast.error('Email ou senha incorretos.');
+        } else if (authError.message.includes('Email not confirmed')) {
+          setError('Confirme seu email antes de fazer login.');
+          toast.error('Confirme seu email antes de fazer login.');
+        } else {
+          setError('Erro ao fazer login. Tente novamente.');
+          toast.error('Erro ao fazer login. Tente novamente.');
+        }
+      } else {
+        // Login successful - redirect will be handled by auth state change
+        // Don't manually redirect here to avoid conflicts
       }
     } catch (error) {
       console.error('Erro durante login:', error);

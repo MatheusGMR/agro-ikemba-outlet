@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Menu, X, Shield, Crown, ShoppingCart } from 'lucide-react';
+import { Menu, X, Shield, Crown, ShoppingCart, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
+import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/contexts/CartContext';
 import CartDrawer from '@/components/ui/CartDrawer';
 import { supabase } from '@/integrations/supabase/client';
-import type { User } from '@supabase/supabase-js';
+import type { User as SupaUser } from '@supabase/supabase-js';
 interface NavItemProps {
   href: string;
   children: React.ReactNode;
@@ -25,7 +26,7 @@ const NavItem = ({
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [user, setUser] = useState(null);
-  const [supaUser, setSupaUser] = useState<User | null>(null);
+  const [supaUser, setSupaUser] = useState<SupaUser | null>(null);
   const [logoError, setLogoError] = useState(false);
   const {
     getTotalItems,
@@ -35,6 +36,11 @@ export default function Navbar() {
     isAuthenticated: isAdminAuthenticated,
     logout
   } = useAdminAuth();
+  const { 
+    user: authUser, 
+    isRepresentative, 
+    signOut: authSignOut 
+  } = useAuth();
 
   // Get the public URL for the logo from Supabase Storage
   const getLogoUrl = () => {
@@ -121,22 +127,27 @@ export default function Navbar() {
     setIsMenuOpen(!isMenuOpen);
   };
   const handleLogout = async () => {
-    // Logout from Supabase
-    await supabase.auth.signOut();
-    
-    // Logout from admin auth
-    logout();
-    
-    // Clear all local state
-    setUser(null);
-    setSupaUser(null);
-    localStorage.removeItem('user');
-    
-    window.location.href = '/';
+    // Auth handler will take care of representative logout
+    if (authUser) {
+      await authSignOut();
+    } else {
+      // Logout from Supabase
+      await supabase.auth.signOut();
+      
+      // Logout from admin auth
+      logout();
+      
+      // Clear all local state
+      setUser(null);
+      setSupaUser(null);
+      localStorage.removeItem('user');
+      
+      window.location.href = '/';
+    }
   };
 
-  // Determine if user is logged in (either Supabase or localStorage)
-  const isLoggedIn = !!supaUser || !!(user?.verified);
+  // Determine if user is logged in (prioritize auth context)
+  const isLoggedIn = !!authUser || !!supaUser || !!(user?.verified);
   const handleLogoError = () => {
     setLogoError(true);
   };
@@ -180,13 +191,20 @@ export default function Navbar() {
                 </Button>
                 
                 <span className="text-sm flex items-center gap-1">
-                  Olá, {user?.name?.split(' ')[0] || supaUser?.email?.split('@')[0] || 'Usuário'}
+                  Olá, {authUser?.email?.split('@')[0] || user?.name?.split(' ')[0] || supaUser?.email?.split('@')[0] || 'Usuário'}
                   {isAdminAuthenticated && <Crown className="w-4 h-4 ml-1 text-yellow-500" />}
+                  {isRepresentative && <User className="w-4 h-4 ml-1 text-blue-500" />}
                 </span>
                 {isAdminAuthenticated && <Button variant="outline" size="sm" asChild className="bg-yellow-50 border-yellow-200 text-yellow-800 hover:bg-yellow-100">
                     <Link to="/admin">
                       <Shield className="w-4 h-4 mr-1" />
                       Painel Admin
+                    </Link>
+                  </Button>}
+                {isRepresentative && <Button variant="outline" size="sm" asChild className="bg-blue-50 border-blue-200 text-blue-800 hover:bg-blue-100">
+                    <Link to="/representative">
+                      <User className="w-4 h-4 mr-1" />
+                      Painel Rep
                     </Link>
                   </Button>}
                 <Button variant="outline" onClick={handleLogout}>
@@ -224,20 +242,28 @@ export default function Navbar() {
                   <NavItem href="/logistics">Logística</NavItem>
                 </>}
               {isAdminAuthenticated && <NavItem href="/admin">Painel Admin</NavItem>}
+              {isRepresentative && <NavItem href="/representative">Painel Representante</NavItem>}
             </ul>
             
             <div className="mt-8 flex flex-col gap-2">
               {isLoggedIn ? <>
                   <div className="flex items-center gap-2 mb-2">
                     <span className="text-sm flex items-center gap-1">
-                      Olá, {user?.name?.split(' ')[0] || supaUser?.email?.split('@')[0] || 'Usuário'}
+                      Olá, {authUser?.email?.split('@')[0] || user?.name?.split(' ')[0] || supaUser?.email?.split('@')[0] || 'Usuário'}
                       {isAdminAuthenticated && <Crown className="w-4 h-4 text-yellow-500" />}
+                      {isRepresentative && <User className="w-4 h-4 text-blue-500" />}
                     </span>
                   </div>
                   {isAdminAuthenticated && <Button variant="outline" className="w-full mb-2 bg-yellow-50 border-yellow-200 text-yellow-800" asChild>
                       <Link to="/admin">
                         <Shield className="w-4 h-4 mr-1" />
                         Painel Admin
+                      </Link>
+                    </Button>}
+                  {isRepresentative && <Button variant="outline" className="w-full mb-2 bg-blue-50 border-blue-200 text-blue-800" asChild>
+                      <Link to="/representative">
+                        <User className="w-4 h-4 mr-1" />
+                        Painel Representante
                       </Link>
                     </Button>}
                   <Button variant="outline" className="w-full" onClick={handleLogout}>

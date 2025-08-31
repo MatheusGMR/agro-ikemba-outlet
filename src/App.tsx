@@ -16,11 +16,13 @@ import Admin from "./pages/Admin";
 import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
 import AdminProtectedRoute from "./components/admin/AdminProtectedRoute";
+import RepresentativeProtectedRoute from "./components/representative/RepresentativeProtectedRoute";
 import TestPage from '@/pages/TestPage';
 import Simulador from './pages/Simulador';
 import Representative from './pages/Representative';
 import { TooltipProvider } from '@radix-ui/react-tooltip';
 import { CartProvider } from '@/contexts/CartContext';
+import { AuthProvider } from '@/hooks/useAuth';
 
 const queryClient = new QueryClient();
 
@@ -33,27 +35,33 @@ function App() {
             <Toaster />
             <Sonner />
             <BrowserRouter>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/sobre" element={<About />} />
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/products" element={<ProductCatalog />} />
-                <Route path="/product/:id" element={<ProductDetail />} />
-                <Route path="/checkout" element={<Checkout />} />
-                <Route path="/register" element={<Registration />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/blog" element={<Blog />} />
-                <Route path="/blog/:slug" element={<BlogPost />} />
-                <Route path="/admin" element={
-                  <AdminProtectedRoute>
-                    <Admin />
-                  </AdminProtectedRoute>
-                } />
-                <Route path="/representative" element={<Representative />} />
-                <Route path="/simulador" element={<Simulador />} />
-                <Route path="/test-openai" element={<TestPage />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>  
+              <AuthProvider>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/sobre" element={<About />} />
+                  <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/products" element={<ProductCatalog />} />
+                  <Route path="/product/:id" element={<ProductDetail />} />
+                  <Route path="/checkout" element={<Checkout />} />
+                  <Route path="/register" element={<Registration />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/blog" element={<Blog />} />
+                  <Route path="/blog/:slug" element={<BlogPost />} />
+                  <Route path="/admin" element={
+                    <AdminProtectedRoute>
+                      <Admin />
+                    </AdminProtectedRoute>
+                  } />
+                  <Route path="/representative" element={
+                    <RepresentativeProtectedRoute>
+                      <Representative />
+                    </RepresentativeProtectedRoute>
+                  } />
+                  <Route path="/simulador" element={<Simulador />} />
+                  <Route path="/test-openai" element={<TestPage />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>  
+              </AuthProvider>
             </BrowserRouter>
           </TooltipProvider>
         </HelmetProvider>
