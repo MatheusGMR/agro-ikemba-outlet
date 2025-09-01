@@ -1,7 +1,7 @@
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { User, Mail, Building, Users, MessageSquare, Lock, Phone } from 'lucide-react';
+import { User, Mail, Building, Users, MessageSquare, Phone } from 'lucide-react';
 import { UseFormReturn } from 'react-hook-form';
 
 interface RegistrationFormFieldsProps {
@@ -170,39 +170,6 @@ export function RegistrationFormFields({ form, formatCNPJ }: RegistrationFormFie
         )}
       />
 
-      <FormField
-        control={form.control}
-        name="password"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Senha *</FormLabel>
-            <FormControl>
-              <div className="relative">
-                <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <Input placeholder="Sua senha" type="password" className="pl-10" {...field} />
-              </div>
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      <FormField
-        control={form.control}
-        name="confirmPassword"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Confirmar Senha *</FormLabel>
-            <FormControl>
-              <div className="relative">
-                <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <Input placeholder="Confirme sua senha" type="password" className="pl-10" {...field} />
-              </div>
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
     </>
   );
 }

@@ -11,14 +11,6 @@ export const formSchema = z.object({
   company: z.string().min(1, 'Empresa é obrigatória'),
   tipo: z.string().min(1, 'Selecione uma opção'),
   conheceu: z.string().optional(),
-  emailOrPhone: z.string().refine((value) => {
-    // Verifica se é um email válido ou um telefone válido
-    const isEmail = z.string().email().safeParse(value).success;
-    const isPhone = phoneRegex.test(value);
-    return isEmail || isPhone;
-  }, {
-    message: "Informe um email válido ou telefone no formato (XX) XXXXX-XXXX"
-  }),
   cnpj: z.string().optional().refine((cnpj) => {
     // If CNPJ is provided, it must match the format
     if (cnpj && cnpj.trim() !== '') {
