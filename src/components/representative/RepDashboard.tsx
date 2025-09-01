@@ -3,8 +3,6 @@ import { useDashboardStats, useCurrentRepresentative } from '@/hooks/useRepresen
 import { Users, Plus, Package } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useAuth } from '@/hooks/useAuth';
-import { useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import StatsCarousel from './StatsCarousel';
 import StatsGrid from './StatsGrid';
 import OpportunityKanban from './OpportunityKanban';
@@ -16,17 +14,6 @@ export default function RepDashboard() {
   const { data: representative, isLoading: repLoading } = useCurrentRepresentative();
   const { data: stats, isLoading: statsLoading, error } = useDashboardStats(representative?.id || '');
   const isMobile = useIsMobile();
-  const [logoError, setLogoError] = useState(false);
-
-  // Get the public URL for the logo from Supabase Storage
-  const getLogoUrl = () => {
-    const { data } = supabase.storage.from('media-assets').getPublicUrl('Logo.png');
-    return data.publicUrl;
-  };
-
-  const handleLogoError = () => {
-    setLogoError(true);
-  };
 
   const overallLoading = auth.isLoading || repLoading || (representative?.id ? statsLoading : false);
   console.info('🏠 RepDashboard', { userId: auth.user?.id ?? null, repId: representative?.id ?? null, overallLoading, statsLoading, repLoading, hasStats: !!stats, error });
@@ -57,26 +44,10 @@ export default function RepDashboard() {
     <div className="space-y-6 pb-20 sm:pb-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div className="flex items-center gap-4">
-          {!logoError ? (
-            <img 
-              alt="Agro Ikemba" 
-              src={getLogoUrl()} 
-              loading="eager" 
-              decoding="async" 
-              className="h-12 w-auto object-contain" 
-              onError={handleLogoError} 
-            />
-          ) : (
-            <div className="h-12 w-24 bg-gradient-to-r from-primary to-primary/80 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">
-                <span className="text-white">Agro</span>
-                <span className="text-green-200">Ikemba</span>
-              </span>
-            </div>
-          )}
+        <div>
+          <h1 className="text-3xl font-bold">Dashboard</h1>
           <p className="text-muted-foreground">
-            Olá, {representative?.name}
+            Olá, {representative?.name}! Aqui está seu resumo de vendas.
           </p>
         </div>
         
