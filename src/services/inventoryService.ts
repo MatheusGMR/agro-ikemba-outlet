@@ -1,5 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
-import type { InventoryItem, ProductDocument, ProductWithInventory, PriceTierBenefit } from '@/types/inventory';
+import type { InventoryItem, ProductDocument, ProductWithInventory, PriceTierBenefit, GroupedProduct } from '@/types/inventory';
 
 export class InventoryService {
   static async getInventoryBySku(sku: string): Promise<InventoryItem[]> {
@@ -94,6 +94,49 @@ export class InventoryService {
           price: item.client_price
         });
       }
+    }
+
+    return Array.from(productMap.values());
+  }
+
+  // Nova função para agrupar produtos mostrando apenas preço unitário
+  static async getGroupedProductsForSales(): Promise<GroupedProduct[]> {
+    const inventory = await this.getAllInventory();
+    const productMap = new Map<string, GroupedProduct>();
+
+    for (const item of inventory) {
+      const key = item.product_sku;
+      
+      if (!productMap.has(key)) {
+        // Buscar o item com preço unitário para exibir como principal
+        const unitaryItem = inventory.find(
+          inv => inv.product_sku === item.product_sku && inv.price_tier === 'Preço Unitário'
+        );
+        
+        if (!unitaryItem) continue; // Pular produtos sem preço unitário
+        
+        productMap.set(key, {
+          sku: item.product_sku,
+          name: item.product_name,
+          manufacturer: item.manufacturer,
+          active_ingredient: item.active_ingredient,
+          main_item: unitaryItem,
+          total_volume: 0,
+          locations_count: 0,
+          all_items: inventory.filter(inv => inv.product_sku === item.product_sku)
+        });
+      }
+
+      const product = productMap.get(key)!;
+      product.total_volume += item.volume_available;
+    }
+
+    // Calcular contagem de locais únicos
+    for (const product of productMap.values()) {
+      const uniqueLocations = new Set(
+        product.all_items.map(item => `${item.city}-${item.state}`)
+      );
+      product.locations_count = uniqueLocations.size;
     }
 
     return Array.from(productMap.values());

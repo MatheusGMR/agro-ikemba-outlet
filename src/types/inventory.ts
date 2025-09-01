@@ -60,3 +60,15 @@ export interface PriceTierBenefit {
   savings_percentage: number;
   volume_required?: number;
 }
+
+// Nova interface para produtos agrupados para vendas
+export interface GroupedProduct {
+  sku: string;
+  name: string;
+  manufacturer: string;
+  active_ingredient?: string;
+  main_item: InventoryItem; // Item com preço unitário
+  total_volume: number;
+  locations_count: number;
+  all_items: InventoryItem[]; // Todos os itens (incluindo bandas de preço)
+}

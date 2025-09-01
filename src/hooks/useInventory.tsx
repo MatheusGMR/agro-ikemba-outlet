@@ -39,3 +39,11 @@ export function useTotalVolumeAvailable() {
     staleTime: 10 * 60 * 1000 // 10 minutes
   });
 }
+
+export function useGroupedProductsForSales() {
+  return useQuery({
+    queryKey: ['products', 'grouped-for-sales'],
+    queryFn: () => InventoryService.getGroupedProductsForSales(),
+    staleTime: 5 * 60 * 1000 // 5 minutes
+  });
+}
