@@ -26,19 +26,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('Auth state change:', event, !!session?.user);
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
           // Check if user is a representative
-          setTimeout(async () => {
-            try {
-              const representative = await RepresentativeService.getCurrentRepresentative();
-              setIsRepresentative(!!representative);
-            } catch (error) {
-              setIsRepresentative(false);
-            }
-          }, 0);
+          try {
+            const representative = await RepresentativeService.getCurrentRepresentative();
+            console.log('Representative found:', !!representative);
+            setIsRepresentative(!!representative);
+          } catch (error) {
+            console.error('Error checking representative status:', error);
+            setIsRepresentative(false);
+          }
         } else {
           setIsRepresentative(false);
         }
@@ -48,9 +49,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     );
 
     // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      console.log('Initial session check:', !!session?.user);
       setSession(session);
       setUser(session?.user ?? null);
+      
+      if (session?.user) {
+        try {
+          const representative = await RepresentativeService.getCurrentRepresentative();
+          console.log('Initial representative check:', !!representative);
+          setIsRepresentative(!!representative);
+        } catch (error) {
+          console.error('Error checking initial representative status:', error);
+          setIsRepresentative(false);
+        }
+      } else {
+        setIsRepresentative(false);
+      }
+      
       setIsLoading(false);
     });
 

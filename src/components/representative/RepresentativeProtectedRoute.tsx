@@ -15,6 +15,7 @@ export default function RepresentativeProtectedRoute({ children }: Representativ
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { user } } = await supabase.auth.getUser();
+      console.log('RepresentativeProtectedRoute - User check:', !!user);
       if (!user) {
         navigate('/login');
         return;
@@ -24,11 +25,19 @@ export default function RepresentativeProtectedRoute({ children }: Representativ
     checkAuth();
   }, [navigate]);
 
+  console.log('RepresentativeProtectedRoute - State:', {
+    isLoading,
+    hasRepresentative: !!representative,
+    error: error?.message
+  });
+
   if (isLoading) {
+    console.log('RepresentativeProtectedRoute - Still loading...');
     return <LoadingFallback />;
   }
 
   if (error || !representative) {
+    console.log('RepresentativeProtectedRoute - Access denied:', { error: error?.message, representative: !!representative });
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center max-w-md mx-auto p-6">

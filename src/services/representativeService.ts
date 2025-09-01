@@ -22,10 +22,13 @@ export class RepresentativeService {
       .from('representatives')
       .select('*')
       .eq('user_id', user.id)
-      .single();
+      .maybeSingle();
 
-    if (error) throw error;
-    return data as Representative;
+    if (error) {
+      console.error('Error fetching representative:', error);
+      return null;
+    }
+    return data as Representative | null;
   }
 
   static async createRepresentative(rep: Omit<Representative, 'id' | 'created_at' | 'updated_at'>): Promise<Representative> {
