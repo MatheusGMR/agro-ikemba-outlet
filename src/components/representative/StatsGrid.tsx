@@ -1,5 +1,5 @@
 import { Card, CardContent } from '@/components/ui/card';
-import { DollarSign, Target, TrendingUp } from 'lucide-react';
+import { Target, TrendingUp } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 import { RepDashboardStats } from '@/types/representative';
 
@@ -14,13 +14,6 @@ export default function StatsGrid({ stats }: StatsGridProps) {
   );
 
   const indicators = [
-    {
-      title: "Comissão Potencial",
-      value: formatCurrency(stats.potential_commission),
-      description: "Valor total baseado no estoque disponível",
-      icon: <DollarSign className="h-6 w-6 text-primary" />,
-      color: "border-green-200 bg-green-50/50"
-    },
     {
       title: "Oportunidades Ativas",
       value: formatCurrency(activeOpportunitiesValue),
@@ -38,7 +31,7 @@ export default function StatsGrid({ stats }: StatsGridProps) {
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {indicators.map((indicator, index) => (
         <Card key={index} className={`${indicator.color} border`}>
           <CardContent className="p-6">

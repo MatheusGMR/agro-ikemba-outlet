@@ -1,6 +1,6 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, DollarSign, Target, TrendingUp } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Target, TrendingUp } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 import { RepDashboardStats } from '@/types/representative';
 import { useState } from 'react';
@@ -18,13 +18,6 @@ export default function StatsCarousel({ stats }: StatsCarouselProps) {
   );
 
   const indicators = [
-    {
-      title: "Comissão Potencial",
-      value: formatCurrency(stats.potential_commission),
-      description: "Valor total baseado no estoque disponível",
-      icon: <DollarSign className="h-8 w-8 text-primary" />,
-      color: "bg-gradient-to-br from-green-500 to-green-600"
-    },
     {
       title: "Oportunidades Ativas",
       value: formatCurrency(activeOpportunitiesValue),
