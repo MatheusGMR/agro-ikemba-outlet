@@ -7,27 +7,19 @@ import { Opportunity } from '@/types/representative';
 import { ChevronRight, Calendar, DollarSign } from 'lucide-react';
 
 const STAGE_LABELS = {
-  prospection: 'Prospecção',
-  qualification: 'Qualificação', 
-  needs_analysis: 'Análise de Necessidades',
-  viability: 'Viabilidade',
-  proposal_sent: 'Proposta Enviada',
-  client_approval: 'Aprovação Cliente',
-  negotiation: 'Negociação',
-  closed_won: 'Fechado Ganho',
-  closed_lost: 'Fechado Perdido'
+  com_oportunidade: 'Com Oportunidade',
+  proposta_apresentada: 'Proposta Apresentada', 
+  em_negociacao: 'Em Negociação',
+  em_aprovacao: 'Em Aprovação',
+  em_entrega: 'Em Entrega'
 };
 
 const STAGE_COLORS = {
-  prospection: 'bg-slate-100 text-slate-800',
-  qualification: 'bg-blue-100 text-blue-800',
-  needs_analysis: 'bg-indigo-100 text-indigo-800',
-  viability: 'bg-purple-100 text-purple-800',
-  proposal_sent: 'bg-orange-100 text-orange-800',
-  client_approval: 'bg-yellow-100 text-yellow-800',
-  negotiation: 'bg-green-100 text-green-800',
-  closed_won: 'bg-emerald-100 text-emerald-800',
-  closed_lost: 'bg-red-100 text-red-800'
+  com_oportunidade: 'bg-slate-100 text-slate-800',
+  proposta_apresentada: 'bg-blue-100 text-blue-800',
+  em_negociacao: 'bg-yellow-100 text-yellow-800',
+  em_aprovacao: 'bg-orange-100 text-orange-800',
+  em_entrega: 'bg-green-100 text-green-800'
 };
 
 interface OpportunityCardProps {
@@ -77,7 +69,7 @@ function OpportunityCard({ opportunity, onStageChange }: OpportunityCardProps) {
           </p>
         )}
 
-        {nextStage && opportunity.stage !== 'closed_won' && opportunity.stage !== 'closed_lost' && (
+        {nextStage && opportunity.stage !== 'em_entrega' && (
           <Button
             size="sm"
             variant="outline"

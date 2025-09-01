@@ -38,7 +38,7 @@ export interface Opportunity {
   client_id: string;
   title: string;
   description?: string;
-  stage: 'prospection' | 'qualification' | 'needs_analysis' | 'viability' | 'proposal_sent' | 'client_approval' | 'negotiation' | 'closed_won' | 'closed_lost';
+  stage: 'com_oportunidade' | 'proposta_apresentada' | 'em_negociacao' | 'em_aprovacao' | 'em_entrega';
   estimated_value: number;
   estimated_commission: number;
   probability: number;
