@@ -199,7 +199,7 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
   const canProceed = () => {
     switch (currentStep) {
       case 'basic':
-        return formData.title && formData.client_id;
+        return formData.client_id;
       case 'products':
         return selectedProducts.length > 0;
       case 'conditions':
@@ -213,17 +213,6 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
 
   const renderBasicStep = () => (
     <div className="space-y-4">
-      <div>
-        <Label htmlFor="title">Título da Oportunidade</Label>
-        <Input
-          id="title"
-          value={formData.title}
-          onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-          placeholder="Ex: Venda de herbicidas para safra 2025"
-          required
-        />
-      </div>
-
       <div>
         <Label htmlFor="client">Cliente</Label>
         <Select value={formData.client_id} onValueChange={handleClientChange}>
@@ -439,7 +428,6 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
           <CardTitle className="text-sm">Informações Gerais</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2 text-sm">
-          <div><strong>Título:</strong> {formData.title}</div>
           <div><strong>Cliente:</strong> {selectedClient?.company_name}</div>
           <div><strong>Probabilidade:</strong> {formData.probability}%</div>
           <div><strong>Pagamento:</strong> {formData.payment_method === 'vista' ? 'À Vista' : 'Crédito'}</div>
