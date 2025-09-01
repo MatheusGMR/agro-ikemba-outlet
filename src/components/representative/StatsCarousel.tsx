@@ -44,26 +44,24 @@ export default function StatsCarousel({ stats }: StatsCarouselProps) {
 
   return (
     <div className="relative">
-      <div className="overflow-hidden rounded-lg">
+      <div className="overflow-hidden">
         <div 
           className="flex transition-transform duration-300 ease-in-out"
           style={{ transform: `translateX(-${currentIndex * 100}%)` }}
         >
           {indicators.map((indicator, index) => (
-            <Card key={index} className="min-w-full">
-              <CardContent className={`p-6 text-white ${indicator.color}`}>
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      {indicator.icon}
-                      <h3 className="text-sm font-medium opacity-90">{indicator.title}</h3>
-                    </div>
-                    <p className="text-3xl font-bold mb-1">{indicator.value}</p>
-                    <p className="text-sm opacity-80">{indicator.description}</p>
+            <div key={index} className={`min-w-full p-6 text-white ${indicator.color} rounded-lg`}>
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-2">
+                    {indicator.icon}
+                    <h3 className="text-sm font-medium opacity-90">{indicator.title}</h3>
                   </div>
+                  <p className="text-3xl font-bold mb-1">{indicator.value}</p>
+                  <p className="text-sm opacity-80">{indicator.description}</p>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           ))}
         </div>
       </div>

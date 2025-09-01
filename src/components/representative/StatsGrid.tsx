@@ -33,16 +33,14 @@ export default function StatsGrid({ stats }: StatsGridProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {indicators.map((indicator, index) => (
-        <Card key={index} className={`${indicator.color} border`}>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-3 mb-3">
-              {indicator.icon}
-              <h3 className="text-sm font-medium text-muted-foreground">{indicator.title}</h3>
-            </div>
-            <p className="text-2xl font-bold mb-1">{indicator.value}</p>
-            <p className="text-sm text-muted-foreground">{indicator.description}</p>
-          </CardContent>
-        </Card>
+        <div key={index} className="space-y-3">
+          <div className="flex items-center gap-3">
+            {indicator.icon}
+            <h3 className="text-sm font-medium text-muted-foreground">{indicator.title}</h3>
+          </div>
+          <p className="text-2xl font-bold">{indicator.value}</p>
+          <p className="text-sm text-muted-foreground">{indicator.description}</p>
+        </div>
       ))}
     </div>
   );

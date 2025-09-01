@@ -210,25 +210,25 @@ export default function OpportunityKanban() {
 
   if (viewMode === 'list') {
     return (
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>Pipeline de Oportunidades</CardTitle>
-            <div className="flex items-center gap-2">
-              {!isMobile && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setViewMode('kanban')}
-                >
-                  <Kanban className="h-4 w-4 mr-2" />
-                  Kanban
-                </Button>
-              )}
-            </div>
+    <div>
+      <div className="mb-6">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-semibold">Oportunidades</h2>
+          <div className="flex items-center gap-2">
+            {!isMobile && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setViewMode('kanban')}
+              >
+                <Kanban className="h-4 w-4 mr-2" />
+                Kanban
+              </Button>
+            )}
           </div>
-        </CardHeader>
-        <CardContent>
+        </div>
+      </div>
+      <div>
           <div className="space-y-4">
             {opportunities.map(opportunity => (
               <Card key={opportunity.id} className="p-4">
@@ -246,16 +246,16 @@ export default function OpportunityKanban() {
               </Card>
             ))}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Card>
-      <CardHeader>
+    <div>
+      <div className="mb-6">
         <div className="flex items-center justify-between">
-          <CardTitle>Pipeline de Oportunidades</CardTitle>
+          <h2 className="text-xl font-semibold">Oportunidades</h2>
           <div className="flex items-center gap-2">
             {!isMobile && (
               <Button
@@ -269,8 +269,8 @@ export default function OpportunityKanban() {
             )}
           </div>
         </div>
-      </CardHeader>
-      <CardContent>
+      </div>
+      <div>
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
           {stageKeys.map(stage => (
             <div key={stage} className="space-y-3">
@@ -302,7 +302,7 @@ export default function OpportunityKanban() {
             </div>
           ))}
         </div>
-      </CardContent>
+      </div>
 
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
         <DialogContent>
@@ -312,6 +312,6 @@ export default function OpportunityKanban() {
           <CreateOpportunityDialog onClose={() => setShowCreateDialog(false)} />
         </DialogContent>
       </Dialog>
-    </Card>
+    </div>
   );
 }
