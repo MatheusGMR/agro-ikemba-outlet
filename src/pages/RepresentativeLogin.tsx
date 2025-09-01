@@ -11,6 +11,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function RepresentativeLogin() {
   const [email, setEmail] = useState('');
@@ -54,7 +55,12 @@ export default function RepresentativeLogin() {
           toast.error('Erro ao fazer login. Tente novamente.');
         }
       } else {
-        // Success - redirect to representative dashboard
+        // Aguarda sessão antes de redirecionar
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          // pequena espera para garantir que a sessão seja propagada
+          await new Promise((r) => setTimeout(r, 200));
+        }
         navigate('/representative');
         toast.success('Login realizado com sucesso!');
       }

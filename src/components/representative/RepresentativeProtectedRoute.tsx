@@ -24,11 +24,11 @@ export default function RepresentativeProtectedRoute({ children }: Representativ
   });
 
   useEffect(() => {
-    // Only redirect if auth has finished loading and there's no user
-    if (!auth.isLoading && !auth.user) {
-      navigate('/login');
+    // Only redirect once auth finished and there's no active session
+    if (!auth.isLoading && auth.session === null) {
+      navigate('/representative/login');
     }
-  }, [auth.isLoading, auth.user, navigate]);
+  }, [auth.isLoading, auth.session, navigate]);
 
   // Show loading while auth is loading or while representative query is loading
   if (auth.isLoading || isLoading) {

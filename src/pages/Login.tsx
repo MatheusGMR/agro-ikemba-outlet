@@ -11,6 +11,7 @@ import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { useAuth } from '@/hooks/useAuth';
 import { RepresentativeService } from '@/services/representativeService';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -54,8 +55,12 @@ export default function Login() {
           toast.error('Erro ao fazer login. Tente novamente.');
         }
       } else {
-        // Login successful - check if user is a representative
+        // Login successful - ensure session is available before next steps
         try {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (!session) {
+            await new Promise((r) => setTimeout(r, 200));
+          }
           const representative = await RepresentativeService.getCurrentRepresentative();
           if (representative) {
             navigate('/representative');
