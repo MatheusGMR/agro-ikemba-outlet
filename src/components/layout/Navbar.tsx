@@ -212,16 +212,6 @@ export default function Navbar() {
                   Sair
                 </Button>
               </div> : <>
-                <Link to="/representative/login">
-                  <Button variant="ghost" size="sm">
-                    Painel do Representante
-                  </Button>
-                </Link>
-                <Link to="/representative/register">
-                  <Button variant="outline" size="sm">
-                    Seja um Representante
-                  </Button>
-                </Link>
                 <Button variant="outline" asChild>
                   <Link to="/login">Entrar</Link>
                 </Button>
@@ -280,13 +270,7 @@ export default function Navbar() {
                   <Button variant="outline" className="w-full" onClick={handleLogout}>
                     Sair
                   </Button>
-                </> : <>
-                   <Button variant="outline" className="w-full mb-2" asChild>
-                     <Link to="/representative/login">Painel do Representante</Link>
-                   </Button>
-                   <Button variant="outline" className="w-full mb-2" asChild>
-                     <Link to="/representative/register">Seja um Representante</Link>
-                   </Button>
+                 </> : <>
                    <Button variant="outline" className="w-full mb-2" asChild>
                      <Link to="/login">Entrar</Link>
                    </Button>
