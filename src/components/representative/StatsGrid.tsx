@@ -33,7 +33,7 @@ export default function StatsGrid({ stats }: StatsGridProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {indicators.map((indicator, index) => (
-        <div key={index} className="space-y-3">
+        <div key={index} className="space-y-3 p-6 bg-background rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 border border-border/40">
           <div className="flex items-center gap-3">
             {indicator.icon}
             <h3 className="text-sm font-medium text-muted-foreground">{indicator.title}</h3>

@@ -50,7 +50,7 @@ export default function StatsCarousel({ stats }: StatsCarouselProps) {
           style={{ transform: `translateX(-${currentIndex * 100}%)` }}
         >
           {indicators.map((indicator, index) => (
-            <div key={index} className={`min-w-full p-6 text-white ${indicator.color} rounded-lg`}>
+            <div key={index} className={`min-w-full p-6 text-white ${indicator.color} rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300`}>
               <div className="flex items-center justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
