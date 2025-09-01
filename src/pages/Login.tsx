@@ -10,6 +10,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { useAuth } from '@/hooks/useAuth';
+import { RepresentativeService } from '@/services/representativeService';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -17,14 +18,16 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
-  const { signIn, user } = useAuth();
+  const { signIn, user, isRepresentative } = useAuth();
 
   // Redirect if already logged in
   useEffect(() => {
-    if (user) {
-      navigate('/');
+    if (user && isRepresentative) {
+      navigate('/representative');
+    } else if (user) {
+      navigate('/products');
     }
-  }, [user, navigate]);
+  }, [user, isRepresentative, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,8 +56,18 @@ export default function Login() {
           toast.error('Erro ao fazer login. Tente novamente.');
         }
       } else {
-        // Login successful - redirect to homepage
-        navigate('/');
+        // Login successful - check if user is representative and redirect accordingly
+        try {
+          const representative = await RepresentativeService.getCurrentRepresentative();
+          if (representative) {
+            navigate('/representative');
+          } else {
+            navigate('/products');
+          }
+        } catch (error) {
+          // If there's an error checking representative status, redirect to products as default
+          navigate('/products');
+        }
       }
     } catch (error) {
       console.error('Erro durante login:', error);
