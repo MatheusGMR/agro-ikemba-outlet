@@ -10,34 +10,46 @@ interface RepresentativeProtectedRouteProps {
 
 export default function RepresentativeProtectedRoute({ children }: RepresentativeProtectedRouteProps) {
   const navigate = useNavigate();
-  const { data: representative, isLoading, error } = useCurrentRepresentative();
+  const { data: representative, isLoading, error, isFetching, isFetched } = useCurrentRepresentative();
   const auth = useAuth();
 
   console.log('=== REPRESENTATIVE PROTECTED ROUTE ===');
   console.log('Estado atual:', { 
     authLoading: auth.isLoading,
     userId: auth.user?.id ?? null,
+    hasUser: !!auth.user,
     repIsLoading: isLoading,
+    repIsFetching: isFetching,
+    repIsFetched: isFetched,
     hasRepresentative: !!representative, 
     hasError: !!error,
     errorMessage: (error as any)?.message 
   });
 
   useEffect(() => {
-    // Only redirect once auth finished and there's no active session
-    if (!auth.isLoading && auth.session === null) {
+    // Only redirect once auth finished and there's no user
+    if (!auth.isLoading && !auth.user) {
+      console.log('Redirecting to login - no user authenticated');
       navigate('/representative/login');
     }
-  }, [auth.isLoading, auth.session, navigate]);
+  }, [auth.isLoading, auth.user, navigate]);
 
-  // Show loading while auth is loading or while representative query is loading
-  if (auth.isLoading || isLoading) {
+  // Show loading while auth is loading
+  if (auth.isLoading) {
+    console.log('Auth loading...');
     return <LoadingFallback />;
   }
 
-  // If user is authenticated but no session found, redirect to login
+  // If no user, redirect (useEffect will handle this)
   if (!auth.user) {
-    return null; // useEffect will handle redirect
+    console.log('No user - redirecting...');
+    return null;
+  }
+
+  // Show loading while representative query is loading/fetching
+  if (isLoading || isFetching) {
+    console.log('Representative query loading...');
+    return <LoadingFallback />;
   }
 
   if (error) {
@@ -71,7 +83,8 @@ export default function RepresentativeProtectedRoute({ children }: Representativ
     );
   }
 
-  if (!representative) {
+  // If query finished and no representative found, show access denied
+  if (isFetched && !representative) {
     console.log('Usuário autenticado mas não é representante');
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">

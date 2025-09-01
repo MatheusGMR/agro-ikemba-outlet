@@ -11,6 +11,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { useAuth } from '@/hooks/useAuth';
+import { useCurrentRepresentative } from '@/hooks/useRepresentative';
 import { supabase } from '@/integrations/supabase/client';
 
 export default function RepresentativeLogin() {
@@ -19,14 +20,16 @@ export default function RepresentativeLogin() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
-  const { signIn, user, isRepresentative } = useAuth();
+  const { signIn, user } = useAuth();
+  const { data: representative, isFetched } = useCurrentRepresentative();
 
   // Redirect if already logged in as representative
   useEffect(() => {
-    if (user && isRepresentative) {
+    if (user && isFetched && representative) {
+      console.log('Already logged in as representative, redirecting...');
       navigate('/representative');
     }
-  }, [user, isRepresentative, navigate]);
+  }, [user, representative, isFetched, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,14 +58,40 @@ export default function RepresentativeLogin() {
           toast.error('Erro ao fazer login. Tente novamente.');
         }
       } else {
-        // Aguarda sessão antes de redirecionar
+        console.log('Login successful, waiting for representative validation...');
+        
+        // Aguarda sessão e verifica se é representante
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) {
           // pequena espera para garantir que a sessão seja propagada
-          await new Promise((r) => setTimeout(r, 200));
+          await new Promise((r) => setTimeout(r, 500));
         }
-        navigate('/representative');
-        toast.success('Login realizado com sucesso!');
+        
+        // Aguarda um pouco mais para o useCurrentRepresentative atualizar
+        await new Promise((r) => setTimeout(r, 800));
+        
+        // Verifica novamente se existe representante
+        try {
+          const { data: repData } = await supabase
+            .from('representatives')
+            .select('*')
+            .eq('user_id', session?.user?.id)
+            .single();
+            
+          if (repData) {
+            console.log('Representative found, navigating to dashboard');
+            navigate('/representative');
+            toast.success('Login realizado com sucesso!');
+          } else {
+            console.log('No representative record found for user');
+            setError('Você não possui permissões de representante. Entre em contato com o administrador.');
+            toast.error('Você não possui permissões de representante.');
+          }
+        } catch (repError) {
+          console.error('Error checking representative:', repError);
+          setError('Erro ao verificar permissões de representante.');
+          toast.error('Erro ao verificar permissões.');
+        }
       }
     } catch (error) {
       console.error('Erro durante login:', error);

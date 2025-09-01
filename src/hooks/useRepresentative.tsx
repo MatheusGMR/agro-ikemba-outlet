@@ -17,7 +17,7 @@ export function useCurrentRepresentative() {
   return useQuery({
     queryKey: ['representative', 'current', user?.id ?? 'anon'],
     queryFn: () => RepresentativeService.getCurrentRepresentative(),
-    enabled: true, // Always enabled - let service handle session check
+    enabled: !!user?.id, // Only enabled when user exists - prevents race conditions
     staleTime: 0,
     refetchOnMount: 'always',
     refetchOnWindowFocus: 'always',
