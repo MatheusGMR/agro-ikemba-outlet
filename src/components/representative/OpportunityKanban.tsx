@@ -14,7 +14,8 @@ import {
   Kanban,
   ChevronRight
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useIsMobile } from '@/hooks/use-mobile';
 import CreateOpportunityDialog from './CreateOpportunityDialog';
 
 const STAGE_LABELS = {
@@ -123,8 +124,18 @@ function OpportunityCard({ opportunity, onAdvanceStage, onCreateProposal }: Oppo
 export default function OpportunityKanban() {
   const { data: representative } = useCurrentRepresentative();
   const { data: opportunities = [], isLoading } = useOpportunities(representative?.id || '');
+  const isMobile = useIsMobile();
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+
+  // Auto-switch to list view on mobile
+  useEffect(() => {
+    if (isMobile) {
+      setViewMode('list');
+    } else {
+      setViewMode('kanban');
+    }
+  }, [isMobile]);
 
   const handleAdvanceStage = (opportunityId: string, newStage: string) => {
     console.log('Advancing stage:', opportunityId, newStage);
@@ -174,14 +185,16 @@ export default function OpportunityKanban() {
           <div className="flex items-center justify-between">
             <CardTitle>Pipeline de Oportunidades</CardTitle>
             <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setViewMode('kanban')}
-              >
-                <Kanban className="h-4 w-4 mr-2" />
-                Kanban
-              </Button>
+              {!isMobile && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setViewMode('kanban')}
+                >
+                  <Kanban className="h-4 w-4 mr-2" />
+                  Kanban
+                </Button>
+              )}
               <Button onClick={() => setShowCreateDialog(true)}>
                 <Plus className="h-4 w-4 mr-2" />
                 Nova Oportunidade
@@ -218,14 +231,16 @@ export default function OpportunityKanban() {
         <div className="flex items-center justify-between">
           <CardTitle>Pipeline de Oportunidades</CardTitle>
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setViewMode('list')}
-            >
-              <List className="h-4 w-4 mr-2" />
-              Lista
-            </Button>
+            {!isMobile && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setViewMode('list')}
+              >
+                <List className="h-4 w-4 mr-2" />
+                Lista
+              </Button>
+            )}
             <Button onClick={() => setShowCreateDialog(true)}>
               <Plus className="h-4 w-4 mr-2" />
               Nova Oportunidade

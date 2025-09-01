@@ -1,13 +1,16 @@
 import { Button } from '@/components/ui/button';
 import { useDashboardStats, useCurrentRepresentative } from '@/hooks/useRepresentative';
 import { Users, Plus } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 import StatsCarousel from './StatsCarousel';
+import StatsGrid from './StatsGrid';
 import OpportunityKanban from './OpportunityKanban';
 
 
 export default function RepDashboard() {
   const { data: representative } = useCurrentRepresentative();
   const { data: stats, isLoading, error } = useDashboardStats(representative?.id || '');
+  const isMobile = useIsMobile();
 
   if (isLoading) {
     return (
@@ -60,8 +63,12 @@ export default function RepDashboard() {
         </div>
       )}
 
-      {/* Stats Carousel */}
-      <StatsCarousel stats={dashboardStats} />
+      {/* Stats Display */}
+      {isMobile ? (
+        <StatsCarousel stats={dashboardStats} />
+      ) : (
+        <StatsGrid stats={dashboardStats} />
+      )}
 
       {/* Opportunity Kanban */}
       <OpportunityKanban />
