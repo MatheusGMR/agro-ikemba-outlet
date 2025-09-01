@@ -15,16 +15,36 @@ import type {
 export class RepresentativeService {
   // Representatives
   static async getCurrentRepresentative(): Promise<Representative | null> {
+    console.log('=== VERIFICANDO REPRESENTANTE ATUAL ===');
+    
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return null;
+    console.log('Usuário autenticado:', user?.id, user?.email);
+    
+    if (!user) {
+      console.log('Nenhum usuário autenticado encontrado');
+      return null;
+    }
 
+    console.log('Consultando representante para user_id:', user.id);
     const { data, error } = await supabase
       .from('representatives')
       .select('*')
       .eq('user_id', user.id)
-      .single();
+      .maybeSingle();
 
-    if (error) throw error;
+    if (error) {
+      console.error('Erro ao buscar representante:', error);
+      console.error('Detalhes do erro:', {
+        message: error.message,
+        code: error.code,
+        hint: error.hint
+      });
+      throw error;
+    }
+
+    console.log('Resultado da consulta:', data ? 'Representante encontrado' : 'Nenhum representante encontrado');
+    console.log('Dados do representante:', data);
+
     return data as Representative;
   }
 
