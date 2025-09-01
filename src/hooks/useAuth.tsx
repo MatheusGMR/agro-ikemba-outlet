@@ -4,6 +4,7 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { RepresentativeService } from '@/services/representativeService';
 import { toast } from 'sonner';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface AuthContextType {
   user: User | null;
@@ -21,23 +22,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isRepresentative, setIsRepresentative] = useState(false);
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
+        console.debug('[Auth] onAuthStateChange', { event, hasSession: !!session, userId: session?.user?.id });
         setSession(session);
         setUser(session?.user ?? null);
+        // Invalidate representative cache on any auth change
+        queryClient.invalidateQueries({ queryKey: ['representative'] });
         
         if (session?.user) {
-          // Check if user is a representative
-          setTimeout(async () => {
-            try {
-              const representative = await RepresentativeService.getCurrentRepresentative();
-              setIsRepresentative(!!representative);
-            } catch (error) {
-              setIsRepresentative(false);
-            }
+          // Check if user is a representative (defer Supabase calls)
+          setTimeout(() => {
+            RepresentativeService.getCurrentRepresentative()
+              .then((rep) => setIsRepresentative(!!rep))
+              .catch(() => setIsRepresentative(false));
           }, 0);
         } else {
           setIsRepresentative(false);
@@ -74,6 +76,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { error } = await supabase.auth.signOut();
     if (!error) {
       setIsRepresentative(false);
+      queryClient.removeQueries({ queryKey: ['representative'] });
       toast.success('Logout realizado com sucesso!');
     }
   };

@@ -15,7 +15,11 @@ export function useCurrentRepresentative() {
   return useQuery({
     queryKey: ['representative', 'current'],
     queryFn: () => RepresentativeService.getCurrentRepresentative(),
-    staleTime: 5 * 60 * 1000 // 5 minutes
+    staleTime: 0,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: 'always',
+    refetchOnReconnect: 'always',
+    retry: 2
   });
 }
 

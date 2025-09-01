@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCurrentRepresentative } from '@/hooks/useRepresentative';
 import { LoadingFallback } from '@/components/ui/LoadingFallback';
-import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 
 interface RepresentativeProtectedRouteProps {
   children: React.ReactNode;
@@ -11,28 +11,26 @@ interface RepresentativeProtectedRouteProps {
 export default function RepresentativeProtectedRoute({ children }: RepresentativeProtectedRouteProps) {
   const navigate = useNavigate();
   const { data: representative, isLoading, error } = useCurrentRepresentative();
+  const auth = useAuth();
 
   console.log('=== REPRESENTATIVE PROTECTED ROUTE ===');
   console.log('Estado atual:', { 
-    isLoading, 
+    authLoading: auth.isLoading,
+    userId: auth.user?.id ?? null,
+    repIsLoading: isLoading,
     hasRepresentative: !!representative, 
     hasError: !!error,
-    errorMessage: error?.message 
+    errorMessage: (error as any)?.message 
   });
 
   useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        navigate('/login');
-        return;
-      }
-    };
+    if (auth.isLoading) return;
+    if (!auth.user) {
+      navigate('/login');
+    }
+  }, [auth.isLoading, auth.user, navigate]);
 
-    checkAuth();
-  }, [navigate]);
-
-  if (isLoading) {
+  if (auth.isLoading || isLoading) {
     return <LoadingFallback />;
   }
 
