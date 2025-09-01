@@ -15,17 +15,24 @@ import type {
 export class RepresentativeService {
   // Representatives
   static async getCurrentRepresentative(): Promise<Representative | null> {
-    console.log('=== VERIFICANDO REPRESENTANTE ATUAL ===');
-    
-    const { data: { user } } = await supabase.auth.getUser();
-    console.log('Usuário autenticado:', user?.id, user?.email);
-    
+    const ts = new Date().toISOString();
+    console.log(`[${ts}] === VERIFICANDO REPRESENTANTE ATUAL ===`);
+
+    // Use getSession to ensure we read a fully established session
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError) {
+      console.error(`[${ts}] Erro ao obter sessão:`, sessionError);
+    }
+
+    const user = session?.user ?? null;
+    console.log(`[${ts}] Sessão ativa:`, !!session, 'UserId:', user?.id || null);
+
     if (!user) {
-      console.log('Nenhum usuário autenticado encontrado');
+      console.log(`[${ts}] Nenhum usuário autenticado encontrado - retornando null`);
       return null;
     }
 
-    console.log('Consultando representante para user_id:', user.id);
+    console.log(`[${ts}] Consultando representante para user_id:`, user.id);
     const { data, error } = await supabase
       .from('representatives')
       .select('*')
@@ -33,19 +40,17 @@ export class RepresentativeService {
       .maybeSingle();
 
     if (error) {
-      console.error('Erro ao buscar representante:', error);
+      console.error(`[${ts}] Erro ao buscar representante:`, error);
       console.error('Detalhes do erro:', {
         message: error.message,
-        code: error.code,
-        hint: error.hint
+        code: (error as any).code,
+        hint: (error as any).hint
       });
       throw error;
     }
 
-    console.log('Resultado da consulta:', data ? 'Representante encontrado' : 'Nenhum representante encontrado');
-    console.log('Dados do representante:', data);
-
-    return data as Representative;
+    console.log(`[${ts}] Resultado da consulta:`, data ? 'Representante encontrado' : 'Nenhum representante encontrado');
+    return (data || null) as Representative | null;
   }
 
   static async createRepresentative(rep: Omit<Representative, 'id' | 'created_at' | 'updated_at'>): Promise<Representative> {

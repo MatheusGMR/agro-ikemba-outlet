@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { RepresentativeService } from '@/services/representativeService';
+import { useAuth } from '@/hooks/useAuth';
 import type { 
   Representative, 
   RepClient, 
@@ -12,9 +13,11 @@ import type {
 
 // Representative hooks
 export function useCurrentRepresentative() {
+  const { user, isLoading: authLoading } = useAuth();
   return useQuery({
-    queryKey: ['representative', 'current'],
+    queryKey: ['representative', 'current', user?.id ?? 'anon'],
     queryFn: () => RepresentativeService.getCurrentRepresentative(),
+    enabled: !!user && !authLoading,
     staleTime: 0,
     refetchOnMount: 'always',
     refetchOnWindowFocus: 'always',

@@ -2,19 +2,22 @@ import { Button } from '@/components/ui/button';
 import { useDashboardStats, useCurrentRepresentative } from '@/hooks/useRepresentative';
 import { Users, Plus } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useAuth } from '@/hooks/useAuth';
 import StatsCarousel from './StatsCarousel';
 import StatsGrid from './StatsGrid';
 import OpportunityKanban from './OpportunityKanban';
 
 
 export default function RepDashboard() {
-  const { data: representative } = useCurrentRepresentative();
-  const { data: stats, isLoading, error } = useDashboardStats(representative?.id || '');
+  const auth = useAuth();
+  const { data: representative, isLoading: repLoading } = useCurrentRepresentative();
+  const { data: stats, isLoading: statsLoading, error } = useDashboardStats(representative?.id || '');
   const isMobile = useIsMobile();
 
-  console.info('🏠 RepDashboard - representative:', representative?.id, 'stats loading:', isLoading, 'stats error:', error, 'has stats:', !!stats);
+  const overallLoading = auth.isLoading || repLoading || (representative?.id ? statsLoading : false);
+  console.info('🏠 RepDashboard', { userId: auth.user?.id ?? null, repId: representative?.id ?? null, overallLoading, statsLoading, repLoading, hasStats: !!stats, error });
 
-  if (isLoading) {
+  if (overallLoading) {
     return (
       <div className="space-y-6">
         <div className="h-32 bg-muted animate-pulse rounded-lg mb-6" />
