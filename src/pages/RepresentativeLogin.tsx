@@ -147,7 +147,7 @@ export default function RepresentativeLogin() {
                   </Link>
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Usuário comum?{' '}
+                  Cliente?{' '}
                   <Link to="/login" className="text-primary hover:underline">
                     Acesse aqui
                   </Link>
