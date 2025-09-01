@@ -225,10 +225,6 @@ export default function OpportunityKanban() {
                   Kanban
                 </Button>
               )}
-              <Button onClick={() => setShowCreateDialog(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Nova Oportunidade
-              </Button>
             </div>
           </div>
         </CardHeader>
@@ -271,10 +267,6 @@ export default function OpportunityKanban() {
                 Lista
               </Button>
             )}
-            <Button onClick={() => setShowCreateDialog(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Nova Oportunidade
-            </Button>
           </div>
         </div>
       </CardHeader>

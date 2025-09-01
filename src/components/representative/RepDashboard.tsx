@@ -91,20 +91,12 @@ export default function RepDashboard() {
 
       {/* Mobile Floating Action Buttons */}
       <div className="sm:hidden fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
-        <div className="flex items-center justify-center gap-4 bg-background/95 backdrop-blur-sm rounded-full px-6 py-3 shadow-lg border">
-          <Button
-            size="sm"
-            variant="ghost"
-            className="h-12 w-12 rounded-full p-0 hover:bg-primary hover:text-primary-foreground transition-colors"
-          >
-            <Plus className="h-5 w-5" />
-          </Button>
-          
+        <div className="flex items-center justify-center gap-6 bg-background/95 backdrop-blur-sm rounded-full px-8 py-4 shadow-lg border">
           <InventoryConsultation>
             <Button
               size="sm"
               variant="ghost"
-              className="h-12 w-12 rounded-full p-0 hover:bg-primary hover:text-primary-foreground transition-colors"
+              className="h-12 w-12 rounded-full p-0 bg-blue-500 text-white hover:bg-blue-600 transition-colors shadow-md"
             >
               <Package className="h-5 w-5" />
             </Button>
@@ -113,7 +105,7 @@ export default function RepDashboard() {
           <Button
             size="sm"
             variant="ghost"
-            className="h-12 w-12 rounded-full p-0 hover:bg-primary hover:text-primary-foreground transition-colors"
+            className="h-12 w-12 rounded-full p-0 bg-green-500 text-white hover:bg-green-600 transition-colors shadow-md"
           >
             <Users className="h-5 w-5" />
           </Button>
