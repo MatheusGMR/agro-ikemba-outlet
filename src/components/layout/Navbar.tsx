@@ -131,6 +131,8 @@ export default function Navbar() {
       // Always use authSignOut if available (handles Supabase auth)
       if (authUser) {
         await authSignOut();
+        // Ensure redirect even if the hook didn't navigate for any reason
+        window.location.href = '/';
       } else {
         // Fallback for other auth types (admin, legacy users)
         await supabase.auth.signOut();
@@ -215,7 +217,7 @@ export default function Navbar() {
                     </Link>
                   </Button>}
                  
-                <Button variant="outline" onClick={handleLogout}>
+                <Button variant="outline" type="button" onClick={handleLogout}>
                   Sair
                 </Button>
               </div> : <>
@@ -274,7 +276,7 @@ export default function Navbar() {
                         Painel Representante
                       </Link>
                     </Button>}
-                  <Button variant="outline" className="w-full" onClick={handleLogout}>
+                  <Button variant="outline" type="button" className="w-full" onClick={handleLogout}>
                     Sair
                   </Button>
                  </> : <>
