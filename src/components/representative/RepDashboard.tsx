@@ -1,12 +1,15 @@
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useDashboardStats, useCurrentRepresentative } from '@/hooks/useRepresentative';
 import { Users, Plus, Package } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useAuth } from '@/hooks/useAuth';
+import { useState } from 'react';
 import StatsCarousel from './StatsCarousel';
 import StatsGrid from './StatsGrid';
 import OpportunityKanban from './OpportunityKanban';
 import InventoryConsultation from './InventoryConsultation';
+import CreateOpportunityDialog from './CreateOpportunityDialog';
 
 
 export default function RepDashboard() {
@@ -14,6 +17,7 @@ export default function RepDashboard() {
   const { data: representative, isLoading: repLoading } = useCurrentRepresentative();
   const { data: stats, isLoading: statsLoading, error } = useDashboardStats(representative?.id || '');
   const isMobile = useIsMobile();
+  const [showCreateOpportunity, setShowCreateOpportunity] = useState(false);
 
   const overallLoading = auth.isLoading || repLoading || (representative?.id ? statsLoading : false);
   console.info('🏠 RepDashboard', { userId: auth.user?.id ?? null, repId: representative?.id ?? null, overallLoading, statsLoading, repLoading, hasStats: !!stats, error });
@@ -53,7 +57,7 @@ export default function RepDashboard() {
         
         {/* Desktop Actions */}
         <div className="hidden sm:flex gap-2">
-          <Button variant="outline">
+          <Button variant="outline" onClick={() => setShowCreateOpportunity(true)}>
             <Plus className="h-4 w-4 mr-2" />
             Nova Oportunidade
           </Button>
@@ -92,6 +96,15 @@ export default function RepDashboard() {
       {/* Mobile Floating Action Buttons */}
       <div className="sm:hidden fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
         <div className="flex items-center justify-center gap-6 bg-background/95 backdrop-blur-sm rounded-full px-8 py-4 shadow-lg border">
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-12 w-12 rounded-full p-0 bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-md"
+            onClick={() => setShowCreateOpportunity(true)}
+          >
+            <Plus className="h-5 w-5" />
+          </Button>
+          
           <InventoryConsultation>
             <Button
               size="sm"
@@ -111,6 +124,16 @@ export default function RepDashboard() {
           </Button>
         </div>
       </div>
+
+      {/* Create Opportunity Dialog */}
+      <Dialog open={showCreateOpportunity} onOpenChange={setShowCreateOpportunity}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Nova Oportunidade</DialogTitle>
+          </DialogHeader>
+          <CreateOpportunityDialog onClose={() => setShowCreateOpportunity(false)} />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

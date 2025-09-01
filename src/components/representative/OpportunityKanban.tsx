@@ -1,12 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useOpportunities, useCurrentRepresentative } from '@/hooks/useRepresentative';
 import { formatCurrency } from '@/lib/utils';
 import { Opportunity } from '@/types/representative';
 import { 
-  Plus, 
   Building, 
   Phone, 
   FileText, 
@@ -16,7 +14,6 @@ import {
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
-import CreateOpportunityDialog from './CreateOpportunityDialog';
 
 const STAGE_LABELS = {
   com_oportunidade: 'Com Oportunidade',
@@ -126,7 +123,6 @@ export default function OpportunityKanban() {
   const { data: opportunities = [], isLoading, error } = useOpportunities(representative?.id || '');
   const isMobile = useIsMobile();
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
-  const [showCreateDialog, setShowCreateDialog] = useState(false);
 
   console.info('🎯 OpportunityKanban - representative:', representative?.id, 'opportunities:', opportunities.length, 'loading:', isLoading, 'error:', error);
 
@@ -304,14 +300,6 @@ export default function OpportunityKanban() {
         </div>
       </div>
 
-      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Nova Oportunidade</DialogTitle>
-          </DialogHeader>
-          <CreateOpportunityDialog onClose={() => setShowCreateDialog(false)} />
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
