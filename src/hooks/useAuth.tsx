@@ -87,10 +87,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (!error) {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error('Logout error:', error);
+        toast.error('Erro ao fazer logout. Tentando novamente...');
+        // Force cleanup even if logout fails
+      }
+      
+      // Clear all states
+      setUser(null);
+      setSession(null);
       setIsRepresentative(false);
+      
+      // Clear localStorage
+      localStorage.removeItem('user');
+      
       toast.success('Logout realizado com sucesso!');
+      
+      // Redirect to home page
+      window.location.href = '/';
+    } catch (error) {
+      console.error('Unexpected logout error:', error);
+      toast.error('Erro inesperado durante logout');
+      // Force redirect even on error
+      window.location.href = '/';
     }
   };
 

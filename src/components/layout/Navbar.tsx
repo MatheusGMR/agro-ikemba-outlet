@@ -127,21 +127,28 @@ export default function Navbar() {
     setIsMenuOpen(!isMenuOpen);
   };
   const handleLogout = async () => {
-    // Auth handler will take care of representative logout
-    if (authUser) {
-      await authSignOut();
-    } else {
-      // Logout from Supabase
-      await supabase.auth.signOut();
-      
-      // Logout from admin auth
-      logout();
-      
-      // Clear all local state
+    try {
+      // Always use authSignOut if available (handles Supabase auth)
+      if (authUser) {
+        await authSignOut();
+      } else {
+        // Fallback for other auth types (admin, legacy users)
+        await supabase.auth.signOut();
+        logout(); // Admin logout
+        
+        // Clear local states
+        setUser(null);
+        setSupaUser(null);
+        localStorage.removeItem('user');
+        
+        window.location.href = '/';
+      }
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Force cleanup and redirect even on error
       setUser(null);
       setSupaUser(null);
       localStorage.removeItem('user');
-      
       window.location.href = '/';
     }
   };
