@@ -13,11 +13,11 @@ import type {
 
 // Representative hooks
 export function useCurrentRepresentative() {
-  const { user, isLoading: authLoading } = useAuth();
+  const { user } = useAuth();
   return useQuery({
     queryKey: ['representative', 'current', user?.id ?? 'anon'],
     queryFn: () => RepresentativeService.getCurrentRepresentative(),
-    enabled: !!user && !authLoading,
+    enabled: true, // Always enabled - let service handle session check
     staleTime: 0,
     refetchOnMount: 'always',
     refetchOnWindowFocus: 'always',

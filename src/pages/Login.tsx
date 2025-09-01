@@ -10,6 +10,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { useAuth } from '@/hooks/useAuth';
+import { RepresentativeService } from '@/services/representativeService';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -53,8 +54,18 @@ export default function Login() {
           toast.error('Erro ao fazer login. Tente novamente.');
         }
       } else {
-        // Login successful - redirect to homepage
-        navigate('/');
+        // Login successful - check if user is a representative
+        try {
+          const representative = await RepresentativeService.getCurrentRepresentative();
+          if (representative) {
+            navigate('/representative');
+          } else {
+            navigate('/');
+          }
+        } catch (repError) {
+          console.log('Error checking representative status, redirecting to homepage:', repError);
+          navigate('/');
+        }
       }
     } catch (error) {
       console.error('Erro durante login:', error);

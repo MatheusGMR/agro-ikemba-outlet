@@ -24,14 +24,20 @@ export default function RepresentativeProtectedRoute({ children }: Representativ
   });
 
   useEffect(() => {
-    if (auth.isLoading) return;
-    if (!auth.user) {
+    // Only redirect if auth has finished loading and there's no user
+    if (!auth.isLoading && !auth.user) {
       navigate('/login');
     }
   }, [auth.isLoading, auth.user, navigate]);
 
+  // Show loading while auth is loading or while representative query is loading
   if (auth.isLoading || isLoading) {
     return <LoadingFallback />;
+  }
+
+  // If user is authenticated but no session found, redirect to login
+  if (!auth.user) {
+    return null; // useEffect will handle redirect
   }
 
   if (error) {
