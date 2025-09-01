@@ -207,6 +207,10 @@ export default function Navbar() {
                       Painel Rep
                     </Link>
                   </Button>}
+                
+                {!authUser && !supaUser && <Button variant="outline" size="sm" asChild>
+                    <Link to="/representative/register">Seja um Representante</Link>
+                  </Button>}
                 <Button variant="outline" onClick={handleLogout}>
                   Sair
                 </Button>
