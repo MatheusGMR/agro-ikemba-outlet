@@ -247,54 +247,96 @@ export class RepresentativeService {
 
   // Dashboard Stats
   static async getDashboardStats(representativeId: string): Promise<RepDashboardStats> {
-    // Buscar oportunidades ativas
-    const { data: opportunities, error: oppError } = await supabase
-      .from('opportunities')
-      .select(`
-        *,
-        client:rep_clients(*)
-      `)
-      .eq('representative_id', representativeId)
-      .eq('status', 'active');
+    console.info('🔄 Iniciando busca de estatísticas do dashboard para:', representativeId);
 
-    if (oppError) throw oppError;
+    // Buscar oportunidades ativas com robustez
+    let opportunities: Opportunity[] = [];
+    try {
+      const { data, error } = await supabase
+        .from('opportunities')
+        .select(`
+          *,
+          client:rep_clients(*)
+        `)
+        .eq('representative_id', representativeId)
+        .eq('status', 'active');
 
-    // Buscar atividades recentes
-    const { data: activities, error: actError } = await supabase
-      .from('rep_activities')
-      .select(`
-        *,
-        client:rep_clients(*),
-        opportunity:opportunities(*)
-      `)
-      .eq('representative_id', representativeId)
-      .order('created_at', { ascending: false })
-      .limit(10);
+      if (error) {
+        console.error('❌ Erro ao buscar oportunidades:', error);
+      } else {
+        opportunities = (data || []) as Opportunity[];
+        console.info('✅ Oportunidades carregadas:', opportunities.length);
+      }
+    } catch (error) {
+      console.error('❌ Falha crítica ao buscar oportunidades:', error);
+    }
 
-    if (actError) throw actError;
+    // Buscar atividades recentes com robustez
+    let activities: RepActivity[] = [];
+    try {
+      const { data, error } = await supabase
+        .from('rep_activities')
+        .select(`
+          *,
+          client:rep_clients(*),
+          opportunity:opportunities(*)
+        `)
+        .eq('representative_id', representativeId)
+        .order('created_at', { ascending: false })
+        .limit(10);
 
-    // Buscar notificações não lidas
-    const { data: notifications, error: notError } = await supabase
-      .from('rep_notifications')
-      .select('*')
-      .eq('representative_id', representativeId)
-      .eq('read', false)
-      .order('created_at', { ascending: false });
+      if (error) {
+        console.error('❌ Erro ao buscar atividades:', error);
+      } else {
+        activities = (data || []) as RepActivity[];
+        console.info('✅ Atividades carregadas:', activities.length);
+      }
+    } catch (error) {
+      console.error('❌ Falha crítica ao buscar atividades:', error);
+    }
 
-    if (notError) throw notError;
+    // Buscar notificações não lidas com robustez
+    let notifications: RepNotification[] = [];
+    try {
+      const { data, error } = await supabase
+        .from('rep_notifications')
+        .select('*')
+        .eq('representative_id', representativeId)
+        .eq('read', false)
+        .order('created_at', { ascending: false });
 
-    // Buscar comissões do mês
-    const startOfMonth = new Date();
-    startOfMonth.setDate(1);
-    startOfMonth.setHours(0, 0, 0, 0);
+      if (error) {
+        console.error('❌ Erro ao buscar notificações:', error);
+      } else {
+        notifications = (data || []) as RepNotification[];
+        console.info('✅ Notificações carregadas:', notifications.length);
+      }
+    } catch (error) {
+      console.error('❌ Falha crítica ao buscar notificações:', error);
+    }
 
-    const { data: commissions, error: commError } = await supabase
-      .from('commissions')
-      .select('*')
-      .eq('representative_id', representativeId)
-      .gte('created_at', startOfMonth.toISOString());
+    // Buscar comissões do mês com robustez
+    let commissions: Commission[] = [];
+    try {
+      const startOfMonth = new Date();
+      startOfMonth.setDate(1);
+      startOfMonth.setHours(0, 0, 0, 0);
 
-    if (commError) throw commError;
+      const { data, error } = await supabase
+        .from('commissions')
+        .select('*')
+        .eq('representative_id', representativeId)
+        .gte('created_at', startOfMonth.toISOString());
+
+      if (error) {
+        console.error('❌ Erro ao buscar comissões:', error);
+      } else {
+        commissions = (data || []) as Commission[];
+        console.info('✅ Comissões carregadas:', commissions.length);
+      }
+    } catch (error) {
+      console.error('❌ Falha crítica ao buscar comissões:', error);
+    }
 
     // Calcular comissão potencial baseada no estoque disponível
     let potentialCommission = 0;
@@ -302,22 +344,27 @@ export class RepresentativeService {
       const { data: potentialCommissionData, error: potentialError } = await supabase.functions.invoke('calculate-potential-commission');
       
       if (potentialError) {
-        console.error('Error calculating potential commission:', potentialError);
+        console.error('❌ Erro ao calcular comissão potencial via function:', potentialError);
         // Fallback para o cálculo antigo baseado em oportunidades
-        potentialCommission = (opportunities || []).reduce((sum, opp) => sum + (opp.estimated_commission || 0), 0);
+        potentialCommission = opportunities.reduce((sum, opp) => sum + (opp.estimated_commission || 0), 0);
+        console.info('🔄 Usando fallback para comissão potencial:', potentialCommission);
       } else {
         potentialCommission = potentialCommissionData?.total_potential_commission || 0;
+        console.info('✅ Comissão potencial calculada via function:', potentialCommission);
       }
     } catch (error) {
-      console.error('Error calling potential commission function:', error);
+      console.error('❌ Falha crítica ao chamar function de comissão potencial:', error);
       // Fallback para o cálculo antigo baseado em oportunidades
-      potentialCommission = (opportunities || []).reduce((sum, opp) => sum + (opp.estimated_commission || 0), 0);
+      potentialCommission = opportunities.reduce((sum, opp) => sum + (opp.estimated_commission || 0), 0);
+      console.info('🔄 Usando fallback para comissão potencial:', potentialCommission);
     }
 
-    // Calcular estatísticas
-    const activeOpportunities = opportunities || [];
-    const pendingProposals = activeOpportunities.filter(opp => ['proposal_sent', 'client_approval'].includes(opp.stage)).length;
-    const totalCommissionThisMonth = (commissions || []).reduce((sum, comm) => sum + comm.commission_amount, 0);
+    // Calcular estatísticas usando os novos estágios em português
+    const activeOpportunities = opportunities;
+    const pendingProposals = activeOpportunities.filter(opp => 
+      ['proposta_apresentada', 'em_aprovacao'].includes(opp.stage)
+    ).length;
+    const totalCommissionThisMonth = commissions.reduce((sum, comm) => sum + comm.commission_amount, 0);
 
     // Agrupar por estágio
     const stageGroups = activeOpportunities.reduce((acc, opp) => {
@@ -341,16 +388,26 @@ export class RepresentativeService {
       .sort((a, b) => (b.estimated_value || 0) - (a.estimated_value || 0))
       .slice(0, 5);
 
-    return {
+    const stats = {
       potential_commission: potentialCommission,
       active_opportunities: activeOpportunities.length,
       pending_proposals: pendingProposals,
       total_commission_this_month: totalCommissionThisMonth,
       pipeline_stages: pipelineStages,
       top_opportunities: topOpportunities as Opportunity[],
-      recent_activities: (activities || []) as RepActivity[],
-      pending_notifications: (notifications || []) as RepNotification[]
+      recent_activities: activities as RepActivity[],
+      pending_notifications: notifications as RepNotification[]
     };
+
+    console.info('✅ Estatísticas do dashboard calculadas:', {
+      potentialCommission,
+      activeOpportunities: activeOpportunities.length,
+      pendingProposals,
+      totalCommissionThisMonth,
+      pipelineStages: pipelineStages.length
+    });
+
+    return stats;
   }
 
   // Commissions

@@ -7,7 +7,7 @@ import OpportunityKanban from './OpportunityKanban';
 
 export default function RepDashboard() {
   const { data: representative } = useCurrentRepresentative();
-  const { data: stats, isLoading } = useDashboardStats(representative?.id || '');
+  const { data: stats, isLoading, error } = useDashboardStats(representative?.id || '');
 
   if (isLoading) {
     return (
@@ -18,7 +18,19 @@ export default function RepDashboard() {
     );
   }
 
-  if (!stats) return null;
+  // Criar stats padrão se não houver dados
+  const defaultStats = {
+    potential_commission: 0,
+    active_opportunities: 0,
+    pending_proposals: 0,
+    total_commission_this_month: 0,
+    pipeline_stages: [],
+    top_opportunities: [],
+    recent_activities: [],
+    pending_notifications: []
+  };
+
+  const dashboardStats = stats || defaultStats;
 
   return (
     <div className="space-y-6">
@@ -39,8 +51,17 @@ export default function RepDashboard() {
         </div>
       </div>
 
+      {/* Error Alert */}
+      {error && !stats && (
+        <div className="p-4 rounded-lg bg-yellow-50 border border-yellow-200">
+          <p className="text-sm text-yellow-800">
+            ⚠️ Alguns dados podem não estar atualizados. Verifique sua conexão e tente novamente.
+          </p>
+        </div>
+      )}
+
       {/* Stats Carousel */}
-      <StatsCarousel stats={stats} />
+      <StatsCarousel stats={dashboardStats} />
 
       {/* Opportunity Kanban */}
       <OpportunityKanban />
