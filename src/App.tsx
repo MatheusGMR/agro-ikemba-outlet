@@ -18,6 +18,7 @@ import BlogPost from "./pages/BlogPost";
 import AdminProtectedRoute from "./components/admin/AdminProtectedRoute";
 import RepresentativeProtectedRoute from "./components/representative/RepresentativeProtectedRoute";
 import RepresentativeRegistration from "./pages/RepresentativeRegistration";
+import RepresentativeLogin from "./pages/RepresentativeLogin";
 import TestPage from '@/pages/TestPage';
 import Simulador from './pages/Simulador';
 import Representative from './pages/Representative';
@@ -46,7 +47,10 @@ function App() {
                   <Route path="/checkout" element={<Checkout />} />
                   <Route path="/register" element={<Registration />} />
                   <Route path="/login" element={<Login />} />
+                  <Route path="/representative/login" element={<RepresentativeLogin />} />
                   <Route path="/representative/register" element={<RepresentativeRegistration />} />
+                  {/* Legacy route for backwards compatibility */}
+                  <Route path="/representative-registration" element={<RepresentativeRegistration />} />
                   <Route path="/blog" element={<Blog />} />
                   <Route path="/blog/:slug" element={<BlogPost />} />
                   <Route path="/admin" element={

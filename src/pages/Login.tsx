@@ -17,18 +17,14 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
-  const { signIn, user, isRepresentative } = useAuth();
+  const { signIn, user } = useAuth();
 
   // Redirect if already logged in
   useEffect(() => {
     if (user) {
-      if (isRepresentative) {
-        navigate('/representative');
-      } else {
-        navigate('/');
-      }
+      navigate('/');
     }
-  }, [user, isRepresentative, navigate]);
+  }, [user, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,8 +53,8 @@ export default function Login() {
           toast.error('Erro ao fazer login. Tente novamente.');
         }
       } else {
-        // Login successful - redirect will be handled by auth state change
-        // Don't manually redirect here to avoid conflicts
+        // Login successful - redirect to homepage
+        navigate('/');
       }
     } catch (error) {
       console.error('Erro durante login:', error);

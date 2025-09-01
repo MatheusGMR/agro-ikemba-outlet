@@ -207,14 +207,21 @@ export default function Navbar() {
                       Painel Rep
                     </Link>
                   </Button>}
-                
-                {!authUser && !supaUser && <Button variant="outline" size="sm" asChild>
-                    <Link to="/representative/register">Seja um Representante</Link>
-                  </Button>}
+                 
                 <Button variant="outline" onClick={handleLogout}>
                   Sair
                 </Button>
               </div> : <>
+                <Link to="/representative/login">
+                  <Button variant="ghost" size="sm">
+                    Painel do Representante
+                  </Button>
+                </Link>
+                <Link to="/representative/register">
+                  <Button variant="outline" size="sm">
+                    Seja um Representante
+                  </Button>
+                </Link>
                 <Button variant="outline" asChild>
                   <Link to="/login">Entrar</Link>
                 </Button>
@@ -274,13 +281,19 @@ export default function Navbar() {
                     Sair
                   </Button>
                 </> : <>
-                  <Button variant="outline" className="w-full mb-2" asChild>
-                    <Link to="/login">Entrar</Link>
-                  </Button>
-                  <Button className="w-full bg-primary hover:bg-primary/90" asChild>
-                    <Link to="/register">Cadastrar</Link>
-                  </Button>
-                </>}
+                   <Button variant="outline" className="w-full mb-2" asChild>
+                     <Link to="/representative/login">Painel do Representante</Link>
+                   </Button>
+                   <Button variant="outline" className="w-full mb-2" asChild>
+                     <Link to="/representative/register">Seja um Representante</Link>
+                   </Button>
+                   <Button variant="outline" className="w-full mb-2" asChild>
+                     <Link to="/login">Entrar</Link>
+                   </Button>
+                   <Button className="w-full bg-primary hover:bg-primary/90" asChild>
+                     <Link to="/register">Cadastrar</Link>
+                   </Button>
+                 </>}
             </div>
           </nav>
         </div>}

@@ -95,7 +95,7 @@ export default function RepresentativeRegistration() {
           toast.success('Representante cadastrado com sucesso! Aguarde aprovação e verifique seu email.');
         }
 
-        navigate('/login');
+        navigate('/representative/login');
       }
     } catch (error: any) {
       console.error('Registration error:', error);
@@ -221,7 +221,7 @@ export default function RepresentativeRegistration() {
 
             <div className="mt-4 text-center text-sm">
               <span className="text-muted-foreground">Já tem conta? </span>
-              <Button variant="link" onClick={() => navigate('/login')} className="p-0">
+              <Button variant="link" onClick={() => navigate('/representative/login')} className="p-0">
                 Fazer login
               </Button>
             </div>
