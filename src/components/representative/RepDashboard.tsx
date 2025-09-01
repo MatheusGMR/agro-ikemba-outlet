@@ -73,7 +73,7 @@ export default function RepDashboard() {
         <StatCard
           title="Comissão Potencial"
           value={formatCurrency(stats.potential_commission)}
-          description="Valor estimado do pipeline"
+          description="Valor total baseado no estoque disponível"
           icon={<DollarSign className="h-5 w-5 text-primary" />}
           trend={{ value: 12.5, isPositive: true }}
         />

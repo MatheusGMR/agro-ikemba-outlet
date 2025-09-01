@@ -276,9 +276,26 @@ export class RepresentativeService {
 
     if (commError) throw commError;
 
+    // Calcular comissão potencial baseada no estoque disponível
+    let potentialCommission = 0;
+    try {
+      const { data: potentialCommissionData, error: potentialError } = await supabase.functions.invoke('calculate-potential-commission');
+      
+      if (potentialError) {
+        console.error('Error calculating potential commission:', potentialError);
+        // Fallback para o cálculo antigo baseado em oportunidades
+        potentialCommission = (opportunities || []).reduce((sum, opp) => sum + (opp.estimated_commission || 0), 0);
+      } else {
+        potentialCommission = potentialCommissionData?.total_potential_commission || 0;
+      }
+    } catch (error) {
+      console.error('Error calling potential commission function:', error);
+      // Fallback para o cálculo antigo baseado em oportunidades
+      potentialCommission = (opportunities || []).reduce((sum, opp) => sum + (opp.estimated_commission || 0), 0);
+    }
+
     // Calcular estatísticas
     const activeOpportunities = opportunities || [];
-    const potentialCommission = activeOpportunities.reduce((sum, opp) => sum + (opp.estimated_commission || 0), 0);
     const pendingProposals = activeOpportunities.filter(opp => ['proposal_sent', 'client_approval'].includes(opp.stage)).length;
     const totalCommissionThisMonth = (commissions || []).reduce((sum, comm) => sum + comm.commission_amount, 0);
 

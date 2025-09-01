@@ -18,3 +18,6 @@ verify_jwt = false
 
 [functions.create-auth-user]
 verify_jwt = false
+
+[functions.calculate-potential-commission]
+verify_jwt = false
