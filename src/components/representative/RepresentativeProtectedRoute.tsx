@@ -46,9 +46,9 @@ export default function RepresentativeProtectedRoute({ children }: Representativ
     return null;
   }
 
-  // Show loading while representative query is loading/fetching
-  if (isLoading || isFetching) {
-    console.log('Representative query loading...');
+  // Show loading only on initial load (do not block on background refetch)
+  if (isLoading && !isFetched) {
+    console.log('Representative initial load...');
     return <LoadingFallback />;
   }
 

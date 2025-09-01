@@ -18,10 +18,10 @@ export function useCurrentRepresentative() {
     queryKey: ['representative', 'current', user?.id ?? 'anon'],
     queryFn: () => RepresentativeService.getCurrentRepresentative(),
     enabled: !!user?.id, // Only enabled when user exists - prevents race conditions
-    staleTime: 0,
-    refetchOnMount: 'always',
-    refetchOnWindowFocus: 'always',
-    refetchOnReconnect: 'always',
+    staleTime: 300000, // 5 minutes to avoid aggressive re-renders
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: true,
     retry: 2
   });
 }
