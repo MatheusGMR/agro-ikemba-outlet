@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCurrentRepresentative } from '@/hooks/useRepresentative';
 import { LoadingFallback } from '@/components/ui/LoadingFallback';
-import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 
 interface RepresentativeProtectedRouteProps {
   children: React.ReactNode;
@@ -10,32 +10,37 @@ interface RepresentativeProtectedRouteProps {
 
 export default function RepresentativeProtectedRoute({ children }: RepresentativeProtectedRouteProps) {
   const navigate = useNavigate();
-  const { data: representative, isLoading, error } = useCurrentRepresentative();
-
-  useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      console.log('RepresentativeProtectedRoute - User check:', !!user);
-      if (!user) {
-        navigate('/login');
-        return;
-      }
-    };
-
-    checkAuth();
-  }, [navigate]);
+  const { user, isLoading: authLoading } = useAuth();
+  const { data: representative, isLoading: repLoading, error } = useCurrentRepresentative();
 
   console.log('RepresentativeProtectedRoute - State:', {
-    isLoading,
+    user: !!user,
+    authLoading,
+    repLoading,
     hasRepresentative: !!representative,
     error: error?.message
   });
 
-  if (isLoading) {
-    console.log('RepresentativeProtectedRoute - Still loading...');
+  // Show loading while authentication or representative data is loading
+  if (authLoading || repLoading) {
+    console.log('RepresentativeProtectedRoute - Loading...');
     return <LoadingFallback />;
   }
 
+  // Redirect to representative login if no user
+  useEffect(() => {
+    if (!authLoading && !user) {
+      console.log('RepresentativeProtectedRoute - No user, redirecting to login');
+      navigate('/representative/login');
+    }
+  }, [user, authLoading, navigate]);
+
+  // If no user, don't render anything (redirect will happen)
+  if (!user) {
+    return null;
+  }
+
+  // If user exists but no representative data or error, show access denied
   if (error || !representative) {
     console.log('RepresentativeProtectedRoute - Access denied:', { error: error?.message, representative: !!representative });
     return (
@@ -59,5 +64,6 @@ export default function RepresentativeProtectedRoute({ children }: Representativ
     );
   }
 
+  console.log('RepresentativeProtectedRoute - Access granted');
   return <>{children}</>;
 }
