@@ -1,6 +1,6 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, DollarSign, Target, FileText, TrendingUp } from 'lucide-react';
+import { ChevronLeft, ChevronRight, DollarSign, Target, TrendingUp } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 import { RepDashboardStats } from '@/types/representative';
 import { useState } from 'react';
@@ -12,6 +12,11 @@ interface StatsCarouselProps {
 export default function StatsCarousel({ stats }: StatsCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
 
+  // Calculate total value of active opportunities
+  const activeOpportunitiesValue = stats.pipeline_stages.reduce(
+    (total, stage) => total + (stage.value || 0), 0
+  );
+
   const indicators = [
     {
       title: "Comissão Potencial",
@@ -22,17 +27,10 @@ export default function StatsCarousel({ stats }: StatsCarouselProps) {
     },
     {
       title: "Oportunidades Ativas",
-      value: stats.active_opportunities.toString(),
-      description: "Negociações em andamento",
+      value: formatCurrency(activeOpportunitiesValue),
+      description: "Valor total das negociações em andamento",
       icon: <Target className="h-8 w-8 text-primary" />,
       color: "bg-gradient-to-br from-blue-500 to-blue-600"
-    },
-    {
-      title: "Propostas Pendentes",
-      value: stats.pending_proposals.toString(),
-      description: "Aguardando aprovação",
-      icon: <FileText className="h-8 w-8 text-primary" />,
-      color: "bg-gradient-to-br from-orange-500 to-orange-600"
     },
     {
       title: "Comissão Este Mês",
