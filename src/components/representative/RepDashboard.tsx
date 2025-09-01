@@ -57,28 +57,26 @@ export default function RepDashboard() {
     <div className="space-y-6 pb-20 sm:pb-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <div className="flex items-center gap-2 mb-2">
-            {!logoError ? (
-              <img 
-                alt="Agro Ikemba" 
-                src={getLogoUrl()} 
-                loading="eager" 
-                decoding="async" 
-                className="h-12 w-auto object-contain" 
-                onError={handleLogoError} 
-              />
-            ) : (
-              <div className="h-12 w-24 bg-gradient-to-r from-primary to-primary/80 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">
-                  <span className="text-white">Agro</span>
-                  <span className="text-green-200">Ikemba</span>
-                </span>
-              </div>
-            )}
-          </div>
+        <div className="flex items-center gap-4">
+          {!logoError ? (
+            <img 
+              alt="Agro Ikemba" 
+              src={getLogoUrl()} 
+              loading="eager" 
+              decoding="async" 
+              className="h-12 w-auto object-contain" 
+              onError={handleLogoError} 
+            />
+          ) : (
+            <div className="h-12 w-24 bg-gradient-to-r from-primary to-primary/80 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-sm">
+                <span className="text-white">Agro</span>
+                <span className="text-green-200">Ikemba</span>
+              </span>
+            </div>
+          )}
           <p className="text-muted-foreground">
-            Olá, {representative?.name}! Aqui está seu resumo de vendas.
+            Olá, {representative?.name}
           </p>
         </div>
         
