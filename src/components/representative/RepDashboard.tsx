@@ -12,6 +12,8 @@ export default function RepDashboard() {
   const { data: stats, isLoading, error } = useDashboardStats(representative?.id || '');
   const isMobile = useIsMobile();
 
+  console.info('🏠 RepDashboard - representative:', representative?.id, 'stats loading:', isLoading, 'stats error:', error, 'has stats:', !!stats);
+
   if (isLoading) {
     return (
       <div className="space-y-6">

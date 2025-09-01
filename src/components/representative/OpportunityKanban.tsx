@@ -123,10 +123,12 @@ function OpportunityCard({ opportunity, onAdvanceStage, onCreateProposal }: Oppo
 
 export default function OpportunityKanban() {
   const { data: representative } = useCurrentRepresentative();
-  const { data: opportunities = [], isLoading } = useOpportunities(representative?.id || '');
+  const { data: opportunities = [], isLoading, error } = useOpportunities(representative?.id || '');
   const isMobile = useIsMobile();
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+
+  console.info('🎯 OpportunityKanban - representative:', representative?.id, 'opportunities:', opportunities.length, 'loading:', isLoading, 'error:', error);
 
   // Auto-switch to list view on mobile
   useEffect(() => {
@@ -161,6 +163,34 @@ export default function OpportunityKanban() {
                 </div>
               ))}
             </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Show error state with friendly message
+  if (error && opportunities.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Pipeline de Oportunidades</CardTitle>
+        </CardHeader>
+        <CardContent className="p-6">
+          <div className="text-center py-8">
+            <p className="text-muted-foreground mb-4">
+              ⚠️ Não foi possível carregar as oportunidades no momento.
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Verifique sua conexão e tente novamente.
+            </p>
+            <Button 
+              variant="outline" 
+              className="mt-4"
+              onClick={() => window.location.reload()}
+            >
+              Tentar Novamente
+            </Button>
           </div>
         </CardContent>
       </Card>
