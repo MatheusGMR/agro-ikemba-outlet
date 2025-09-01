@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, X, Shield, Crown, ShoppingCart, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { hardLogout } from '@/utils/logout';
 import { cn } from '@/lib/utils';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useAuth } from '@/hooks/useAuth';
@@ -126,33 +127,18 @@ export default function Navbar() {
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
-  const handleLogout = async () => {
-    try {
-      // Always use authSignOut if available (handles Supabase auth)
-      if (authUser) {
-        await authSignOut();
-        // Ensure redirect even if the hook didn't navigate for any reason
-        window.location.href = '/';
-      } else {
-        // Fallback for other auth types (admin, legacy users)
-        await supabase.auth.signOut();
-        logout(); // Admin logout
-        
-        // Clear local states
-        setUser(null);
-        setSupaUser(null);
-        localStorage.removeItem('user');
-        
-        window.location.href = '/';
-      }
-    } catch (error) {
-      console.error('Logout error:', error);
-      // Force cleanup and redirect even on error
-      setUser(null);
-      setSupaUser(null);
-      localStorage.removeItem('user');
-      window.location.href = '/';
+  const handleLogoutFallback = async (e?: React.MouseEvent) => {
+    console.info('🎯 Logout fallback triggered');
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
     }
+    
+    // Close mobile menu if open
+    setIsMenuOpen(false);
+    
+    // Use centralized logout utility
+    await hardLogout();
   };
 
   // Determine if user is logged in (prioritize auth context)
@@ -217,8 +203,14 @@ export default function Navbar() {
                     </Link>
                   </Button>}
                  
-                <Button variant="outline" type="button" onClick={handleLogout}>
-                  Sair
+                <Button variant="outline" asChild>
+                  <Link 
+                    to="/logout" 
+                    onClick={handleLogoutFallback}
+                    onPointerUp={handleLogoutFallback}
+                  >
+                    Sair
+                  </Link>
                 </Button>
               </div> : <>
                 <Button variant="outline" asChild>
@@ -276,8 +268,14 @@ export default function Navbar() {
                         Painel Representante
                       </Link>
                     </Button>}
-                  <Button variant="outline" type="button" className="w-full" onClick={handleLogout}>
-                    Sair
+                  <Button variant="outline" className="w-full" asChild>
+                    <Link 
+                      to="/logout" 
+                      onClick={handleLogoutFallback}
+                      onPointerUp={handleLogoutFallback}
+                    >
+                      Sair
+                    </Link>
                   </Button>
                  </> : <>
                    <Button variant="outline" className="w-full mb-2" asChild>
