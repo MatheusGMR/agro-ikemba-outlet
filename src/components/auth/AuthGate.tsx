@@ -294,6 +294,14 @@ export default function AuthGate({ children }: AuthGateProps) {
 
       // Registration Flow
       if (!isLogin) {
+        console.log('=== INÍCIO DO PROCESSO DE CADASTRO (POPUP) ===');
+        console.log('Dados do formulário:', {
+          name: formData.name,
+          email: formData.email,
+          tipo: formData.tipo,
+          conheceu: formData.conheceu
+        });
+
         const { error } = await supabase.from('users').insert({
           name: formData.name,
           email: formData.email,
@@ -309,10 +317,40 @@ export default function AuthGate({ children }: AuthGateProps) {
           }
           throw error;
         }
+
+        console.log('Usuário salvo no Supabase, enviando notificações...');
+
+        // Tentar enviar emails via Edge Function (não crítico)
+        try {
+          const registrationData = {
+            name: formData.name,
+            email: formData.email,
+            tipo: formData.tipo,
+            conheceu: formData.conheceu,
+            phone: formData.phone,
+            company: formData.company
+          };
+
+          const { data: emailResult, error: emailError } = await supabase.functions.invoke('send-registration', {
+            body: registrationData
+          });
+
+          if (emailError) {
+            console.warn('Aviso: Erro no envio de emails (popup):', emailError);
+          } else if (emailResult?.success) {
+            console.log('Emails enviados com sucesso (popup)');
+          } else {
+            console.warn('Aviso: Falha no envio de emails (popup):', emailResult);
+          }
+        } catch (emailError) {
+          console.warn('Aviso: Erro inesperado no envio de emails (popup):', emailError);
+        }
+
+        console.log('=== CADASTRO CONCLUÍDO COM SUCESSO (POPUP) ===');
         
         toast({
           title: "Cadastro realizado com sucesso!",
-          description: "Aguarde a aprovação para acessar o sistema."
+          description: "Sua solicitação foi enviada para análise. O administrador será notificado e você receberá uma resposta em até 24 horas."
         });
 
         // Switch to login mode
