@@ -41,7 +41,7 @@ export default function RepDashboard() {
   const dashboardStats = stats || defaultStats;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-20 sm:pb-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
@@ -51,7 +51,12 @@ export default function RepDashboard() {
           </p>
         </div>
         
-        <div className="flex gap-2">
+        {/* Desktop Actions */}
+        <div className="hidden sm:flex gap-2">
+          <Button variant="outline">
+            <Plus className="h-4 w-4 mr-2" />
+            Nova Oportunidade
+          </Button>
           <InventoryConsultation>
             <Button variant="outline">
               <Package className="h-4 w-4 mr-2" />
@@ -83,6 +88,37 @@ export default function RepDashboard() {
 
       {/* Opportunity Kanban */}
       <OpportunityKanban />
+
+      {/* Mobile Floating Action Buttons */}
+      <div className="sm:hidden fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
+        <div className="flex items-center justify-center gap-4 bg-background/95 backdrop-blur-sm rounded-full px-6 py-3 shadow-lg border">
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-12 w-12 rounded-full p-0 hover:bg-primary hover:text-primary-foreground transition-colors"
+          >
+            <Plus className="h-5 w-5" />
+          </Button>
+          
+          <InventoryConsultation>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-12 w-12 rounded-full p-0 hover:bg-primary hover:text-primary-foreground transition-colors"
+            >
+              <Package className="h-5 w-5" />
+            </Button>
+          </InventoryConsultation>
+          
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-12 w-12 rounded-full p-0 hover:bg-primary hover:text-primary-foreground transition-colors"
+          >
+            <Users className="h-5 w-5" />
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }
