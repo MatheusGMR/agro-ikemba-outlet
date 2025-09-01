@@ -18,57 +18,14 @@ export class RepresentativeService {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return null;
 
-    // First, try to find by user_id
-    let { data, error } = await supabase
+    const { data, error } = await supabase
       .from('representatives')
       .select('*')
       .eq('user_id', user.id)
-      .maybeSingle();
+      .single();
 
-    if (error) {
-      console.error('Error fetching representative by user_id:', error);
-      return null;
-    }
-
-    // If found by user_id, return it
-    if (data) {
-      return data as Representative;
-    }
-
-    // If not found by user_id, try to find by email for auto-linking
-    console.log('Representative not found by user_id, trying by email:', user.email);
-    const { data: emailData, error: emailError } = await supabase
-      .from('representatives')
-      .select('*')
-      .eq('email', user.email)
-      .maybeSingle();
-
-    if (emailError) {
-      console.error('Error fetching representative by email:', emailError);
-      return null;
-    }
-
-    // If found by email, link it to the current user
-    if (emailData) {
-      console.log('Found representative by email, linking to user:', { id: emailData.id, email: user.email });
-      const { data: updatedData, error: updateError } = await supabase
-        .from('representatives')
-        .update({ user_id: user.id })
-        .eq('id', emailData.id)
-        .select()
-        .single();
-
-      if (updateError) {
-        console.error('Error linking representative to user:', updateError);
-        return emailData as Representative; // Return original data even if update failed
-      }
-
-      console.log('Successfully linked representative to user');
-      return updatedData as Representative;
-    }
-
-    // No representative found
-    return null;
+    if (error) throw error;
+    return data as Representative;
   }
 
   static async createRepresentative(rep: Omit<Representative, 'id' | 'created_at' | 'updated_at'>): Promise<Representative> {

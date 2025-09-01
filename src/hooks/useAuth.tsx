@@ -26,20 +26,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state change:', event, !!session?.user);
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
           // Check if user is a representative
-          try {
-            const representative = await RepresentativeService.getCurrentRepresentative();
-            console.log('Representative found:', !!representative);
-            setIsRepresentative(!!representative);
-          } catch (error) {
-            console.error('Error checking representative status:', error);
-            setIsRepresentative(false);
-          }
+          setTimeout(async () => {
+            try {
+              const representative = await RepresentativeService.getCurrentRepresentative();
+              setIsRepresentative(!!representative);
+            } catch (error) {
+              setIsRepresentative(false);
+            }
+          }, 0);
         } else {
           setIsRepresentative(false);
         }
@@ -49,24 +48,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     );
 
     // Check for existing session
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      console.log('Initial session check:', !!session?.user);
+    supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        try {
-          const representative = await RepresentativeService.getCurrentRepresentative();
-          console.log('Initial representative check:', !!representative);
-          setIsRepresentative(!!representative);
-        } catch (error) {
-          console.error('Error checking initial representative status:', error);
-          setIsRepresentative(false);
-        }
-      } else {
-        setIsRepresentative(false);
-      }
-      
       setIsLoading(false);
     });
 
@@ -87,31 +71,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signOut = async () => {
-    try {
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        console.error('Logout error:', error);
-        toast.error('Erro ao fazer logout. Tentando novamente...');
-        // Force cleanup even if logout fails
-      }
-      
-      // Clear all states
-      setUser(null);
-      setSession(null);
+    const { error } = await supabase.auth.signOut();
+    if (!error) {
       setIsRepresentative(false);
-      
-      // Clear localStorage
-      localStorage.removeItem('user');
-      
       toast.success('Logout realizado com sucesso!');
-      
-      // Redirect to home page
-      window.location.href = '/';
-    } catch (error) {
-      console.error('Unexpected logout error:', error);
-      toast.error('Erro inesperado durante logout');
-      // Force redirect even on error
-      window.location.href = '/';
     }
   };
 

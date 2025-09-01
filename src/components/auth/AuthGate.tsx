@@ -309,30 +309,6 @@ export default function AuthGate({ children }: AuthGateProps) {
           }
           throw error;
         }
-
-        // Send registration email notification to admin
-        try {
-          const registrationData = {
-            name: formData.name,
-            email: formData.email,
-            phone: formData.phone || '',
-            company: formData.company || '',
-            tipo: formData.tipo,
-            conheceu: formData.conheceu || ''
-          };
-
-          const { error: emailError } = await supabase.functions.invoke('send-registration', {
-            body: registrationData
-          });
-
-          if (emailError) {
-            console.warn('Falha ao enviar email de notificação:', emailError);
-          } else {
-            console.log('Email de notificação enviado com sucesso');
-          }
-        } catch (emailError) {
-          console.warn('Erro no envio do email de notificação:', emailError);
-        }
         
         toast({
           title: "Cadastro realizado com sucesso!",

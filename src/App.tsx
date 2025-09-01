@@ -22,7 +22,6 @@ import RepresentativeLogin from "./pages/RepresentativeLogin";
 import TestPage from '@/pages/TestPage';
 import Simulador from './pages/Simulador';
 import Representative from './pages/Representative';
-import Logout from './pages/Logout';
 import { TooltipProvider } from '@radix-ui/react-tooltip';
 import { CartProvider } from '@/contexts/CartContext';
 import { AuthProvider } from '@/hooks/useAuth';
@@ -48,7 +47,6 @@ function App() {
                   <Route path="/checkout" element={<Checkout />} />
                   <Route path="/register" element={<Registration />} />
                   <Route path="/login" element={<Login />} />
-                  <Route path="/logout" element={<Logout />} />
                   <Route path="/representative/login" element={<RepresentativeLogin />} />
                   <Route path="/representative/register" element={<RepresentativeRegistration />} />
                   {/* Legacy route for backwards compatibility */}

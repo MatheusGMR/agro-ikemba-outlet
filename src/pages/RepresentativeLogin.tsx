@@ -11,7 +11,6 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { useAuth } from '@/hooks/useAuth';
-import { RepresentativeService } from '@/services/representativeService';
 
 export default function RepresentativeLogin() {
   const [email, setEmail] = useState('');
@@ -55,21 +54,9 @@ export default function RepresentativeLogin() {
           toast.error('Erro ao fazer login. Tente novamente.');
         }
       } else {
-        // Login successful - verify representative status
-        try {
-          const representative = await RepresentativeService.getCurrentRepresentative();
-          if (representative) {
-            navigate('/representative');
-            toast.success('Login realizado com sucesso!');
-          } else {
-            setError('Acesso negado: você não está cadastrado como representante. Acesse a área de clientes ou solicite o cadastro como representante.');
-            toast.error('Acesso negado: você não está cadastrado como representante.');
-          }
-        } catch (error) {
-          console.error('Erro ao verificar status de representante:', error);
-          setError('Erro ao verificar permissões. Tente novamente.');
-          toast.error('Erro ao verificar permissões. Tente novamente.');
-        }
+        // Success - redirect to representative dashboard
+        navigate('/representative');
+        toast.success('Login realizado com sucesso!');
       }
     } catch (error) {
       console.error('Erro durante login:', error);
@@ -160,7 +147,7 @@ export default function RepresentativeLogin() {
                   </Link>
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Cliente?{' '}
+                  Usuário comum?{' '}
                   <Link to="/login" className="text-primary hover:underline">
                     Acesse aqui
                   </Link>

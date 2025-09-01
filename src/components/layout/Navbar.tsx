@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, X, Shield, Crown, ShoppingCart, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { hardLogout } from '@/utils/logout';
 import { cn } from '@/lib/utils';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useAuth } from '@/hooks/useAuth';
@@ -127,18 +126,24 @@ export default function Navbar() {
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
-  const handleLogoutFallback = async (e?: React.MouseEvent) => {
-    console.info('🎯 Logout fallback triggered');
-    if (e) {
-      e.preventDefault();
-      e.stopPropagation();
+  const handleLogout = async () => {
+    // Auth handler will take care of representative logout
+    if (authUser) {
+      await authSignOut();
+    } else {
+      // Logout from Supabase
+      await supabase.auth.signOut();
+      
+      // Logout from admin auth
+      logout();
+      
+      // Clear all local state
+      setUser(null);
+      setSupaUser(null);
+      localStorage.removeItem('user');
+      
+      window.location.href = '/';
     }
-    
-    // Close mobile menu if open
-    setIsMenuOpen(false);
-    
-    // Use centralized logout utility
-    await hardLogout();
   };
 
   // Determine if user is logged in (prioritize auth context)
@@ -203,14 +208,8 @@ export default function Navbar() {
                     </Link>
                   </Button>}
                  
-                <Button variant="outline" asChild>
-                  <Link 
-                    to="/logout" 
-                    onClick={handleLogoutFallback}
-                    onPointerUp={handleLogoutFallback}
-                  >
-                    Sair
-                  </Link>
+                <Button variant="outline" onClick={handleLogout}>
+                  Sair
                 </Button>
               </div> : <>
                 <Button variant="outline" asChild>
@@ -268,14 +267,8 @@ export default function Navbar() {
                         Painel Representante
                       </Link>
                     </Button>}
-                  <Button variant="outline" className="w-full" asChild>
-                    <Link 
-                      to="/logout" 
-                      onClick={handleLogoutFallback}
-                      onPointerUp={handleLogoutFallback}
-                    >
-                      Sair
-                    </Link>
+                  <Button variant="outline" className="w-full" onClick={handleLogout}>
+                    Sair
                   </Button>
                  </> : <>
                    <Button variant="outline" className="w-full mb-2" asChild>
