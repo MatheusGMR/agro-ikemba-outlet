@@ -21,3 +21,9 @@ verify_jwt = false
 
 [functions.calculate-potential-commission]
 verify_jwt = false
+
+[functions.approve-proposal]
+verify_jwt = false
+
+[functions.reject-proposal]
+verify_jwt = false

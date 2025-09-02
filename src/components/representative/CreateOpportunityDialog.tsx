@@ -12,9 +12,18 @@ import { useState, useMemo } from 'react';
 import { RepClient } from '@/types/representative';
 import { GroupedProduct } from '@/types/inventory';
 import { Plus, Minus, MapPin, Package, CreditCard, Truck, FileDown } from 'lucide-react';
+import ProductLocationSelector from './ProductLocationSelector';
+import { PDFGenerator } from '@/utils/pdfGenerator';
 
 interface CreateOpportunityDialogProps {
   onClose: () => void;
+}
+
+interface LocationSelection {
+  city: string;
+  state: string;
+  quantity: number;
+  available_volume: number;
 }
 
 interface OpportunityProduct {
@@ -24,6 +33,7 @@ interface OpportunityProduct {
   unit_price: number;
   commission_unit: number;
   available_locations: string[];
+  selected_locations: LocationSelection[];
   closest_location?: string;
 }
 
@@ -44,6 +54,8 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
   const [selectedClient, setSelectedClient] = useState<RepClient | null>(null);
   const [selectedProducts, setSelectedProducts] = useState<OpportunityProduct[]>([]);
   const [currentStep, setCurrentStep] = useState<'basic' | 'products' | 'conditions' | 'review'>('basic');
+  const [showLocationSelector, setShowLocationSelector] = useState(false);
+  const [selectedProductForLocation, setSelectedProductForLocation] = useState<GroupedProduct | null>(null);
 
   const handleClientChange = (clientId: string) => {
     const client = clients.find(c => c.id === clientId);
@@ -89,24 +101,42 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
   };
 
   const addProduct = (product: GroupedProduct) => {
+    setSelectedProductForLocation(product);
+    setShowLocationSelector(true);
+  };
+
+  const handleLocationSelection = (locations: any[]) => {
+    if (!selectedProductForLocation) return;
+
+    const product = selectedProductForLocation;
     const existingIndex = selectedProducts.findIndex(p => p.sku === product.sku);
     
+    const totalQuantity = locations.reduce((sum, loc) => sum + loc.quantity, 0);
+    
     if (existingIndex >= 0) {
-      // Update quantity
+      // Update existing product
       setSelectedProducts(prev => prev.map((item, index) => 
         index === existingIndex 
-          ? { ...item, quantity: item.quantity + 1 }
+          ? { 
+              ...item, 
+              quantity: totalQuantity,
+              selected_locations: locations.map(loc => ({
+                city: loc.city,
+                state: loc.state,
+                quantity: loc.quantity,
+                available_volume: loc.available_volume
+              }))
+            }
           : item
       ));
     } else {
       // Add new product
-      const locations = [...new Set(
+      const availableLocations = [...new Set(
         product.all_items.map(item => `${item.city}, ${item.state}`)
       )];
-      
+
       let closestLocation = '';
       if (selectedClient && selectedClient.city && selectedClient.state) {
-        // Logic for finding closest location (same as updateProductProximities)
         const sameStateItems = product.all_items.filter(
           inv => inv.state === selectedClient.state
         );
@@ -127,15 +157,23 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
       const newProduct: OpportunityProduct = {
         sku: product.sku,
         name: product.name,
-        quantity: 1,
+        quantity: totalQuantity,
         unit_price: product.main_item.client_price,
         commission_unit: product.main_item.commission_unit,
-        available_locations: locations,
+        available_locations: availableLocations,
+        selected_locations: locations.map(loc => ({
+          city: loc.city,
+          state: loc.state,
+          quantity: loc.quantity,
+          available_volume: loc.available_volume
+        })),
         closest_location: closestLocation
       };
       
       setSelectedProducts(prev => [...prev, newProduct]);
     }
+    
+    setSelectedProductForLocation(null);
   };
 
   const removeProduct = (sku: string) => {
@@ -164,15 +202,27 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
     return { total_value, total_commission };
   }, [selectedProducts]);
 
-  const generatePDF = () => {
-    console.log('Generating PDF with data:', {
-      client: selectedClient,
-      products: selectedProducts,
-      payment: formData.payment_method,
-      delivery: formData.delivery_method,
-      totals: calculateTotals
-    });
-    // TODO: Implement PDF generation
+  const generatePDF = async () => {
+    if (!selectedClient) return;
+
+    try {
+      const proposalData = {
+        proposal_number: `PROP-${Date.now()}`,
+        validity_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days
+        payment_terms: formData.payment_method === 'vista' ? 'À Vista' : 'Crédito',
+        delivery_terms: formData.delivery_method === 'entrega' ? 'Com Entrega' : 'Retirada',
+        observations: formData.description
+      };
+
+      await PDFGenerator.downloadProposalPDF({
+        proposal: proposalData as any,
+        client: selectedClient,
+        products: selectedProducts,
+        totals: calculateTotals
+      });
+    } catch (error) {
+      console.error('Erro ao gerar PDF:', error);
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -306,10 +356,14 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
                 <div className="flex-1">
                   <div className="font-medium text-sm">{item.name}</div>
                   <div className="text-xs text-muted-foreground">SKU: {item.sku}</div>
-                  {item.closest_location && (
-                    <div className="flex items-center gap-1 text-xs text-green-600 mt-1">
-                      <MapPin className="h-3 w-3" />
-                      Mais próximo: {item.closest_location}
+                  {item.selected_locations && item.selected_locations.length > 0 && (
+                    <div className="mt-1 space-y-1">
+                      {item.selected_locations.map((loc, locIndex) => (
+                        <div key={locIndex} className="flex items-center gap-1 text-xs text-green-600">
+                          <MapPin className="h-3 w-3" />
+                          {loc.city}, {loc.state}: {loc.quantity.toLocaleString()}L
+                        </div>
+                      ))}
                     </div>
                   )}
                   <div className="text-xs text-muted-foreground mt-1">
@@ -529,6 +583,17 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
           {currentStep === 'review' ? 'Enviar Oportunidade' : 'Próximo'}
         </Button>
       </div>
+
+      {/* Product Location Selector Dialog */}
+      {selectedProductForLocation && (
+        <ProductLocationSelector
+          open={showLocationSelector}
+          onOpenChange={setShowLocationSelector}
+          product={selectedProductForLocation}
+          client={selectedClient}
+          onConfirm={handleLocationSelection}
+        />
+      )}
     </form>
   );
 }
