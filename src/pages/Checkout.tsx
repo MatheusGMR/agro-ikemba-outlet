@@ -118,11 +118,26 @@ const STORAGE_PERIODS = [
   { id: 'period-3', days: 30, label: '1 mês' }
 ];
 
-// Mock payment methods
+// Simplified payment methods (removed credit and insurance options)
 const PAYMENT_METHODS = [
-  { id: 'invoice', name: 'Boleto Faturado', icon: File },
-  { id: 'credit', name: 'Crédito Ikemba', icon: BarChart },
-  { id: 'transfer', name: 'Transferência / PIX', icon: CreditCard }
+  { 
+    id: 'boleto', 
+    name: 'Boleto Bancário', 
+    description: 'Pagamento em até 7 dias corridos',
+    icon: File 
+  },
+  { 
+    id: 'pix', 
+    name: 'PIX', 
+    description: 'Pagamento instantâneo',
+    icon: CreditCard 
+  },
+  { 
+    id: 'ted', 
+    name: 'TED/Transferência', 
+    description: 'Transferência bancária',
+    icon: BarChart 
+  }
 ];
 
 // Step component

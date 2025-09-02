@@ -113,6 +113,36 @@ export type Database = {
         }
         Relationships: []
       }
+      checkout_funnel_logs: {
+        Row: {
+          action_type: string
+          checkout_step: string
+          created_at: string
+          id: string
+          session_id: string
+          step_data: Json | null
+          user_id: string | null
+        }
+        Insert: {
+          action_type: string
+          checkout_step: string
+          created_at?: string
+          id?: string
+          session_id: string
+          step_data?: Json | null
+          user_id?: string | null
+        }
+        Update: {
+          action_type?: string
+          checkout_step?: string
+          created_at?: string
+          id?: string
+          session_id?: string
+          step_data?: Json | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       commissions: {
         Row: {
           base_value: number
@@ -596,6 +626,36 @@ export type Database = {
           },
         ]
       }
+      order_documents: {
+        Row: {
+          document_type: string
+          document_url: string
+          downloaded_at: string | null
+          generated_at: string
+          id: string
+          order_id: string
+          user_id: string | null
+        }
+        Insert: {
+          document_type: string
+          document_url: string
+          downloaded_at?: string | null
+          generated_at?: string
+          id?: string
+          order_id: string
+          user_id?: string | null
+        }
+        Update: {
+          document_type?: string
+          document_url?: string
+          downloaded_at?: string | null
+          generated_at?: string
+          id?: string
+          order_id?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       patients: {
         Row: {
           address: string | null
@@ -751,6 +811,36 @@ export type Database = {
           id?: string
           product_sku?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      product_interactions: {
+        Row: {
+          created_at: string
+          id: string
+          interaction_data: Json | null
+          interaction_type: string
+          product_sku: string
+          session_id: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          interaction_data?: Json | null
+          interaction_type: string
+          product_sku: string
+          session_id: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          interaction_data?: Json | null
+          interaction_type?: string
+          product_sku?: string
+          session_id?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -1158,6 +1248,42 @@ export type Database = {
           },
         ]
       }
+      user_navigation_logs: {
+        Row: {
+          browser_info: Json | null
+          created_at: string
+          id: string
+          page_path: string
+          page_title: string | null
+          referrer: string | null
+          session_id: string
+          time_on_page: number | null
+          user_id: string | null
+        }
+        Insert: {
+          browser_info?: Json | null
+          created_at?: string
+          id?: string
+          page_path: string
+          page_title?: string | null
+          referrer?: string | null
+          session_id: string
+          time_on_page?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          browser_info?: Json | null
+          created_at?: string
+          id?: string
+          page_path?: string
+          page_title?: string | null
+          referrer?: string | null
+          session_id?: string
+          time_on_page?: number | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       users: {
         Row: {
           cnpj: string | null
@@ -1197,6 +1323,54 @@ export type Database = {
           status?: string
           tipo?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      volume_analysis_logs: {
+        Row: {
+          created_at: string
+          final_price: number | null
+          final_volume: number | null
+          id: string
+          initial_price: number | null
+          initial_volume: number | null
+          product_sku: string
+          reached_banda_menor: boolean | null
+          savings_amount: number | null
+          savings_percentage: number | null
+          session_id: string
+          time_spent: number | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          final_price?: number | null
+          final_volume?: number | null
+          id?: string
+          initial_price?: number | null
+          initial_volume?: number | null
+          product_sku: string
+          reached_banda_menor?: boolean | null
+          savings_amount?: number | null
+          savings_percentage?: number | null
+          session_id: string
+          time_spent?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          final_price?: number | null
+          final_volume?: number | null
+          id?: string
+          initial_price?: number | null
+          initial_volume?: number | null
+          product_sku?: string
+          reached_banda_menor?: boolean | null
+          savings_amount?: number | null
+          savings_percentage?: number | null
+          session_id?: string
+          time_spent?: number | null
+          user_id?: string | null
         }
         Relationships: []
       }

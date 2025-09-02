@@ -11,8 +11,9 @@ import Footer from '@/components/layout/Footer';
 import { useToast } from '@/hooks/use-toast';
 import { useCart } from '@/contexts/CartContext';
 import { useInventoryBySku, useProductDocuments } from '@/hooks/useInventory';
-import { PriceTierCard } from '@/components/inventory/PriceTierCard';
+import { DynamicPriceCard } from '@/components/inventory/DynamicPriceCard';
 import { InventoryService } from '@/services/inventoryService';
+import { analyticsService } from '@/services/analyticsService';
 
 // Mock product data
 const PRODUCT = {
@@ -154,7 +155,7 @@ const ProductDetail = () => {
     return acc;
   }, {} as Record<string, { items: any[], totalVolume: number }>);
   
-  // Check user permissions on component mount
+  // Check user permissions and track page view
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('user') || 'null');
     
@@ -177,7 +178,13 @@ const ProductDetail = () => {
       navigate('/');
       return;
     }
-  }, [navigate, toast]);
+
+    // Track page view and product interaction
+    if (sku) {
+      analyticsService.trackPageView(`/products/${sku}`, `Produto: ${sku}`);
+      analyticsService.trackProductView(sku);
+    }
+  }, [navigate, toast, sku]);
   
   const increaseQuantity = () => {
     setQuantity(prev => prev + 1);
@@ -356,18 +363,16 @@ const ProductDetail = () => {
                   </div>
                 </div>
                 
-                {/* Price Tiers */}
+                {/* Dynamic Price Card */}
                 <div className="mb-6">
-                  <h3 className="text-lg font-semibold mb-3">Opções de Preço por Volume</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                    {priceBenefits.map((benefit, index) => (
-                      <PriceTierCard 
-                        key={benefit.tier}
-                        benefit={benefit}
-                        isRecommended={index === priceBenefits.length - 1}
-                      />
-                    ))}
-                  </div>
+                  <DynamicPriceCard 
+                    inventoryItems={inventoryItems}
+                    onVolumeChange={(volume, price, savings) => {
+                      // Track volume changes for analytics
+                      analyticsService.trackVolumeChange(productInfo.product_sku, volume, price);
+                    }}
+                    minVolume={1000}
+                  />
                 </div>
 
                 {/* Location Selection */}
