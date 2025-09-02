@@ -32,7 +32,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setSession(session);
         setUser(session?.user ?? null);
         // Invalidate representative cache on any auth change
+        // Invalidate representative-related caches
         queryClient.invalidateQueries({ queryKey: ['representative'] });
+        queryClient.invalidateQueries({ queryKey: ['representative', 'current'] });
         
         if (session?.user) {
           // Check if user is a representative (defer Supabase calls)
@@ -49,11 +51,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     );
 
-    // Check for existing session
+    // Check for existing session (do not set loading to false here; wait for onAuthStateChange INITIAL_SESSION)
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
-      setIsLoading(false);
     });
 
     return () => subscription.unsubscribe();
