@@ -9,6 +9,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { ShieldCheck, Users, Zap, Star, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import type { User, Session } from '@supabase/supabase-js';
+import { AuthGateRegistrationForm } from './AuthGateRegistrationForm';
+import type { UnifiedRegistrationData } from './UnifiedRegistrationForm';
 
 interface AuthGateProps {
   children: React.ReactNode;
@@ -70,6 +72,17 @@ export default function AuthGate({ children }: AuthGateProps) {
     }
     return () => clearInterval(interval);
   }, [resendCooldown]);
+
+  const handleRegistrationSuccess = (data: UnifiedRegistrationData) => {
+    // Switch to login mode after successful registration
+    setIsLogin(true);
+    setFormData(prev => ({
+      ...prev,
+      emailOrPhone: data.email,
+      password: '',
+      confirmPassword: ''
+    }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -292,76 +305,7 @@ export default function AuthGate({ children }: AuthGateProps) {
         }
       }
 
-      // Registration Flow
-      if (!isLogin) {
-        console.log('=== INÍCIO DO PROCESSO DE CADASTRO (POPUP) ===');
-        console.log('Dados do formulário:', {
-          name: formData.name,
-          email: formData.email,
-          tipo: formData.tipo,
-          conheceu: formData.conheceu
-        });
-
-        const { error } = await supabase.from('users').insert({
-          name: formData.name,
-          email: formData.email,
-          phone: formData.phone,
-          company: formData.company,
-          tipo: formData.tipo,
-          conheceu: formData.conheceu
-        });
-        
-        if (error) {
-          if (error.message.includes('duplicate key')) {
-            throw new Error('Este email ou telefone já está cadastrado.');
-          }
-          throw error;
-        }
-
-        console.log('Usuário salvo no Supabase, enviando notificações...');
-
-        // Tentar enviar emails via Edge Function (não crítico)
-        try {
-          const registrationData = {
-            name: formData.name,
-            email: formData.email,
-            tipo: formData.tipo,
-            conheceu: formData.conheceu,
-            phone: formData.phone,
-            company: formData.company
-          };
-
-          const { data: emailResult, error: emailError } = await supabase.functions.invoke('send-registration', {
-            body: registrationData
-          });
-
-          if (emailError) {
-            console.warn('Aviso: Erro no envio de emails (popup):', emailError);
-          } else if (emailResult?.success) {
-            console.log('Emails enviados com sucesso (popup)');
-          } else {
-            console.warn('Aviso: Falha no envio de emails (popup):', emailResult);
-          }
-        } catch (emailError) {
-          console.warn('Aviso: Erro inesperado no envio de emails (popup):', emailError);
-        }
-
-        console.log('=== CADASTRO CONCLUÍDO COM SUCESSO (POPUP) ===');
-        
-        toast({
-          title: "Cadastro realizado com sucesso!",
-          description: "Sua solicitação foi enviada para análise. O administrador será notificado e você receberá uma resposta em até 24 horas."
-        });
-
-        // Switch to login mode
-        setIsLogin(true);
-        setFormData(prev => ({
-          ...prev,
-          emailOrPhone: formData.email,
-          password: '',
-          confirmPassword: ''
-        }));
-      }
+      // Registration is now handled by UnifiedRegistrationForm component
     } catch (error: any) {
       console.error('Auth error:', error);
       toast({
@@ -494,7 +438,14 @@ export default function AuthGate({ children }: AuthGateProps) {
                 </CardHeader>
 
                 <CardContent>
-                  <form onSubmit={handleSubmit} className="space-y-4">
+                  {!isLogin && !isFirstAccess && !isForgotPassword ? (
+                    // Use unified registration form for new registrations
+                    <AuthGateRegistrationForm 
+                      onSuccess={handleRegistrationSuccess}
+                      onSwitchToLogin={() => setIsLogin(true)}
+                    />
+                  ) : (
+                    <form onSubmit={handleSubmit} className="space-y-4">
                     {/* Back button for first access and forgot password */}
                     {(isFirstAccess || isForgotPassword) && (
                       <Button
@@ -507,78 +458,11 @@ export default function AuthGate({ children }: AuthGateProps) {
                         <ArrowLeft className="h-4 w-4" />
                         Voltar ao login
                       </Button>
-                    )}
+                      )}
 
-                    {/* Registration fields */}
-                    {!isLogin && !isFirstAccess && !isForgotPassword && (
-                      <>
-                        <div className="space-y-2">
-                          <Label htmlFor="name">Nome Completo</Label>
-                          <Input 
-                            id="name" 
-                            type="text" 
-                            value={formData.name} 
-                            onChange={e => handleInputChange('name', e.target.value)} 
-                            placeholder="Seu nome completo" 
-                            required 
-                          />
-                        </div>
+                      {/* Registration fields - Now handled by UnifiedRegistrationForm */}
 
-                        <div className="space-y-2">
-                          <Label htmlFor="company">Empresa</Label>
-                          <Input 
-                            id="company" 
-                            type="text" 
-                            value={formData.company} 
-                            onChange={e => handleInputChange('company', e.target.value)} 
-                            placeholder="Nome da sua empresa" 
-                            required 
-                          />
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="phone">Telefone *</Label>
-                          <Input 
-                            id="phone" 
-                            type="tel" 
-                            value={formData.phone} 
-                            onChange={e => handleInputChange('phone', e.target.value)} 
-                            placeholder="(11) 99999-9999" 
-                            required 
-                          />
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="email">E-mail</Label>
-                          <Input 
-                            id="email" 
-                            type="email" 
-                            value={formData.email} 
-                            onChange={e => handleInputChange('email', e.target.value)} 
-                            placeholder="seu@email.com" 
-                            required 
-                          />
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="tipo">Você é:</Label>
-                          <select 
-                            id="tipo" 
-                            value={formData.tipo} 
-                            onChange={e => handleInputChange('tipo', e.target.value)} 
-                            className="w-full px-3 py-2 border border-input bg-background rounded-md" 
-                            required
-                          >
-                            <option value="produtor">Produtor Rural</option>
-                            <option value="distribuidor">Distribuidor</option>
-                            <option value="cooperativa">Cooperativa</option>
-                            <option value="representante">Representante Comercial</option>
-                          </select>
-                        </div>
-                      </>
-                    )}
-
-                    {/* Login and forgot password email field */}
+                      {/* Login and forgot password email field */}
                     {(isLogin || isForgotPassword) && !isFirstAccess && (
                       <div className="space-y-2">
                         <Label htmlFor="emailOrPhone">
@@ -683,7 +567,8 @@ export default function AuthGate({ children }: AuthGateProps) {
                         </p>
                       </div>
                     )}
-                  </form>
+                    </form>
+                  )}
                 </CardContent>
               </Card>
             </div>
