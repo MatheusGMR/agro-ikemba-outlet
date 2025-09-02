@@ -10,6 +10,7 @@ import StatsGrid from './StatsGrid';
 import OpportunityKanban from './OpportunityKanban';
 import InventoryConsultation from './InventoryConsultation';
 import CreateOpportunityDialog from './CreateOpportunityDialog';
+import { ClientRegistrationDialog } from './ClientRegistrationDialog';
 
 
 export default function RepDashboard() {
@@ -18,6 +19,7 @@ export default function RepDashboard() {
   const { data: stats, isLoading: statsLoading, error } = useDashboardStats(representative?.id || '');
   const isMobile = useIsMobile();
   const [showCreateOpportunity, setShowCreateOpportunity] = useState(false);
+  const [showClientRegistration, setShowClientRegistration] = useState(false);
 
   const overallLoading = auth.isLoading || repLoading || (representative?.id ? statsLoading : false);
   console.info('🏠 RepDashboard', { userId: auth.user?.id ?? null, repId: representative?.id ?? null, overallLoading, statsLoading, repLoading, hasStats: !!stats, error });
@@ -67,7 +69,7 @@ export default function RepDashboard() {
               Consultar Estoque
             </Button>
           </InventoryConsultation>
-          <Button variant="outline">
+          <Button variant="outline" onClick={() => setShowClientRegistration(true)}>
             <Users className="h-4 w-4 mr-2" />
             Cadastrar Cliente
           </Button>
@@ -119,6 +121,7 @@ export default function RepDashboard() {
             size="sm"
             variant="ghost"
             className="h-12 w-12 rounded-full p-0 bg-green-500 text-white hover:bg-green-600 transition-colors shadow-md"
+            onClick={() => setShowClientRegistration(true)}
           >
             <Users className="h-5 w-5" />
           </Button>
@@ -134,6 +137,13 @@ export default function RepDashboard() {
           <CreateOpportunityDialog onClose={() => setShowCreateOpportunity(false)} />
         </DialogContent>
       </Dialog>
+
+      {/* Client Registration Dialog */}
+      <ClientRegistrationDialog 
+        open={showClientRegistration}
+        onOpenChange={setShowClientRegistration}
+        representativeId={representative?.id || ''}
+      />
     </div>
   );
 }
