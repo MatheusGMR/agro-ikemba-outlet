@@ -10,6 +10,8 @@ const corsHeaders = {
 interface RegistrationRequest {
   name: string;
   email: string;
+  phone: string;
+  company: string;
   tipo: string;
   conheceu?: string;
   cnpj?: string;
@@ -58,13 +60,15 @@ const handler = async (req: Request): Promise<Response> => {
     const resend = new Resend(resendApiKey);
 
     const data: RegistrationRequest = await req.json();
-    console.log("Dados de cadastro recebidos:", {
-      name: data.name,
-      email: data.email,
-      tipo: data.tipo,
-      conheceu: data.conheceu,
-      cnpj: data.cnpj ? "***CNPJ FORNECIDO***" : "Não fornecido"
-    });
+    console.log("=== DADOS CADASTRO RECEBIDOS ===");
+    console.log("Nome:", data.name || "NOME NÃO ENCONTRADO");
+    console.log("Email:", data.email || "EMAIL NÃO ENCONTRADO");
+    console.log("Telefone:", data.phone || "TELEFONE NÃO ENCONTRADO");
+    console.log("Empresa:", data.company || "EMPRESA NÃO ENCONTRADA");
+    console.log("Tipo:", data.tipo || "TIPO NÃO ENCONTRADO");
+    console.log("CNPJ:", data.cnpj ? "***CNPJ FORNECIDO***" : "Não fornecido");
+    console.log("Como conheceu:", data.conheceu || "Não informado");
+    console.log("Dados completos:", JSON.stringify(data, null, 2));
 
     // Função para enviar email com fallback
     const sendEmailWithFallback = async (emailData: any) => {

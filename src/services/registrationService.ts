@@ -78,8 +78,8 @@ export class RegistrationService {
         body: {
           name: data.name,
           email: data.email,
-          telefone: data.phone,
-          empresa: data.company,
+          phone: data.phone,
+          company: data.company,
           tipo: data.tipo,
           cnpj: data.cnpj || undefined,
           conheceu: data.conheceu || undefined,

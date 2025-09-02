@@ -16,10 +16,10 @@ const corsHeaders = {
 };
 
 interface PreRegistrationRequest {
-  nome: string;
+  name: string;
   email: string;
-  telefone: string;
-  empresa: string;
+  phone: string;
+  company: string;
   tipo: string;
   conheceu?: string;
   cnpj?: string;
@@ -40,7 +40,12 @@ const handler = async (req: Request): Promise<Response> => {
 
   try {
     const data: PreRegistrationRequest = await req.json();
-    console.log("Dados do pré-cadastro recebidos:", data);
+    console.log("=== DADOS PRÉ-CADASTRO RECEBIDOS ===");
+    console.log("Nome:", data.name || "NOME NÃO ENCONTRADO");
+    console.log("Email:", data.email || "EMAIL NÃO ENCONTRADO");
+    console.log("Telefone:", data.phone || "TELEFONE NÃO ENCONTRADO");
+    console.log("Empresa:", data.company || "EMPRESA NÃO ENCONTRADA");
+    console.log("Dados completos:", JSON.stringify(data, null, 2));
     console.log("RESEND_API_KEY configurada:", !!RESEND_API_KEY);
 
     // Função para enviar email com fallback
@@ -70,10 +75,10 @@ const handler = async (req: Request): Promise<Response> => {
       html: `
         <h2>Novo Pré-cadastro Recebido</h2>
         <div style="font-family: Arial, sans-serif; line-height: 1.6;">
-          <p><strong>Nome:</strong> ${data.nome}</p>
+          <p><strong>Nome:</strong> ${data.name}</p>
           <p><strong>Email:</strong> ${data.email}</p>
-          <p><strong>Telefone:</strong> ${data.telefone}</p>
-           <p><strong>Empresa:</strong> ${data.empresa}</p>
+          <p><strong>Telefone:</strong> ${data.phone}</p>
+           <p><strong>Empresa:</strong> ${data.company}</p>
            <p><strong>Tipo:</strong> ${data.tipo}</p>
            ${data.cnpj ? `<p><strong>CNPJ:</strong> ${data.cnpj}</p>` : ''}
            ${data.conheceu ? `<p><strong>Como conheceu:</strong> ${data.conheceu}</p>` : ''}
@@ -92,15 +97,15 @@ const handler = async (req: Request): Promise<Response> => {
       subject: "Confirmação de Pré-cadastro - Agro Ikemba",
       html: `
         <div style="font-family: Arial, sans-serif; line-height: 1.6; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #075e54;">Obrigado pelo seu interesse, ${data.nome}!</h2>
+          <h2 style="color: #075e54;">Obrigado pelo seu interesse, ${data.name}!</h2>
           
           <p>Recebemos seu pré-cadastro na <strong>Agro Ikemba</strong> e em breve entraremos em contato para apresentar nossa plataforma de insumos agrícolas.</p>
           
            <div style="background-color: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
              <h3 style="color: #075e54; margin-top: 0;">Dados do seu pré-cadastro:</h3>
-             <p><strong>Empresa:</strong> ${data.empresa}</p>
+             <p><strong>Empresa:</strong> ${data.company}</p>
              <p><strong>Tipo:</strong> ${data.tipo}</p>
-             <p><strong>Telefone:</strong> ${data.telefone}</p>
+             <p><strong>Telefone:</strong> ${data.phone}</p>
              ${data.cnpj ? `<p><strong>CNPJ:</strong> ${data.cnpj}</p>` : ''}
            </div>
           
