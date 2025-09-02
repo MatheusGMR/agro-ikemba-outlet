@@ -1,0 +1,54 @@
+{
+  "app": {
+    "name": "Agro Ikemba Outlet",
+    "shortName": "Agro Ikemba",
+    "description": "Plataforma completa para representantes comerciais do agronegócio",
+    "version": "1.0.0",
+    "bundleId": "app.lovable.c3fd88f5deed4c49874fa30ae9501862",
+    "category": "Business"
+  },
+  "playStore": {
+    "title": "Agro Ikemba - Representantes",
+    "shortDescription": "Gestão completa para representantes do agronegócio",
+    "fullDescription": "O Agro Ikemba Outlet é a plataforma completa para representantes comerciais do setor agropecuário. Gerencie clientes, produtos, propostas e comissões em um só lugar. Funcionalidades incluem:\n\n🌾 Catálogo completo de produtos agrícolas\n📊 Dashboard com métricas em tempo real\n👥 Gestão de clientes e oportunidades\n📄 Geração automática de propostas\n💰 Acompanhamento de comissões\n📱 Interface otimizada para mobile\n\nAumente suas vendas e organize seu negócio com eficiência!",
+    "keywords": "agronegócio, representante comercial, vendas, agricultura, produtos agrícolas, gestão, CRM"
+  },
+  "appStore": {
+    "title": "Agro Ikemba - Representantes",
+    "subtitle": "Gestão para o Agronegócio",
+    "description": "O Agro Ikemba Outlet é a ferramenta definitiva para representantes comerciais do agronegócio. Gerencie toda sua operação comercial de forma profissional e eficiente.\n\nRECURSOS PRINCIPAIS:\n• Catálogo completo de produtos com disponibilidade em tempo real\n• Dashboard intuitivo com métricas de performance\n• Gestão completa de clientes e oportunidades\n• Geração automática de propostas profissionais\n• Acompanhamento detalhado de comissões\n• Sistema de aprovação digital de propostas\n• Interface responsiva otimizada para tablets e smartphones\n\nTRANSFORME SUA OPERAÇÃO:\nAumente sua produtividade, organize seus clientes e maximize suas comissões com a tecnologia mais avançada do mercado agropecuário.",
+    "keywords": "agronegócio,agricultura,representante,vendas,CRM,gestão"
+  },
+  "assets": {
+    "icon": {
+      "android": "512x512",
+      "ios": "1024x1024"
+    },
+    "splash": {
+      "android": "1080x1920",
+      "ios": "1242x2208"
+    },
+    "screenshots": {
+      "android_phone": "1080x1920",
+      "android_tablet": "1600x2560", 
+      "ios_iphone": "1242x2208",
+      "ios_ipad": "2048x2732"
+    }
+  },
+  "permissions": {
+    "android": [
+      "INTERNET",
+      "ACCESS_NETWORK_STATE",
+      "WRITE_EXTERNAL_STORAGE",
+      "READ_EXTERNAL_STORAGE",
+      "CAMERA",
+      "ACCESS_FINE_LOCATION",
+      "ACCESS_COARSE_LOCATION"
+    ],
+    "ios": [
+      "NSCameraUsageDescription",
+      "NSPhotoLibraryUsageDescription", 
+      "NSLocationWhenInUseUsageDescription"
+    ]
+  }
+}

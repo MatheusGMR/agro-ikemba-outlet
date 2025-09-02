@@ -1,0 +1,34 @@
+<!-- Adicionar ao Info.plist do iOS -->
+<key>CFBundleDisplayName</key>
+<string>Agro Ikemba</string>
+
+<key>CFBundleShortVersionString</key>
+<string>1.0.0</string>
+
+<key>CFBundleVersion</key>
+<string>1</string>
+
+<!-- Permissões necessárias -->
+<key>NSCameraUsageDescription</key>
+<string>Este app precisa acessar a câmera para capturar fotos de produtos.</string>
+
+<key>NSPhotoLibraryUsageDescription</key>
+<string>Este app precisa acessar a galeria para selecionar fotos.</string>
+
+<key>NSLocationWhenInUseUsageDescription</key>
+<string>Este app usa localização para encontrar produtos próximos.</string>
+
+<!-- Configurações de segurança -->
+<key>NSAppTransportSecurity</key>
+<dict>
+    <key>NSAllowsArbitraryLoads</key>
+    <true/>
+</dict>
+
+<!-- Orientações suportadas -->
+<key>UISupportedInterfaceOrientations</key>
+<array>
+    <string>UIInterfaceOrientationPortrait</string>
+    <string>UIInterfaceOrientationLandscapeLeft</string>
+    <string>UIInterfaceOrientationLandscapeRight</string>
+</array>

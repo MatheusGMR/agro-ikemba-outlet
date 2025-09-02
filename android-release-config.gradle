@@ -1,0 +1,28 @@
+// Arquivo de configuração para release Android
+// Colocar em: android/app/build.gradle
+
+android {
+    signingConfigs {
+        release {
+            keyAlias 'agro-ikemba'
+            keyPassword 'SUA_SENHA_AQUI'
+            storeFile file('release.keystore')
+            storePassword 'SUA_SENHA_AQUI'
+        }
+    }
+    
+    buildTypes {
+        release {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
+            
+            // Otimizações para produção
+            debuggable false
+            jniDebuggable false
+            renderscriptDebuggable false
+            zipAlignEnabled true
+        }
+    }
+}
