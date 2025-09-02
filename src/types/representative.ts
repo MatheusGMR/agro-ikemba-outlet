@@ -18,6 +18,7 @@ export interface RepClient {
   company_name: string;
   cnpj_cpf?: string;
   contact_name?: string;
+  contact_function?: string;
   email?: string;
   phone?: string;
   whatsapp?: string;

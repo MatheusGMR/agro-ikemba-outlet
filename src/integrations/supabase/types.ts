@@ -919,6 +919,7 @@ export type Database = {
           city: string | null
           cnpj_cpf: string | null
           company_name: string
+          contact_function: string | null
           contact_name: string | null
           created_at: string
           credit_limit: number | null
@@ -938,6 +939,7 @@ export type Database = {
           city?: string | null
           cnpj_cpf?: string | null
           company_name: string
+          contact_function?: string | null
           contact_name?: string | null
           created_at?: string
           credit_limit?: number | null
@@ -957,6 +959,7 @@ export type Database = {
           city?: string | null
           cnpj_cpf?: string | null
           company_name?: string
+          contact_function?: string | null
           contact_name?: string | null
           created_at?: string
           credit_limit?: number | null

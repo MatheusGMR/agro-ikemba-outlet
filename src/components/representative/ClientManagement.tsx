@@ -4,8 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useRepClients, useCurrentRepresentative } from '@/hooks/useRepresentative';
-import { Search, Plus, Building, Phone, Mail, MapPin } from 'lucide-react';
+import { Search, Plus, Building, Phone, Mail, MapPin, User } from 'lucide-react';
 import { RepClient } from '@/types/representative';
+import { ClientRegistrationDialog } from './ClientRegistrationDialog';
 
 interface ClientCardProps {
   client: RepClient;
@@ -19,9 +20,15 @@ function ClientCard({ client }: ClientCardProps) {
           <div className="flex-1">
             <h3 className="font-semibold text-lg mb-1">{client.company_name}</h3>
             {client.contact_name && (
-              <p className="text-sm text-muted-foreground">
-                Contato: {client.contact_name}
-              </p>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 text-sm">
+                  <User className="h-4 w-4" />
+                  <span>{client.contact_name}</span>
+                  {client.contact_function && (
+                    <span className="text-muted-foreground">({client.contact_function})</span>
+                  )}
+                </div>
+              </div>
             )}
           </div>
           <Badge variant="outline" className="text-xs">
@@ -76,6 +83,7 @@ export default function ClientManagement() {
   const { data: representative } = useCurrentRepresentative();
   const { data: clients = [], isLoading } = useRepClients(representative?.id || '');
   const [searchTerm, setSearchTerm] = useState('');
+  const [showRegistrationDialog, setShowRegistrationDialog] = useState(false);
 
   const filteredClients = clients.filter(client =>
     client.company_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -97,9 +105,9 @@ export default function ClientManagement() {
           </p>
         </div>
         
-        <Button>
+        <Button onClick={() => setShowRegistrationDialog(true)}>
           <Plus className="h-4 w-4 mr-2" />
-          Novo Cliente
+          Cadastrar Cliente
         </Button>
       </div>
 
@@ -181,11 +189,20 @@ export default function ClientManagement() {
           <p className="text-muted-foreground mb-4">
             Comece cadastrando seu primeiro cliente para começar a gerenciar suas vendas
           </p>
-          <Button>
+          <Button onClick={() => setShowRegistrationDialog(true)}>
             <Plus className="h-4 w-4 mr-2" />
             Cadastrar Primeiro Cliente
           </Button>
         </div>
+      )}
+      
+      {/* Client Registration Dialog */}
+      {representative && (
+        <ClientRegistrationDialog
+          open={showRegistrationDialog}
+          onOpenChange={setShowRegistrationDialog}
+          representativeId={representative.id}
+        />
       )}
     </div>
   );
