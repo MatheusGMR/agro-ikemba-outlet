@@ -429,8 +429,8 @@ export default function ProductCatalogComponent() {
                           <div className="mt-auto">
                             <div className="mb-3">
                               <div className="flex justify-between items-center mb-1">
-                                <span className="text-sm font-medium">Preços por volume:</span>
-                                <span className="text-xs text-muted-foreground">{product.priceTiers.length} opções</span>
+                                <span className="text-sm font-medium">Preço por litro:</span>
+                                <span className="text-xs text-muted-foreground">Vol. mín: 1.000L</span>
                               </div>
                               
                               {product.minPrice === product.maxPrice ? (
@@ -442,13 +442,9 @@ export default function ProductCatalogComponent() {
                                   <p className="text-lg font-bold text-agro-green">
                                     R$ {product.minPrice.toFixed(2).replace('.', ',')} - R$ {product.maxPrice.toFixed(2).replace('.', ',')}
                                   </p>
-                                  <div className="flex gap-1 mt-1">
-                                    {product.priceTiers.slice(0, 3).map((tier, index) => (
-                                      <Badge key={index} variant="secondary" className="text-xs">
-                                        {tier.tier}: R$ {tier.price.toFixed(2)}
-                                      </Badge>
-                                    ))}
-                                  </div>
+                                  <p className="text-xs text-muted-foreground">
+                                    Preço varia conforme volume (min-max)
+                                  </p>
                                 </div>
                               )}
                               

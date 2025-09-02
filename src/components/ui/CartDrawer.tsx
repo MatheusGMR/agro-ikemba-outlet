@@ -4,7 +4,7 @@ import { useCart } from '@/contexts/CartContext';
 import { useNavigate } from 'react-router-dom';
 
 export default function CartDrawer() {
-  const { items, removeFromCart, updateQuantity, getTotalPrice, isOpen, toggleCart } = useCart();
+  const { items, removeFromCart, updateItemVolume, getTotalPrice, isOpen, toggleCart } = useCart();
   const navigate = useNavigate();
 
   const handleCheckout = () => {
@@ -53,32 +53,20 @@ export default function CartDrawer() {
                   <div className="flex-1 min-w-0">
                     <h3 className="font-medium text-sm line-clamp-2">{item.name}</h3>
                     <p className="text-xs text-gray-500">{item.manufacturer}</p>
-                    <p className="text-xs text-gray-500">{item.packageSize}</p>
+                    <p className="text-xs text-gray-500">Volume: {item.volume.toLocaleString('pt-BR')}L</p>
                     <p className="text-sm font-semibold text-primary">
-                      R$ {item.price.toFixed(2)}
+                      R$ {((item.dynamicPrice || item.price) * item.volume).toFixed(2)}
                     </p>
+                    {item.savings && item.savings > 0 && (
+                      <p className="text-xs text-green-600 font-medium">
+                        Economia: R$ {item.savings.toFixed(2)}
+                      </p>
+                    )}
                     
                     <div className="flex items-center justify-between mt-2">
-                      {/* Quantity controls */}
-                      <div className="flex items-center border rounded">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 w-8 p-0"
-                          onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                        >
-                          <Minus className="h-3 w-3" />
-                        </Button>
-                        <span className="w-8 text-center text-sm">{item.quantity}</span>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 w-8 p-0"
-                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                        >
-                          <Plus className="h-3 w-3" />
-                        </Button>
-                      </div>
+                      <p className="text-xs text-gray-500">
+                        R$ {(item.dynamicPrice || item.price).toFixed(2)}/L
+                      </p>
                       
                       {/* Remove button */}
                       <Button

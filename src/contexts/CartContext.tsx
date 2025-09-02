@@ -3,22 +3,23 @@ import { useToast } from '@/hooks/use-toast';
 
 export interface CartItem {
   id: string;
-  productId: number;
+  productId: string;
   name: string;
   manufacturer: string;
   price: number;
-  quantity: number;
-  packageSize: string;
+  volume: number;
+  sku: string;
   image: string;
   activeIngredient: string;
-  concentration: string;
+  dynamicPrice?: number;
+  savings?: number;
 }
 
 interface CartContextType {
   items: CartItem[];
-  addToCart: (product: any, packageInfo: any, quantity: number) => void;
+  addToCart: (product: any, volume: number, price: number, savings?: number) => void;
   removeFromCart: (itemId: string) => void;
-  updateQuantity: (itemId: string, quantity: number) => void;
+  updateItemVolume: (itemId: string, volume: number, price: number, savings?: number) => void;
   clearCart: () => void;
   getTotalItems: () => number;
   getTotalPrice: () => number;
@@ -50,23 +51,29 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('agroikemba-cart', JSON.stringify(items));
   }, [items]);
 
-  const addToCart = (product: any, packageInfo: any, quantity: number) => {
-    const itemId = `${product.id}-${packageInfo.size}`;
+  const addToCart = (product: any, volume: number, price: number, savings?: number) => {
+    const itemId = product.sku || product.id;
     
     setItems(prevItems => {
       const existingItem = prevItems.find(item => item.id === itemId);
       
       if (existingItem) {
-        // Update quantity if item already exists
+        // Update volume and price for existing item
         const updatedItems = prevItems.map(item =>
           item.id === itemId
-            ? { ...item, quantity: item.quantity + quantity }
+            ? { 
+                ...item, 
+                volume: volume,
+                price: price,
+                dynamicPrice: price,
+                savings: savings || 0
+              }
             : item
         );
         
         toast({
           title: "Produto atualizado no carrinho",
-          description: `${product.name} (${packageInfo.size}) - Quantidade: ${existingItem.quantity + quantity}`,
+          description: `${product.name} - Volume: ${volume.toLocaleString('pt-BR')}L`,
         });
         
         return updatedItems;
@@ -74,20 +81,21 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         // Add new item
         const newItem: CartItem = {
           id: itemId,
-          productId: product.id,
+          productId: product.sku || product.id,
           name: product.name,
           manufacturer: product.manufacturer,
-          price: packageInfo.price,
-          quantity,
-          packageSize: packageInfo.size,
-          image: product.mainImage || '/placeholder.svg',
-          activeIngredient: product.activeIngredient,
-          concentration: product.concentration,
+          price: price,
+          volume: volume,
+          sku: product.sku,
+          image: product.image || '/placeholder.svg',
+          activeIngredient: product.active_ingredient || product.activeIngredient || '',
+          dynamicPrice: price,
+          savings: savings || 0,
         };
         
         toast({
           title: "Produto adicionado ao carrinho",
-          description: `${product.name} (${packageInfo.size}) - Quantidade: ${quantity}`,
+          description: `${product.name} - Volume: ${volume.toLocaleString('pt-BR')}L`,
         });
         
         return [...prevItems, newItem];
@@ -108,8 +116,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  const updateQuantity = (itemId: string, quantity: number) => {
-    if (quantity <= 0) {
+  const updateItemVolume = (itemId: string, volume: number, price: number, savings?: number) => {
+    if (volume <= 0) {
       removeFromCart(itemId);
       return;
     }
@@ -117,7 +125,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setItems(prevItems =>
       prevItems.map(item =>
         item.id === itemId
-          ? { ...item, quantity }
+          ? { 
+              ...item, 
+              volume: volume,
+              price: price,
+              dynamicPrice: price,
+              savings: savings || 0
+            }
           : item
       )
     );
@@ -132,11 +146,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   };
 
   const getTotalItems = () => {
-    return items.reduce((total, item) => total + item.quantity, 0);
+    return items.length;
   };
 
   const getTotalPrice = () => {
-    return items.reduce((total, item) => total + (item.price * item.quantity), 0);
+    return items.reduce((total, item) => total + (item.dynamicPrice || item.price) * item.volume, 0);
   };
 
   const toggleCart = () => {
@@ -147,7 +161,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     items,
     addToCart,
     removeFromCart,
-    updateQuantity,
+    updateItemVolume,
     clearCart,
     getTotalItems,
     getTotalPrice,

@@ -208,7 +208,7 @@ const ProductDetail = () => {
       image: '/placeholder.svg'
     };
     
-    addToCart(cartItem, { size: selectedItem.packaging, price: selectedItem.client_price }, quantity);
+    addToCart(cartItem, selectedItem.volume || 1000, selectedItem.client_price, 0);
     toast({
       title: "Produto adicionado",
       description: `${productInfo.product_name} foi adicionado ao carrinho.`
