@@ -765,6 +765,12 @@ export type Database = {
           opportunity_id: string
           payment_terms: string | null
           proposal_number: string
+          public_link: string | null
+          responsible_cpf: string | null
+          responsible_email: string | null
+          responsible_name: string | null
+          responsible_phone: string | null
+          responsible_position: string | null
           shipping_cost: number | null
           status: string | null
           total_commission: number
@@ -782,6 +788,12 @@ export type Database = {
           opportunity_id: string
           payment_terms?: string | null
           proposal_number: string
+          public_link?: string | null
+          responsible_cpf?: string | null
+          responsible_email?: string | null
+          responsible_name?: string | null
+          responsible_phone?: string | null
+          responsible_position?: string | null
           shipping_cost?: number | null
           status?: string | null
           total_commission: number
@@ -799,6 +811,12 @@ export type Database = {
           opportunity_id?: string
           payment_terms?: string | null
           proposal_number?: string
+          public_link?: string | null
+          responsible_cpf?: string | null
+          responsible_email?: string | null
+          responsible_name?: string | null
+          responsible_phone?: string | null
+          responsible_position?: string | null
           shipping_cost?: number | null
           status?: string | null
           total_commission?: number

@@ -80,6 +80,12 @@ export interface Proposal {
   status: 'draft' | 'sent' | 'viewed' | 'approved' | 'rejected' | 'expired';
   client_approved_at?: string;
   client_comments?: string;
+  responsible_name?: string;
+  responsible_cpf?: string;
+  responsible_position?: string;
+  responsible_email?: string;
+  responsible_phone?: string;
+  public_link?: string;
   created_at: string;
   updated_at: string;
   opportunity?: Opportunity;

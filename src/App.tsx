@@ -65,7 +65,7 @@ function App() {
                     </RepresentativeProtectedRoute>
                   } />
                   <Route path="/simulador" element={<Simulador />} />
-                  <Route path="/proposta/:id" element={<ProposalView />} />
+                  <Route path="/proposta/:publicLink" element={<ProposalView />} />
                   <Route path="/test-openai" element={<TestPage />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>  

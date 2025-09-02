@@ -1,69 +1,93 @@
+import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { CheckCircle, XCircle, MessageSquare, FileText, MapPin, Phone, Mail } from 'lucide-react';
 import { useProposalPublic, useApproveProposal, useRejectProposal } from '@/hooks/useProposal';
+import { toast } from '@/hooks/use-toast';
+import { CheckCircle, XCircle, FileText, Building, User, Phone, Mail, Calendar, DollarSign, Loader2 } from 'lucide-react';
 
 export default function ProposalView() {
-  const { id } = useParams<{ id: string }>();
-  const { data: proposal, isLoading, error } = useProposalPublic(id || '');
-  const { mutate: approveProposal, isPending: isApproving } = useApproveProposal();
-  const { mutate: rejectProposal, isPending: isRejecting } = useRejectProposal();
+  const { publicLink } = useParams<{ publicLink: string }>();
+  const { data: proposal, isLoading, error } = useProposalPublic(publicLink || '');
+  const approveProposal = useApproveProposal();
+  const rejectProposal = useRejectProposal();
 
-  const [clientData, setClientData] = useState({
-    name: '',
-    position: '',
-    company: '',
-    email: '',
-    phone: ''
+  const [approvalData, setApprovalData] = useState({
+    client_name: '',
+    client_position: '',
+    client_email: '',
+    client_phone: '',
+    comments: '',
+    signature: null as string | null
   });
-  const [comments, setComments] = useState('');
-  const [signature, setSignature] = useState<string | null>(null);
 
-  useEffect(() => {
-    // Mark as viewed when component loads
-    if (proposal?.id) {
-      // TODO: Implement view tracking
+  const [rejectionComments, setRejectionComments] = useState('');
+  const [showApprovalForm, setShowApprovalForm] = useState(false);
+  const [showRejectionForm, setShowRejectionForm] = useState(false);
+
+  const handleApprove = async () => {
+    if (!proposal) return;
+
+    if (!approvalData.client_name || !approvalData.client_position) {
+      toast({
+        title: "Campos obrigatórios",
+        description: "Nome e cargo são obrigatórios para aprovação",
+        variant: "destructive"
+      });
+      return;
     }
-  }, [proposal?.id]);
 
-  const handleApprove = () => {
-    if (!proposal?.id || !clientData.name || !clientData.position) return;
-    
-    approveProposal({
-      proposalId: proposal.id,
-      approvalData: {
-        client_name: clientData.name,
-        client_position: clientData.position,
-        client_email: clientData.email,
-        client_phone: clientData.phone,
-        comments,
-        signature
-      }
-    });
+    try {
+      await approveProposal.mutateAsync({
+        proposalId: proposal.id,
+        approvalData
+      });
+
+      toast({
+        title: "Proposta Aprovada!",
+        description: "A proposta foi aprovada com sucesso. O representante será notificado.",
+      });
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Erro ao aprovar proposta. Tente novamente.",
+        variant: "destructive"
+      });
+    }
   };
 
-  const handleReject = () => {
-    if (!proposal?.id) return;
-    
-    rejectProposal({
-      proposalId: proposal.id,
-      comments
-    });
+  const handleReject = async () => {
+    if (!proposal) return;
+
+    try {
+      await rejectProposal.mutateAsync({
+        proposalId: proposal.id,
+        comments: rejectionComments
+      });
+
+      toast({
+        title: "Proposta Rejeitada",
+        description: "A proposta foi rejeitada. O representante será notificado.",
+      });
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Erro ao rejeitar proposta. Tente novamente.",
+        variant: "destructive"
+      });
+    }
   };
 
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
           <p>Carregando proposta...</p>
         </div>
       </div>
@@ -73,12 +97,12 @@ export default function ProposalView() {
   if (error || !proposal) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <Card className="max-w-md w-full mx-4">
+        <Card className="w-full max-w-md">
           <CardContent className="pt-6 text-center">
-            <XCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+            <XCircle className="h-16 w-16 text-destructive mx-auto mb-4" />
             <h2 className="text-xl font-semibold mb-2">Proposta não encontrada</h2>
             <p className="text-muted-foreground">
-              A proposta que você está tentando acessar não existe ou expirou.
+              Esta proposta não existe ou o link pode ter expirado.
             </p>
           </CardContent>
         </Card>
@@ -86,280 +110,297 @@ export default function ProposalView() {
     );
   }
 
-  if (proposal.status === 'approved') {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Card className="max-w-md w-full mx-4">
-          <CardContent className="pt-6 text-center">
-            <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold mb-2">Proposta Aprovada</h2>
-            <p className="text-muted-foreground">
-              Esta proposta já foi aprovada em {new Date(proposal.client_approved_at || '').toLocaleDateString('pt-BR')}.
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  if (proposal.status === 'rejected') {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Card className="max-w-md w-full mx-4">
-          <CardContent className="pt-6 text-center">
-            <XCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold mb-2">Proposta Rejeitada</h2>
-            <p className="text-muted-foreground">
-              Esta proposta foi rejeitada.
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  const isExpired = new Date() > new Date(proposal.validity_date);
+  const isExpired = new Date(proposal.validity_date) < new Date();
+  const canInteract = !['approved', 'rejected'].includes(proposal.status) && !isExpired;
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="bg-white border-b">
-        <div className="max-w-4xl mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-primary">AgroIkemba</h1>
-              <p className="text-muted-foreground">Proposta Comercial</p>
-            </div>
-            <div className="text-right">
-              <div className="text-lg font-semibold">#{proposal.proposal_number}</div>
-              <Badge variant={isExpired ? "destructive" : "secondary"}>
-                {isExpired ? 'Expirada' : 'Válida até ' + new Date(proposal.validity_date).toLocaleDateString('pt-BR')}
-              </Badge>
-            </div>
+      <div className="container max-w-4xl mx-auto py-8 px-4">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <FileText className="h-8 w-8 text-primary" />
+            <h1 className="text-3xl font-bold">Proposta Comercial</h1>
           </div>
+          <Badge variant={
+            proposal.status === 'approved' ? 'default' :
+            proposal.status === 'rejected' ? 'destructive' :
+            isExpired ? 'secondary' : 'outline'
+          }>
+            {proposal.status === 'approved' && 'Aprovada'}
+            {proposal.status === 'rejected' && 'Rejeitada'}
+            {proposal.status === 'sent' && !isExpired && 'Aguardando Aprovação'}
+            {proposal.status === 'viewed' && !isExpired && 'Visualizada'}
+            {isExpired && 'Expirada'}
+          </Badge>
         </div>
-      </div>
 
-      <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
-        {isExpired && (
-          <Alert variant="destructive">
-            <AlertDescription>
-              Esta proposta expirou em {new Date(proposal.validity_date).toLocaleDateString('pt-BR')}.
-              Entre em contato conosco para uma nova proposta.
-            </AlertDescription>
-          </Alert>
-        )}
-
-        {/* Client Information */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5" />
-              Dados do Cliente
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <div className="font-medium">{proposal.opportunity?.client?.company_name}</div>
-                <div className="text-muted-foreground text-sm">{proposal.opportunity?.client?.cnpj_cpf}</div>
-              </div>
-              <div className="space-y-1">
-                {proposal.opportunity?.client?.contact_name && (
-                  <div className="flex items-center gap-2 text-sm">
-                    <span className="font-medium">Contato:</span>
-                    <span>{proposal.opportunity.client.contact_name}</span>
-                  </div>
-                )}
-                {proposal.opportunity?.client?.phone && (
-                  <div className="flex items-center gap-2 text-sm">
-                    <Phone className="h-4 w-4" />
-                    <span>{proposal.opportunity.client.phone}</span>
-                  </div>
-                )}
-                {proposal.opportunity?.client?.email && (
-                  <div className="flex items-center gap-2 text-sm">
-                    <Mail className="h-4 w-4" />
-                    <span>{proposal.opportunity.client.email}</span>
-                  </div>
-                )}
-                {proposal.opportunity?.client?.city && proposal.opportunity?.client?.state && (
-                  <div className="flex items-center gap-2 text-sm">
-                    <MapPin className="h-4 w-4" />
-                    <span>{proposal.opportunity.client.city}, {proposal.opportunity.client.state}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Products */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Produtos e Serviços</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {proposal.opportunity?.items?.map((item, index) => (
-                <div key={index} className="flex justify-between items-start pb-3 border-b last:border-b-0">
-                  <div className="flex-1">
-                    <div className="font-medium">{item.product_name}</div>
-                    <div className="text-sm text-muted-foreground">SKU: {item.product_sku}</div>
-                    <div className="text-sm">
-                      Quantidade: {item.quantity.toLocaleString()} • 
-                      Preço unitário: R$ {item.unit_price.toFixed(2)}
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="font-medium">R$ {item.total_price.toFixed(2)}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <Separator className="my-4" />
-
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span>Subtotal:</span>
-                <span>R$ {proposal.total_value.toFixed(2)}</span>
-              </div>
-              {proposal.shipping_cost > 0 && (
-                <div className="flex justify-between">
-                  <span>Frete:</span>
-                  <span>R$ {proposal.shipping_cost.toFixed(2)}</span>
-                </div>
-              )}
-              <div className="flex justify-between font-bold text-lg">
-                <span>Total:</span>
-                <span>R$ {(proposal.total_value + (proposal.shipping_cost || 0)).toFixed(2)}</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Terms and Conditions */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Condições Comerciais</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {proposal.payment_terms && (
-              <div className="flex justify-between">
-                <span className="font-medium">Forma de Pagamento:</span>
-                <span>{proposal.payment_terms}</span>
-              </div>
-            )}
-            {proposal.delivery_terms && (
-              <div className="flex justify-between">
-                <span className="font-medium">Condições de Entrega:</span>
-                <span>{proposal.delivery_terms}</span>
-              </div>
-            )}
-            <div className="flex justify-between">
-              <span className="font-medium">Validade da Proposta:</span>
-              <span>{new Date(proposal.validity_date).toLocaleDateString('pt-BR')}</span>
-            </div>
-            {proposal.observations && (
-              <div>
-                <div className="font-medium mb-1">Observações:</div>
-                <div className="text-muted-foreground text-sm">{proposal.observations}</div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Action Form */}
-        {!isExpired && proposal.status === 'sent' && (
+        {/* Proposal Details */}
+        <div className="grid gap-6">
+          {/* Proposal Info */}
           <Card>
             <CardHeader>
-              <CardTitle>Responder à Proposta</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                Detalhes da Proposta
+              </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="name">Nome Completo *</Label>
-                  <Input
-                    id="name"
-                    value={clientData.name}
-                    onChange={(e) => setClientData(prev => ({ ...prev, name: e.target.value }))}
-                    placeholder="Seu nome completo"
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="position">Cargo/Função *</Label>
-                  <Input
-                    id="position"
-                    value={clientData.position}
-                    onChange={(e) => setClientData(prev => ({ ...prev, position: e.target.value }))}
-                    placeholder="Seu cargo na empresa"
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="email">E-mail</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={clientData.email}
-                    onChange={(e) => setClientData(prev => ({ ...prev, email: e.target.value }))}
-                    placeholder="seu@email.com"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="phone">Telefone</Label>
-                  <Input
-                    id="phone"
-                    value={clientData.phone}
-                    onChange={(e) => setClientData(prev => ({ ...prev, phone: e.target.value }))}
-                    placeholder="(11) 99999-9999"
-                  />
-                </div>
-              </div>
-
+            <CardContent className="grid md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="comments">Comentários</Label>
-                <Textarea
-                  id="comments"
-                  value={comments}
-                  onChange={(e) => setComments(e.target.value)}
-                  placeholder="Deixe seus comentários ou solicitações de alteração..."
-                  rows={3}
-                />
+                <Label className="text-muted-foreground">Número da Proposta</Label>
+                <p className="font-semibold">{proposal.proposal_number}</p>
               </div>
-
-              <div className="flex gap-3 pt-4">
-                <Button
-                  onClick={handleApprove}
-                  disabled={isApproving || !clientData.name || !clientData.position}
-                  className="flex-1"
-                >
-                  <CheckCircle className="h-4 w-4 mr-2" />
-                  {isApproving ? 'Aprovando...' : 'Aprovar Proposta'}
-                </Button>
-                
-                <Button
-                  variant="outline"
-                  onClick={handleReject}
-                  disabled={isRejecting}
-                  className="flex-1"
-                >
-                  <XCircle className="h-4 w-4 mr-2" />
-                  {isRejecting ? 'Rejeitando...' : 'Rejeitar'}
-                </Button>
+              <div>
+                <Label className="text-muted-foreground">Data de Validade</Label>
+                <p className="font-semibold">
+                  {new Date(proposal.validity_date).toLocaleDateString('pt-BR')}
+                </p>
+              </div>
+              <div>
+                <Label className="text-muted-foreground">Valor Total</Label>
+                <p className="font-semibold text-2xl text-primary">
+                  R$ {proposal.total_value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                </p>
+              </div>
+              <div>
+                <Label className="text-muted-foreground">Frete</Label>
+                <p className="font-semibold">
+                  R$ {proposal.shipping_cost.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                </p>
               </div>
             </CardContent>
           </Card>
-        )}
-      </div>
 
-      {/* Footer */}
-      <div className="bg-muted mt-12 py-8">
-        <div className="max-w-4xl mx-auto px-4 text-center text-muted-foreground text-sm">
-          <p>© 2024 AgroIkemba. Todos os direitos reservados.</p>
-          <p className="mt-1">Em caso de dúvidas, entre em contato conosco.</p>
+          {/* Client Info */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Building className="h-5 w-5" />
+                Informações do Cliente
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="grid md:grid-cols-2 gap-4">
+              <div>
+                <Label className="text-muted-foreground">Empresa</Label>
+                <p className="font-semibold">{proposal.opportunity?.client?.company_name}</p>
+              </div>
+              <div>
+                <Label className="text-muted-foreground">Contato</Label>
+                <p className="font-semibold">{proposal.opportunity?.client?.contact_name || 'Não informado'}</p>
+              </div>
+              <div>
+                <Label className="text-muted-foreground">Email</Label>
+                <p className="font-semibold">{proposal.opportunity?.client?.email || 'Não informado'}</p>
+              </div>
+              <div>
+                <Label className="text-muted-foreground">Telefone</Label>
+                <p className="font-semibold">{proposal.opportunity?.client?.phone || 'Não informado'}</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Products */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Produtos</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {proposal.opportunity?.items?.map((item, index) => (
+                  <div key={item.id} className="flex justify-between items-center p-4 border rounded-lg">
+                    <div>
+                      <h4 className="font-semibold">{item.product_name}</h4>
+                      <p className="text-sm text-muted-foreground">SKU: {item.product_sku}</p>
+                      <p className="text-sm">Quantidade: {item.quantity.toLocaleString('pt-BR')}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-semibold">
+                        R$ {item.total_price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        R$ {item.unit_price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} / unidade
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Terms */}
+          {(proposal.payment_terms || proposal.delivery_terms || proposal.observations) && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Condições</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {proposal.payment_terms && (
+                  <div>
+                    <Label className="text-muted-foreground">Condições de Pagamento</Label>
+                    <p>{proposal.payment_terms}</p>
+                  </div>
+                )}
+                {proposal.delivery_terms && (
+                  <div>
+                    <Label className="text-muted-foreground">Condições de Entrega</Label>
+                    <p>{proposal.delivery_terms}</p>
+                  </div>
+                )}
+                {proposal.observations && (
+                  <div>
+                    <Label className="text-muted-foreground">Observações</Label>
+                    <p>{proposal.observations}</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Action Buttons */}
+          {canInteract && (
+            <div className="flex gap-4 justify-center">
+              <Button
+                onClick={() => setShowApprovalForm(true)}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                <CheckCircle className="h-4 w-4 mr-2" />
+                Aprovar Proposta
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setShowRejectionForm(true)}
+                className="border-red-200 text-red-600 hover:bg-red-50"
+              >
+                <XCircle className="h-4 w-4 mr-2" />
+                Rejeitar Proposta
+              </Button>
+            </div>
+          )}
+
+          {/* Approval Form */}
+          {showApprovalForm && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-green-600">Aprovação da Proposta</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="client_name">Seu Nome Completo *</Label>
+                    <Input
+                      id="client_name"
+                      value={approvalData.client_name}
+                      onChange={(e) => setApprovalData(prev => ({ ...prev, client_name: e.target.value }))}
+                      placeholder="Nome completo"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="client_position">Cargo/Função *</Label>
+                    <Input
+                      id="client_position"
+                      value={approvalData.client_position}
+                      onChange={(e) => setApprovalData(prev => ({ ...prev, client_position: e.target.value }))}
+                      placeholder="Seu cargo na empresa"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="client_email">Email</Label>
+                    <Input
+                      id="client_email"
+                      type="email"
+                      value={approvalData.client_email}
+                      onChange={(e) => setApprovalData(prev => ({ ...prev, client_email: e.target.value }))}
+                      placeholder="seu@email.com"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="client_phone">Telefone</Label>
+                    <Input
+                      id="client_phone"
+                      value={approvalData.client_phone}
+                      onChange={(e) => setApprovalData(prev => ({ ...prev, client_phone: e.target.value }))}
+                      placeholder="(11) 99999-9999"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="comments">Comentários (opcional)</Label>
+                  <Textarea
+                    id="comments"
+                    value={approvalData.comments}
+                    onChange={(e) => setApprovalData(prev => ({ ...prev, comments: e.target.value }))}
+                    placeholder="Comentários adicionais sobre a aprovação..."
+                  />
+                </div>
+                <div className="flex gap-2 justify-end">
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowApprovalForm(false)}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    onClick={handleApprove}
+                    disabled={approveProposal.isPending}
+                    className="bg-green-600 hover:bg-green-700"
+                  >
+                    {approveProposal.isPending ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Aprovando...
+                      </>
+                    ) : (
+                      'Confirmar Aprovação'
+                    )}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Rejection Form */}
+          {showRejectionForm && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-red-600">Rejeição da Proposta</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="rejection_comments">Motivo da Rejeição</Label>
+                  <Textarea
+                    id="rejection_comments"
+                    value={rejectionComments}
+                    onChange={(e) => setRejectionComments(e.target.value)}
+                    placeholder="Informe o motivo da rejeição (opcional)..."
+                  />
+                </div>
+                <div className="flex gap-2 justify-end">
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowRejectionForm(false)}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    onClick={handleReject}
+                    disabled={rejectProposal.isPending}
+                  >
+                    {rejectProposal.isPending ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Rejeitando...
+                      </>
+                    ) : (
+                      'Confirmar Rejeição'
+                    )}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
     </div>

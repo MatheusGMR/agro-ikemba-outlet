@@ -505,4 +505,35 @@ export class RepresentativeService {
     if (error) throw error;
     return (data || []) as Commission[];
   }
+
+  // Send proposal link
+  static async sendProposalLink(data: {
+    proposal_id: string;
+    responsible_name: string;
+    responsible_cpf: string;
+    responsible_position: string;
+    responsible_email?: string;
+    responsible_phone?: string;
+    client_email?: string;
+    client_phone?: string;
+    send_method: 'email' | 'whatsapp' | 'both';
+  }): Promise<{
+    success: boolean;
+    proposal_number?: string;
+    public_link?: string;
+    proposal_url?: string;
+    message?: string;
+    error?: string;
+  }> {
+    const { data: result, error } = await supabase.functions.invoke('send-proposal-link', {
+      body: data
+    });
+
+    if (error) {
+      console.error('Erro ao enviar proposta:', error);
+      throw error;
+    }
+
+    return result;
+  }
 }

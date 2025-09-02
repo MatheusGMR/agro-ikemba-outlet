@@ -27,3 +27,6 @@ verify_jwt = false
 
 [functions.reject-proposal]
 verify_jwt = false
+
+[functions.send-proposal-link]
+verify_jwt = false
