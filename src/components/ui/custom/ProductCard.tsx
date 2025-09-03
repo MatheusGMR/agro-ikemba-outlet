@@ -1,6 +1,7 @@
 import { Star, StarHalf, ShoppingCart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useNavigate } from 'react-router-dom';
 
 interface ProductCardProps {
   id: string;
@@ -48,8 +49,22 @@ const renderStars = (rating: number) => {
 };
 
 export default function ProductCard({ id, name, manufacturer, category, rating, image, price, className }: ProductCardProps) {
+  const navigate = useNavigate();
+
+  const handleCardClick = () => {
+    navigate(`/product/${id}`);
+  };
+
+  const handleButtonClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigate(`/product/${id}`);
+  };
+
   return (
-    <div className={cn("bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300 border border-gray-100", className)}>
+    <div 
+      className={cn("bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300 border border-gray-100 cursor-pointer", className)}
+      onClick={handleCardClick}
+    >
       <div className="h-48 overflow-hidden">
         <img 
           src={image} 
@@ -73,12 +88,16 @@ export default function ProductCard({ id, name, manufacturer, category, rating, 
         
         <div className="flex justify-between items-center">
           <span className="text-lg font-bold text-agro-green">{price}</span>
-          <Button size="sm" className="bg-agro-green hover:bg-agro-green-light">
+          <Button 
+            size="sm" 
+            className="bg-agro-green hover:bg-agro-green-light"
+            onClick={handleButtonClick}
+          >
             <ShoppingCart 
               className="w-4 h-4 mr-1" 
               color="#543921" 
             />
-            Add
+            Comprar
           </Button>
         </div>
       </div>
