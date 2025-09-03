@@ -69,8 +69,18 @@ export function ProgressiveForm({
     }
   };
 
+  const handleFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    handleNext();
+  };
+
   return (
-    <div className={cn("w-full max-w-2xl mx-auto", className)} onKeyDown={handleKeyDown}>
+    <form 
+      className={cn("w-full max-w-2xl mx-auto", className)} 
+      onSubmit={handleFormSubmit}
+      onKeyDown={handleKeyDown}
+      noValidate
+    >
       {/* Progress Bar */}
       <div className="mb-8">
         <ProgressBar currentStep={currentStep} totalSteps={totalSteps} />
@@ -119,8 +129,8 @@ export function ProgressiveForm({
           )}
           
           <Button
-            type="button"
-            onClick={handleNext}
+            type={isLastStep ? "submit" : "button"}
+            onClick={!isLastStep ? handleNext : undefined}
             disabled={isSubmitting}
             className="flex items-center gap-2 min-w-[120px]"
           >
@@ -138,6 +148,6 @@ export function ProgressiveForm({
           </Button>
         </div>
       </div>
-    </div>
+    </form>
   );
 }
