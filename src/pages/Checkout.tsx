@@ -11,6 +11,11 @@ const Checkout = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   
+  // Scroll to top on mount
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, []);
+
   // Check if cart is empty
   useEffect(() => {
     if (items.length === 0) {
