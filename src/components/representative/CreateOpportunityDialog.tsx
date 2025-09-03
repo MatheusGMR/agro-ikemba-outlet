@@ -286,7 +286,7 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
         const opportunityData = {
           representative_id: representative.id,
           client_id: formData.client_id,
-          title: formData.title,
+          title: formData.title || 'Oportunidade sem título',
           description: formData.description,
           estimated_value: totalValue,
           estimated_commission: totalCommission,
@@ -375,7 +375,7 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
   const canProceed = () => {
     switch (currentStep) {
       case 'basic':
-        return formData.title && formData.client_id && formData.probability;
+        return formData.client_id && formData.probability;
       case 'products':
         return selectedProducts.length > 0 && selectedProducts.every(p => 
           p.selectedLocations.length > 0 && p.selectedLocations.every(l => l.quantity > 0)
@@ -400,7 +400,6 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
           value={formData.title}
           onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
           placeholder="Ex: Proposta para safra de soja 2024"
-          required
         />
       </div>
 
