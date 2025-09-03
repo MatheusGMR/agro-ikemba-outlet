@@ -7,7 +7,11 @@ interface WhatsAppButtonProps {
 }
 
 export default function WhatsAppButton({ phoneNumber, message = "Olá! Gostaria de saber mais sobre a Agro Ikemba." }: WhatsAppButtonProps) {
-  const handleWhatsAppClick = () => {
+  const handleWhatsAppClick = async () => {
+    // Track Google Ads Sign-up conversion
+    const { reportSignupConversion } = await import('@/utils/googleAdsConversions');
+    reportSignupConversion();
+    
     const encodedMessage = encodeURIComponent(message);
     const whatsappUrl = `https://wa.me/${phoneNumber.replace(/\D/g, '')}?text=${encodedMessage}`;
     window.open(whatsappUrl, '_blank');

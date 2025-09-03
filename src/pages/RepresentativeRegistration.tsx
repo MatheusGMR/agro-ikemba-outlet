@@ -95,6 +95,10 @@ export default function RepresentativeRegistration() {
           toast.success('Representante cadastrado com sucesso! Aguarde aprovação e verifique seu email.');
         }
 
+        // Track Google Ads Sign-up conversion
+        const { reportSignupConversion } = await import('@/utils/googleAdsConversions');
+        reportSignupConversion();
+
         navigate('/representative/login');
       }
     } catch (error: any) {

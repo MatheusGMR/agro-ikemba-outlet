@@ -240,6 +240,10 @@ export function UnifiedRegistrationForm({
         how_found: formData.conheceu || 'not_specified'
       });
 
+      // Track Google Ads Sign-up conversion
+      const { reportSignupConversion } = await import('@/utils/googleAdsConversions');
+      reportSignupConversion();
+
       // Store user data in localStorage for main context
       if (context === 'main') {
         localStorage.setItem('user', JSON.stringify(formData));
