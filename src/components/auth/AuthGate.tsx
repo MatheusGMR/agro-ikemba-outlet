@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { ApprovalBanner } from '@/components/ui/ApprovalBanner';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { ShieldCheck, Users, Zap, Star, Eye, EyeOff, ArrowLeft } from 'lucide-react';
@@ -18,6 +18,7 @@ interface AuthGateProps {
 }
 
 export default function AuthGate({ children }: AuthGateProps) {
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(true);
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
@@ -48,6 +49,10 @@ export default function AuthGate({ children }: AuthGateProps) {
       
       if (session?.user) {
         setIsOpen(false);
+        // Redirect to products after login
+        setTimeout(() => {
+          navigate('/products');
+        }, 100);
       }
     });
 
@@ -57,6 +62,10 @@ export default function AuthGate({ children }: AuthGateProps) {
       
       if (session?.user) {
         setIsOpen(false);
+        // Redirect to products after login
+        setTimeout(() => {
+          navigate('/products');
+        }, 100);
       }
     });
 
@@ -335,12 +344,7 @@ export default function AuthGate({ children }: AuthGateProps) {
   };
 
   if (!isOpen) {
-    return (
-      <div>
-        <ApprovalBanner />
-        {children}
-      </div>
-    );
+    return <div>{children}</div>;
   }
 
   return (
