@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { ProgressiveForm, ProgressiveFormStep } from '@/components/ui/progressive-form';
 import { ProgressiveInput } from '@/components/ui/progressive-input';
 import { ButtonGrid } from '@/components/ui/button-grid';
@@ -7,6 +7,19 @@ import { User, Building, Mail, Phone, Users, Store, Tractor, Globe, Linkedin, In
 import { userService } from '@/services/userService';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+
+// Google Analytics helper function
+declare global {
+  interface Window {
+    gtag?: (...args: any[]) => void;
+  }
+}
+
+const trackFormEvent = (eventName: string, parameters: Record<string, any> = {}) => {
+  if (typeof window !== 'undefined' && window.gtag) {
+    window.gtag('event', eventName, parameters);
+  }
+};
 
 export interface UnifiedRegistrationData {
   name: string;
@@ -75,6 +88,7 @@ export function UnifiedRegistrationForm({
   const [currentStep, setCurrentStep] = useState(initialStep);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [internalSuccessDialog, setInternalSuccessDialog] = useState(false);
+  const formStartTracked = useRef(false);
   const [formData, setFormData] = useState<UnifiedRegistrationData>({
     name: '',
     tipo: '',
@@ -86,6 +100,16 @@ export function UnifiedRegistrationForm({
   });
 
   const updateFormData = (field: keyof UnifiedRegistrationData, value: string) => {
+    // Track form_start on first interaction
+    if (!formStartTracked.current && field === 'name' && value.length > 0) {
+      trackFormEvent('form_start', {
+        form_name: 'registration_form',
+        form_context: context,
+        form_id: 'unified_registration'
+      });
+      formStartTracked.current = true;
+    }
+    
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -205,6 +229,16 @@ export function UnifiedRegistrationForm({
       }
 
       console.log('=== CADASTRO CONCLUÍDO COM SUCESSO ===');
+
+      // Track form_submit event
+      trackFormEvent('form_submit', {
+        form_name: 'registration_form',
+        form_context: context,
+        form_id: 'unified_registration',
+        account_type: formData.tipo,
+        has_cnpj: !!formData.cnpj,
+        how_found: formData.conheceu || 'not_specified'
+      });
 
       // Store user data in localStorage for main context
       if (context === 'main') {
