@@ -281,7 +281,7 @@ export function UnifiedRegistrationForm({
         };
       case 'preregistration':
         return {
-          submitText: 'Enviar pré-cadastro',
+          submitText: 'Criar conta',
           successTitle: '✅ Pré-cadastro enviado!',
           successDescription: 'Sua solicitação foi enviada. Entraremos em contato em breve via WhatsApp.'
         };
