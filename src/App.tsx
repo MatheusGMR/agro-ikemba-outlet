@@ -26,6 +26,7 @@ import ProposalView from './pages/ProposalView';
 import { TooltipProvider } from '@radix-ui/react-tooltip';
 import { CartProvider } from '@/contexts/CartContext';
 import { AuthProvider } from '@/hooks/useAuth';
+import ScrollToTop from '@/components/layout/ScrollToTop';
 
 const queryClient = new QueryClient();
 
@@ -38,6 +39,7 @@ function App() {
             <Toaster />
             <Sonner />
             <BrowserRouter>
+              <ScrollToTop />
               <AuthProvider>
                 <Routes>
                   <Route path="/" element={<Index />} />
