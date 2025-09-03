@@ -79,6 +79,7 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
   const { trackCheckoutStep, trackConversion } = useCheckoutAnalytics();
   
   const [currentStep, setCurrentStep] = useState<'volume_selection' | 'logistics' | 'payment' | 'confirmation'>('volume_selection');
+  const [hasOptimizedVolumes, setHasOptimizedVolumes] = useState(false);
   const [selectedVolumes, setSelectedVolumes] = useState<Record<string, { volume: number; price: number }>>({});
   const [selectedLogistics, setSelectedLogistics] = useState<string>('pickup');
   const [deliveryInfo, setDeliveryInfo] = useState('');
@@ -86,6 +87,28 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [generatedDocument, setGeneratedDocument] = useState<string | null>(null);
   const [orderData, setOrderData] = useState<any>(null);
+
+  // Check if items are already optimized and set initial step
+  useEffect(() => {
+    // Check if any items in the cart were marked as optimized from the product page
+    const hasOptimizedItems = cartItems.some(item => {
+      // Check for volumes >= 1000L which indicates optimization was done
+      return item.quantity >= 1000;
+    });
+    
+    setHasOptimizedVolumes(hasOptimizedItems);
+    
+    // If items appear to be optimized, start at logistics step
+    if (hasOptimizedItems) {
+      setCurrentStep('logistics');
+      // Initialize selected volumes with current cart data
+      const initialVolumes = cartItems.reduce((acc, item) => {
+        acc[item.id] = { volume: item.quantity, price: item.price };
+        return acc;
+      }, {} as Record<string, { volume: number; price: number }>);
+      setSelectedVolumes(initialVolumes);
+    }
+  }, [cartItems]);
 
   // Track step entries
   useEffect(() => {
@@ -242,15 +265,54 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
   );
 
   const renderLogisticsStep = () => (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Package className="w-5 h-5 text-primary" />
-          Logística de Entrega
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <RadioGroup value={selectedLogistics} onValueChange={setSelectedLogistics}>
+    <div className="space-y-6">
+      {/* Show optimized volumes summary if starting from logistics */}
+      {hasOptimizedVolumes && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-green-600">
+              <CheckCircle className="w-5 h-5" />
+              Volumes Otimizados
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground mb-4">
+              Seus volumes foram otimizados na página do produto para obter os melhores preços.
+            </p>
+            <div className="space-y-2">
+              {cartItems.map((item) => {
+                const volumeData = selectedVolumes[item.id] || { volume: item.quantity, price: item.price };
+                return (
+                  <div key={item.id} className="flex justify-between items-center text-sm">
+                    <span className="font-medium">{item.name}</span>
+                    <span className="text-muted-foreground">
+                      {volumeData.volume.toLocaleString('pt-BR')}L × R$ {volumeData.price.toFixed(2)}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="mt-3"
+              onClick={() => setCurrentStep('volume_selection')}
+            >
+              Ajustar Volumes
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+      
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Package className="w-5 h-5 text-primary" />
+            Logística de Entrega
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <RadioGroup value={selectedLogistics} onValueChange={setSelectedLogistics}>
           {LOGISTICS_OPTIONS.map((option) => (
             <div key={option.id} className="space-y-3">
               <div className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-muted/50">
@@ -283,16 +345,20 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
           ))}
         </RadioGroup>
         
-        <div className="flex justify-between">
-          <Button variant="outline" onClick={() => setCurrentStep('volume_selection')}>
-            Voltar
-          </Button>
-          <Button onClick={handleLogisticsNext}>
-            Continuar para Pagamento
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+          <div className="flex justify-between">
+            <Button 
+              variant="outline" 
+              onClick={() => setCurrentStep('volume_selection')}
+            >
+              Voltar aos Volumes
+            </Button>
+            <Button onClick={handleLogisticsNext}>
+              Continuar para Pagamento
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 
   const renderPaymentStep = () => (

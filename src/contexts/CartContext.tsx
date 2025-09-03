@@ -13,11 +13,12 @@ export interface CartItem {
   activeIngredient: string;
   dynamicPrice?: number;
   savings?: number;
+  isOptimized?: boolean; // Flag to track if volume was optimized in product page
 }
 
 interface CartContextType {
   items: CartItem[];
-  addToCart: (product: any, volume: number, price: number, savings?: number) => void;
+  addToCart: (product: any, volume: number, price: number, savings?: number, isOptimized?: boolean) => void;
   removeFromCart: (itemId: string) => void;
   updateItemVolume: (itemId: string, volume: number, price: number, savings?: number) => void;
   clearCart: () => void;
@@ -25,6 +26,7 @@ interface CartContextType {
   getTotalPrice: () => number;
   isOpen: boolean;
   toggleCart: () => void;
+  hasOptimizedItems: () => boolean;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -51,7 +53,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('agroikemba-cart', JSON.stringify(items));
   }, [items]);
 
-  const addToCart = (product: any, volume: number, price: number, savings?: number) => {
+  const addToCart = (product: any, volume: number, price: number, savings?: number, isOptimized?: boolean) => {
     const itemId = product.sku || product.id;
     
     setItems(prevItems => {
@@ -66,7 +68,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                 volume: volume,
                 price: price,
                 dynamicPrice: price,
-                savings: savings || 0
+                savings: savings || 0,
+                isOptimized: isOptimized || false
               }
             : item
         );
@@ -91,6 +94,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           activeIngredient: product.active_ingredient || product.activeIngredient || '',
           dynamicPrice: price,
           savings: savings || 0,
+          isOptimized: isOptimized || false,
         };
         
         toast({
@@ -157,6 +161,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setIsOpen(!isOpen);
   };
 
+  const hasOptimizedItems = () => {
+    return items.some(item => item.isOptimized);
+  };
+
   const value = {
     items,
     addToCart,
@@ -167,6 +175,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     getTotalPrice,
     isOpen,
     toggleCart,
+    hasOptimizedItems,
   };
 
   return (

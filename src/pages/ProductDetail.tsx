@@ -208,7 +208,11 @@ const ProductDetail = () => {
       image: '/placeholder.svg'
     };
     
-    addToCart(cartItem, selectedItem.volume || 1000, selectedItem.client_price, 0);
+    // Check if volume was optimized (different from default 1000L or has savings)
+    const volume = selectedItem.volume || 1000;
+    const isOptimized = volume !== 1000 || (selectedItem.savings && selectedItem.savings > 0);
+    
+    addToCart(cartItem, volume, selectedItem.client_price, selectedItem.savings || 0, isOptimized);
     toast({
       title: "Produto adicionado",
       description: `${productInfo.product_name} foi adicionado ao carrinho.`
