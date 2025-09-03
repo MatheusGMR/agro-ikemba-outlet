@@ -7,7 +7,7 @@ export default function PreRegistration() {
       <div className="container-custom relative z-10">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold mb-6">
-            Pronto para transformar sua compra de produtos pós patente?
+            Vamos dar o primeiro passo?
           </h2>
           <p className="text-lg text-gray-600 max-w-4xl mx-auto">
             Junte-se ao Agro Ikemba hoje e experimente os benefícios de conexões diretas, 
