@@ -141,6 +141,10 @@ export default function ProgressiveRegistrationForm() {
         }
       });
 
+      // Track Google Ads Sign-up conversion
+      const { reportSignupConversion } = await import('@/utils/googleAdsConversions');
+      reportSignupConversion();
+
       setShowSuccessDialog(true);
       
     } catch (error) {
