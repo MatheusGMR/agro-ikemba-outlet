@@ -1,6 +1,6 @@
 import { useUserApproval } from '@/hooks/useUserApproval';
 import { useAuth } from '@/hooks/useAuth';
-import { Dialog, DialogContent, DialogTitle, DialogDescription } from './dialog';
+import { UnclosableDialog, UnclosableDialogContent, UnclosableDialogTitle, UnclosableDialogDescription } from './unclosable-dialog';
 import { Button } from './button';
 import { Badge } from './badge';
 import { Clock, LogOut } from 'lucide-react';
@@ -28,12 +28,12 @@ export function ApprovalBlockingModal() {
   };
 
   return (
-    <Dialog open={true} onOpenChange={() => {}}>
-      <DialogContent className="max-w-md mx-auto">
-        <DialogTitle className="sr-only">Conta em análise</DialogTitle>
-        <DialogDescription className="sr-only">
+    <UnclosableDialog open={true}>
+      <UnclosableDialogContent className="max-w-md mx-auto">
+        <UnclosableDialogTitle className="sr-only">Conta em análise</UnclosableDialogTitle>
+        <UnclosableDialogDescription className="sr-only">
           Sua conta está sendo analisada pela nossa equipe
-        </DialogDescription>
+        </UnclosableDialogDescription>
         
         <div className="text-center space-y-6 p-6">
           <div className="flex justify-center">
@@ -69,7 +69,7 @@ export function ApprovalBlockingModal() {
             Sair da conta
           </Button>
         </div>
-      </DialogContent>
-    </Dialog>
+      </UnclosableDialogContent>
+    </UnclosableDialog>
   );
 }

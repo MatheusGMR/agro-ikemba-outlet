@@ -27,6 +27,7 @@ import { TooltipProvider } from '@radix-ui/react-tooltip';
 import { CartProvider } from '@/contexts/CartContext';
 import { AuthProvider } from '@/hooks/useAuth';
 import ScrollToTop from '@/components/layout/ScrollToTop';
+import { ApprovalBlockingModal } from '@/components/ui/ApprovalBlockingModal';
 
 const queryClient = new QueryClient();
 
@@ -41,6 +42,7 @@ function App() {
             <BrowserRouter>
               <ScrollToTop />
               <AuthProvider>
+                <ApprovalBlockingModal />
                 <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/sobre" element={<About />} />
