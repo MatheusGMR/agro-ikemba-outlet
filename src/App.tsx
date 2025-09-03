@@ -28,6 +28,7 @@ import { CartProvider } from '@/contexts/CartContext';
 import { AuthProvider } from '@/hooks/useAuth';
 import ScrollToTop from '@/components/layout/ScrollToTop';
 import { ApprovalBlockingModal } from '@/components/ui/ApprovalBlockingModal';
+import ApprovedProtectedRoute from '@/components/auth/ApprovedProtectedRoute';
 
 const queryClient = new QueryClient();
 
@@ -47,9 +48,21 @@ function App() {
                   <Route path="/" element={<Index />} />
                   <Route path="/sobre" element={<About />} />
                   <Route path="/dashboard" element={<Dashboard />} />
-                  <Route path="/products" element={<ProductCatalog />} />
-                  <Route path="/product/:id" element={<ProductDetail />} />
-                  <Route path="/checkout" element={<Checkout />} />
+                  <Route path="/products" element={
+                    <ApprovedProtectedRoute>
+                      <ProductCatalog />
+                    </ApprovedProtectedRoute>
+                  } />
+                  <Route path="/product/:id" element={
+                    <ApprovedProtectedRoute>
+                      <ProductDetail />
+                    </ApprovedProtectedRoute>
+                  } />
+                  <Route path="/checkout" element={
+                    <ApprovedProtectedRoute>
+                      <Checkout />
+                    </ApprovedProtectedRoute>
+                  } />
                   <Route path="/register" element={<Registration />} />
                   <Route path="/login" element={<Login />} />
                   <Route path="/representative/login" element={<RepresentativeLogin />} />

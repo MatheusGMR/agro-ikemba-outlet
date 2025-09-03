@@ -1,4 +1,5 @@
 import { useUserApproval } from '@/hooks/useUserApproval';
+import { useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { UnclosableDialog, UnclosableDialogContent, UnclosableDialogTitle, UnclosableDialogDescription } from './unclosable-dialog';
 import { Button } from './button';
@@ -14,6 +15,18 @@ export function ApprovalBlockingModal() {
 
   // Don't show modal if user is not logged in, is loading, or is approved
   if (!user || isLoading || isApproved) return null;
+  
+  // Lock background scroll while modal is open
+  useEffect(() => {
+    const prevHtmlOverflow = document.documentElement.style.overflow;
+    const prevBodyOverflow = document.body.style.overflow;
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.documentElement.style.overflow = prevHtmlOverflow;
+      document.body.style.overflow = prevBodyOverflow;
+    };
+  }, []);
 
   const handleLogout = async () => {
     try {
