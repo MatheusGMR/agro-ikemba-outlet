@@ -11,7 +11,7 @@ import Footer from '@/components/layout/Footer';
 import { useToast } from '@/hooks/use-toast';
 import { useCart } from '@/contexts/CartContext';
 import { useInventoryBySku, useProductDocuments } from '@/hooks/useInventory';
-import { DynamicPriceCard } from '@/components/inventory/DynamicPriceCard';
+import DynamicPriceCard from '@/components/inventory/DynamicPriceCard';
 import { InventoryService } from '@/services/inventoryService';
 import { analyticsService } from '@/services/analyticsService';
 

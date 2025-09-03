@@ -120,7 +120,7 @@ export function UnifiedRegistrationForm({
       console.log('Context:', context);
       console.log('Dados:', formData);
 
-      // Check if email already exists
+      // Check if email already exists in users table
       const { exists, error: checkError } = await userService.checkEmailExists(formData.email);
       if (checkError) {
         throw new Error(`Erro ao verificar email: ${checkError}`);
@@ -132,7 +132,27 @@ export function UnifiedRegistrationForm({
         return;
       }
 
-      // Add user to database
+      // Create user directly in Supabase Auth with temporary password
+      const tempPassword = Math.random().toString(36).slice(-12) + 'A1!'; // Ensure it meets password requirements
+      
+      const { data: authData, error: authError } = await supabase.functions.invoke('create-auth-user', {
+        body: {
+          email: formData.email,
+          password: tempPassword,
+          name: formData.name
+        }
+      });
+
+      if (authError) {
+        if (authError.message?.includes('email_exists') || authError.message?.includes('409')) {
+          toast.error('Este email já possui uma conta. Tente fazer login.');
+          setCurrentStep(5);
+          return;
+        }
+        throw new Error(`Erro ao criar usuário: ${authError.message}`);
+      }
+
+      // Add user to database with pending status
       const { success, error: userError } = await userService.addUser({
         name: formData.name,
         email: formData.email,
@@ -145,6 +165,17 @@ export function UnifiedRegistrationForm({
 
       if (!success || userError) {
         throw new Error(`Erro ao salvar cadastro: ${userError}`);
+      }
+
+      // Auto sign in the user with the temporary password
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: formData.email,
+        password: tempPassword
+      });
+
+      if (signInError) {
+        console.error('Auto sign-in failed:', signInError);
+        // Don't throw error here, user can still login manually later
       }
 
       // Send registration email (non-critical)

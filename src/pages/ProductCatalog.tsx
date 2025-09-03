@@ -1,5 +1,6 @@
 import { Helmet } from 'react-helmet-async';
 import AuthGate from '@/components/auth/AuthGate';
+import { ApprovalBanner } from '@/components/ui/ApprovalBanner';
 import ProductCatalogComponent from '@/components/ui/custom/ProductCatalogComponent';
 
 export default function ProductCatalog() {
@@ -46,6 +47,8 @@ export default function ProductCatalog() {
       </Helmet>
 
       <AuthGate>
+        {/* Show approval banner inside AuthGate for authenticated users */}
+        <ApprovalBanner />
         <ProductCatalogComponent />
       </AuthGate>
     </>

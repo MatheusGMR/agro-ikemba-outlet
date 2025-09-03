@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { ApprovalBanner } from '@/components/ui/ApprovalBanner';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { ShieldCheck, Users, Zap, Star, Eye, EyeOff, ArrowLeft } from 'lucide-react';
@@ -334,7 +335,12 @@ export default function AuthGate({ children }: AuthGateProps) {
   };
 
   if (!isOpen) {
-    return <>{children}</>;
+    return (
+      <div>
+        <ApprovalBanner />
+        {children}
+      </div>
+    );
   }
 
   return (

@@ -20,7 +20,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { useCheckoutAnalytics } from '@/hooks/useAnalytics';
 import { PDFGenerator } from '@/utils/pdfGenerator';
-import { DynamicPriceCard } from '@/components/inventory/DynamicPriceCard';
+import DynamicPriceCard from '@/components/inventory/DynamicPriceCard';
 
 interface OptimizedCheckoutFlowProps {
   cartItems: Array<{

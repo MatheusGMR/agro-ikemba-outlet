@@ -1,7 +1,10 @@
-import { Star, StarHalf, ShoppingCart } from 'lucide-react';
+import { Star, StarHalf, ShoppingCart, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { PriceDisplay } from '@/components/ui/PriceDisplay';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
+import { useUserApproval } from '@/hooks/useUserApproval';
+import { useAuth } from '@/hooks/useAuth';
 
 interface ProductCardProps {
   id: string;
@@ -50,6 +53,8 @@ const renderStars = (rating: number) => {
 
 export default function ProductCard({ id, name, manufacturer, category, rating, image, price, className }: ProductCardProps) {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { isApproved, isPending } = useUserApproval();
 
   const handleCardClick = () => {
     navigate(`/product/${id}`);
@@ -57,7 +62,30 @@ export default function ProductCard({ id, name, manufacturer, category, rating, 
 
   const handleButtonClick = (e: React.MouseEvent) => {
     e.stopPropagation();
+    
+    if (!user) {
+      // Redirect to login/register
+      navigate('/register');
+      return;
+    }
+    
+    if (isPending) {
+      // Show message about pending approval
+      return;
+    }
+    
     navigate(`/product/${id}`);
+  };
+
+  const getButtonText = () => {
+    if (!user) return 'Fazer Login';
+    if (isPending) return 'Aguardando Aprovação';
+    return 'Comprar';
+  };
+
+  const getButtonIcon = () => {
+    if (!user || isPending) return <Lock className="w-4 h-4 mr-1" />;
+    return <ShoppingCart className="w-4 h-4 mr-1" color="#543921" />;
   };
 
   return (
@@ -87,17 +115,18 @@ export default function ProductCard({ id, name, manufacturer, category, rating, 
         <p className="text-sm text-gray-600 mb-4">by {manufacturer}</p>
         
         <div className="flex justify-between items-center">
-          <span className="text-lg font-bold text-agro-green">{price}</span>
+          <PriceDisplay price={price} size="md" />
           <Button 
             size="sm" 
-            className="bg-agro-green hover:bg-agro-green-light"
+            className={cn(
+              "transition-all duration-200",
+              isApproved ? "bg-agro-green hover:bg-agro-green-light" : "bg-muted hover:bg-muted/80"
+            )}
             onClick={handleButtonClick}
+            disabled={isPending}
           >
-            <ShoppingCart 
-              className="w-4 h-4 mr-1" 
-              color="#543921" 
-            />
-            Comprar
+            {getButtonIcon()}
+            {getButtonText()}
           </Button>
         </div>
       </div>
