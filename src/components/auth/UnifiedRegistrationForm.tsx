@@ -311,7 +311,6 @@ export function UnifiedRegistrationForm({
           onEnter={() => setCurrentStep(2)}
           icon={User}
           required
-          autoFocus
           error={validateStep(1) !== true ? String(validateStep(1)) : undefined}
         />
       ),
@@ -345,7 +344,6 @@ export function UnifiedRegistrationForm({
             onEnter={() => setCurrentStep(4)}
             icon={Building}
             formatter={formatCNPJ}
-            autoFocus
           />
           <div className="text-sm text-muted-foreground bg-secondary/50 p-3 rounded-md text-center">
             <p>💡 O CNPJ não é obrigatório, mas acelera a aprovação da sua conta</p>
@@ -368,7 +366,6 @@ export function UnifiedRegistrationForm({
           onEnter={() => setCurrentStep(5)}
           icon={Building}
           required
-          autoFocus
           error={validateStep(4) !== true ? String(validateStep(4)) : undefined}
         />
       ),
@@ -389,7 +386,7 @@ export function UnifiedRegistrationForm({
             icon={Phone}
             formatter={formatPhone}
             required
-            autoFocus
+            
             error={validateStep(5) !== true && typeof validateStep(5) === 'string' && (validateStep(5) as string).includes('Telefone') ? String(validateStep(5)) : undefined}
           />
           <ProgressiveInput
