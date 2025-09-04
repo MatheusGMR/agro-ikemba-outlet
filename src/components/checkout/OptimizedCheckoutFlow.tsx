@@ -62,14 +62,19 @@ const LOGISTICS_OPTIONS = [
   {
     id: 'pickup',
     name: 'Retirada no Local',
-    description: 'Retire seus produtos em nosso estoque',
-    price: 0
-  },
+    description: 'Retire seus produtos em nosso estoque - ÚNICA OPÇÃO DISPONÍVEL',
+    price: 0,
+    isOnlyOption: true
+  }
+];
+
+const ADDITIONAL_SERVICES = [
   {
     id: 'delivery_quote',
-    name: 'Solicitar Cotação de Entrega',
-    description: 'Receba orçamento personalizado para entrega',
-    requiresInfo: true
+    name: 'Solicitar Cotação com Transportadoras Parceiras',
+    description: 'Ajudamos você a conseguir orçamentos de entrega com nossos parceiros (resposta em até 90 minutos)',
+    requiresInfo: true,
+    isService: true
   }
 ];
 
@@ -83,6 +88,7 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
   const [selectedVolumes, setSelectedVolumes] = useState<Record<string, { volume: number; price: number }>>({});
   const [selectedLogistics, setSelectedLogistics] = useState<string>('pickup');
   const [deliveryInfo, setDeliveryInfo] = useState('');
+  const [deliveryQuoteRequested, setDeliveryQuoteRequested] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState<string>('');
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [generatedDocument, setGeneratedDocument] = useState<string | null>(null);
@@ -131,7 +137,7 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
   };
 
   const handleLogisticsNext = () => {
-    if (selectedLogistics === 'delivery_quote' && !deliveryInfo.trim()) {
+    if (deliveryQuoteRequested && !deliveryInfo.trim()) {
       toast({
         title: "Informações necessárias",
         description: "Por favor, informe os detalhes para cotação de entrega.",
@@ -141,7 +147,8 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
     }
     
     trackCheckoutStep('logistics', 'complete', { 
-      logistics_type: selectedLogistics,
+      logistics_type: 'pickup', // Always pickup
+      delivery_quote_requested: deliveryQuoteRequested,
       delivery_info: deliveryInfo 
     });
     setCurrentStep('payment');
@@ -163,7 +170,8 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
           total: volumeData.volume * volumeData.price
         };
       }),
-      logistics: selectedLogistics,
+      logistics: 'pickup', // Always pickup - delivery is not available yet
+      deliveryQuoteRequested,
       deliveryInfo,
       paymentMethod: selectedPayment,
       total,
@@ -311,39 +319,82 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
             Logística de Entrega
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <RadioGroup value={selectedLogistics} onValueChange={setSelectedLogistics}>
-          {LOGISTICS_OPTIONS.map((option) => (
-            <div key={option.id} className="space-y-3">
-              <div className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-muted/50">
-                <RadioGroupItem value={option.id} id={option.id} className="mt-1" />
-                <div className="flex-1">
-                  <Label htmlFor={option.id} className="font-medium cursor-pointer">
-                    {option.name}
-                  </Label>
-                  <p className="text-sm text-muted-foreground mt-1">{option.description}</p>
-                  {option.price === 0 && <Badge variant="secondary" className="mt-2">Gratuito</Badge>}
+        <CardContent className="space-y-6">
+          {/* Main logistics option - Pickup only */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 mb-2">
+              <Badge variant="outline" className="text-primary border-primary">
+                Opção de Entrega
+              </Badge>
+            </div>
+            
+            {LOGISTICS_OPTIONS.map((option) => (
+              <div key={option.id} className="p-4 border-2 border-primary/20 rounded-lg bg-primary/5">
+                <div className="flex items-start space-x-3">
+                  <div className="w-5 h-5 bg-primary rounded-full mt-1 flex items-center justify-center">
+                    <CheckCircle className="w-3 h-3 text-primary-foreground" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="font-medium text-foreground">{option.name}</div>
+                    <p className="text-sm text-muted-foreground mt-1">{option.description}</p>
+                    <Badge variant="secondary" className="mt-2">Gratuito</Badge>
+                  </div>
                 </div>
               </div>
-              
-              {option.requiresInfo && selectedLogistics === option.id && (
-                <div className="ml-7 p-3 bg-muted/50 rounded-lg">
-                  <Label htmlFor="delivery-info" className="text-sm font-medium">
-                    Informações para Cotação
-                  </Label>
-                  <Textarea
-                    id="delivery-info"
-                    placeholder="Informe o endereço de entrega, CEP, e outras informações relevantes..."
-                    value={deliveryInfo}
-                    onChange={(e) => setDeliveryInfo(e.target.value)}
-                    className="mt-2"
-                    rows={3}
-                  />
-                </div>
-              )}
+            ))}
+          </div>
+
+          <Separator />
+
+          {/* Additional service - Delivery quote */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 mb-2">
+              <Badge variant="outline">Serviço Adicional (Opcional)</Badge>
             </div>
-          ))}
-        </RadioGroup>
+            
+            {ADDITIONAL_SERVICES.map((service) => (
+              <div key={service.id} className="space-y-3">
+                <div className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-muted/50">
+                  <input
+                    type="checkbox"
+                    id={service.id}
+                    checked={deliveryQuoteRequested}
+                    onChange={(e) => setDeliveryQuoteRequested(e.target.checked)}
+                    className="mt-1 rounded border-gray-300"
+                  />
+                  <div className="flex-1">
+                    <Label htmlFor={service.id} className="font-medium cursor-pointer">
+                      {service.name}
+                    </Label>
+                    <p className="text-sm text-muted-foreground mt-1">{service.description}</p>
+                    <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-800">
+                      <strong>Importante:</strong> Este serviço não substitui a retirada no local. 
+                      Ele apenas ajuda você a conseguir orçamentos para futura entrega por transportadoras.
+                    </div>
+                  </div>
+                </div>
+                
+                {deliveryQuoteRequested && (
+                  <div className="ml-7 p-3 bg-muted/50 rounded-lg">
+                    <Label htmlFor="delivery-info" className="text-sm font-medium">
+                      Informações para Cotação de Entrega
+                    </Label>
+                    <Textarea
+                      id="delivery-info"
+                      placeholder="Informe o endereço completo de entrega, CEP, e outras informações relevantes para a cotação..."
+                      value={deliveryInfo}
+                      onChange={(e) => setDeliveryInfo(e.target.value)}
+                      className="mt-2"
+                      rows={3}
+                    />
+                    <p className="text-xs text-muted-foreground mt-2">
+                      ⏱️ Prazo para resposta: até 90 minutos durante horário comercial
+                    </p>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
         
           <div className="flex justify-between">
             <Button 
@@ -483,7 +534,7 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
             </div>
             <div className="flex justify-between">
               <span>Logística:</span>
-              <span>{LOGISTICS_OPTIONS.find(l => l.id === selectedLogistics)?.name}</span>
+              <span>Retirada no Local</span>
             </div>
           </div>
           
