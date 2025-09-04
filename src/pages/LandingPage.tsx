@@ -160,11 +160,6 @@ export default function LandingPage() {
               <p className="text-muted-foreground text-sm">Todo o Brasil</p>
             </div>
             <div className="flex flex-col items-center">
-              <Star className="h-12 w-12 text-primary mb-3" />
-              <h3 className="font-semibold">+ de 1000</h3>
-              <p className="text-muted-foreground text-sm">Clientes satisfeitos</p>
-            </div>
-            <div className="flex flex-col items-center">
               <TrendingDown className="h-12 w-12 text-primary mb-3" />
               <h3 className="font-semibold">Melhor Preço</h3>
               <p className="text-muted-foreground text-sm">Garantido</p>
