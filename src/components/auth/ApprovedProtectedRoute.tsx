@@ -13,8 +13,14 @@ export default function ApprovedProtectedRoute({ children }: ApprovedProtectedRo
 
   if (isLoading) return null;
 
-  if (!user || !isApproved) {
-    return <Navigate to="/" replace />;
+  // Allow unauthenticated users to reach the page so AuthGate can handle login/registration
+  if (!user) {
+    return <>{children}</>;
+  }
+
+  // If user is authenticated but not approved, redirect to pending approval
+  if (!isApproved) {
+    return <Navigate to="/pending-approval" replace />;
   }
 
   return <>{children}</>;
