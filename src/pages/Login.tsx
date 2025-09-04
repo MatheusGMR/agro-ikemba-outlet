@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,7 +19,25 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const location = useLocation();
   const { signIn, user } = useAuth();
+
+  // Get the intended destination from location state or default to products for approved users
+  const getRedirectPath = (userStatus: string) => {
+    // Get the path user was trying to access before login
+    const from = location.state?.from?.pathname || localStorage.getItem('redirectAfterLogin');
+    
+    // Clear stored redirect path
+    localStorage.removeItem('redirectAfterLogin');
+    
+    if (userStatus === 'approved') {
+      // For approved users, redirect to where they came from or to products catalog
+      return from && from !== '/login' ? from : '/products';
+    } else {
+      // For pending users, always go to pending approval
+      return '/pending-approval';
+    }
+  };
 
   // Redirect if already logged in
   useEffect(() => {
@@ -76,12 +94,9 @@ export default function Login() {
             .eq('email', email)
             .maybeSingle();
           
-          if (userData?.status === 'approved') {
-            navigate('/dashboard');
-          } else {
-            // User is pending approval
-            navigate('/pending-approval');
-          }
+          const userStatus = userData?.status || 'pending';
+          const redirectPath = getRedirectPath(userStatus);
+          navigate(redirectPath);
         } catch (repError) {
           console.log('Error checking user status, redirecting to pending approval:', repError);
           navigate('/pending-approval');
@@ -110,7 +125,7 @@ export default function Login() {
               <Info className="h-4 w-4" />
               <AlertDescription>
                 <strong>Primeira vez?</strong> Após o login, sua conta passará por um processo de aprovação. 
-                Você receberá um email quando estiver liberada para compras.
+                Quando aprovada, você será redirecionado para o catálogo de produtos ou para onde estava navegando.
               </AlertDescription>
             </Alert>
           </CardHeader>

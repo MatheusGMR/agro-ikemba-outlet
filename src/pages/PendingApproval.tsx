@@ -24,7 +24,10 @@ export default function PendingApproval() {
     }
     
     if (!isLoading && isApproved) {
-      navigate('/dashboard');
+      // Use the same smart redirect logic - go back to where user was trying to go
+      const redirectPath = localStorage.getItem('redirectAfterLogin') || '/products';
+      localStorage.removeItem('redirectAfterLogin');
+      navigate(redirectPath);
       return;
     }
   }, [user, isApproved, isLoading, navigate]);

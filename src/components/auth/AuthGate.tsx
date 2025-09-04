@@ -49,10 +49,7 @@ export default function AuthGate({ children }: AuthGateProps) {
       
       if (session?.user) {
         setIsOpen(false);
-        // Redirect to products after login
-        setTimeout(() => {
-          navigate('/products');
-        }, 100);
+        // Let the Login page handle smart redirects instead of forcing /products
       }
     });
 
@@ -62,10 +59,7 @@ export default function AuthGate({ children }: AuthGateProps) {
       
       if (session?.user) {
         setIsOpen(false);
-        // Redirect to products after login
-        setTimeout(() => {
-          navigate('/products');
-        }, 100);
+        // Let the Login page handle smart redirects instead of forcing /products
       }
     });
 

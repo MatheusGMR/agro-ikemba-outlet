@@ -73,7 +73,7 @@ const Checkout = () => {
       title: "Pedido realizado com sucesso!",
       description: `Seu pedido foi confirmado.`,
     });
-    navigate('/dashboard');
+    navigate('/products');
   };
 
   return (

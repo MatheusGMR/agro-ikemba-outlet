@@ -98,10 +98,10 @@ export default function RepresentativeProtectedRoute({ children }: Representativ
           </p>
           <div className="space-y-2">
             <button 
-              onClick={() => navigate('/dashboard')}
+              onClick={() => navigate('/products')}
               className="block w-full px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90"
             >
-              Ir para Dashboard
+              Ir para Catálogo de Produtos
             </button>
             <button 
               onClick={() => navigate('/')}
