@@ -814,6 +814,36 @@ export type Database = {
         }
         Relationships: []
       }
+      product_images: {
+        Row: {
+          alt_text: string | null
+          created_at: string | null
+          id: string
+          image_type: string | null
+          image_url: string
+          product_sku: string
+          updated_at: string | null
+        }
+        Insert: {
+          alt_text?: string | null
+          created_at?: string | null
+          id?: string
+          image_type?: string | null
+          image_url: string
+          product_sku: string
+          updated_at?: string | null
+        }
+        Update: {
+          alt_text?: string | null
+          created_at?: string | null
+          id?: string
+          image_type?: string | null
+          image_url?: string
+          product_sku?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       product_interactions: {
         Row: {
           created_at: string
