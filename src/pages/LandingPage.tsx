@@ -21,8 +21,7 @@ import {
   CheckCircle, 
   Star,
   Zap,
-  Package,
-  Calculator
+  Package
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -77,24 +76,14 @@ export default function LandingPage() {
     }
   };
 
-  const handleBuyNow = (product: any) => {
-    trackConversion('lead', product.main_item.client_price);
+  const handleBuyNow = () => {
+    trackConversion('lead', 0);
     
-    // Google Ads conversion for add to cart
-    reportAddToCartConversion(product.main_item.client_price);
+    // Google Ads conversion for navigation to products
+    reportAddToCartConversion(0);
     
-    // Navigate to checkout with product pre-selected
-    window.location.href = `/checkout?product=${product.sku}&volume=1000`;
-  };
-
-  const handleGetQuote = (product: any) => {
-    trackConversion('quote_request', product.main_item.client_price);
-    
-    // Google Ads conversion for quote request
-    reportQuoteRequestConversion(product.main_item.client_price);
-    
-    // Navigate to contact/quote page
-    window.location.href = `/register?product=${product.sku}&intent=quote`;
+    // Navigate to products page
+    window.location.href = '/products';
   };
 
   if (isLoading) {
@@ -137,7 +126,7 @@ export default function LandingPage() {
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex justify-center">
               <Button 
                 size="lg" 
                 variant="secondary"
@@ -146,15 +135,6 @@ export default function LandingPage() {
               >
                 <Zap className="mr-2 h-5 w-5" />
                 VER PRODUTOS EM OFERTA
-              </Button>
-              <Button 
-                size="lg" 
-                variant="outline"
-                className="text-lg px-8 py-4 border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/10"
-                onClick={() => handleGetQuote(null)}
-              >
-                <Calculator className="mr-2 h-5 w-5" />
-                CALCULAR ECONOMIA
               </Button>
             </div>
           </div>
@@ -291,28 +271,17 @@ export default function LandingPage() {
                       </Badge>
                     </div>
 
-                    {/* Action Buttons */}
-                    <div className="flex flex-col sm:flex-row gap-3 pt-4">
+                    {/* Action Button */}
+                    <div className="pt-4">
                       <Button 
-                        className="flex-1 text-lg py-6"
+                        className="w-full text-lg py-6"
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleBuyNow(product);
+                          handleBuyNow();
                         }}
                       >
                         <ShoppingCart className="mr-2 h-5 w-5" />
-                        COMPRAR AGORA
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        className="flex-1 text-lg py-6"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleGetQuote(product);
-                        }}
-                      >
-                        <Calculator className="mr-2 h-5 w-5" />
-                        COTAÇÃO
+                        VER PRODUTOS E COMPRAR
                       </Button>
                     </div>
                   </CardContent>
