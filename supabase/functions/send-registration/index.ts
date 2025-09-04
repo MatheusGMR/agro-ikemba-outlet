@@ -36,6 +36,35 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    // Parse request body
+    const data: RegistrationRequest = await req.json();
+    console.log("=== DADOS REGISTRO RECEBIDOS ===");
+    console.log("Nome:", data.name || "NOME NÃO ENCONTRADO");
+    console.log("Email:", data.email || "EMAIL NÃO ENCONTRADO");
+    console.log("Telefone:", data.phone || "TELEFONE NÃO ENCONTRADO");
+    console.log("Empresa:", data.company || "EMPRESA NÃO ENCONTRADA");
+    console.log("Dados completos:", JSON.stringify(data, null, 2));
+
+    // Validar campos obrigatórios
+    const requiredFields = ['name', 'email', 'phone', 'company'];
+    const missingFields = requiredFields.filter(field => !data[field as keyof RegistrationRequest]);
+    
+    if (missingFields.length > 0) {
+      console.error("ERRO: Campos obrigatórios faltando:", missingFields);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: "Campos obrigatórios faltando",
+          missingFields,
+          receivedData: data
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json", ...corsHeaders }
+        }
+      );
+    }
+
     // Verificar se a chave da API do Resend está configurada
     const resendApiKey = Deno.env.get("RESEND_API_KEY");
     if (!resendApiKey) {
@@ -58,17 +87,6 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("RESEND_API_KEY encontrada, criando cliente Resend...");
     const resend = new Resend(resendApiKey);
-
-    const data: RegistrationRequest = await req.json();
-    console.log("=== DADOS CADASTRO RECEBIDOS ===");
-    console.log("Nome:", data.name || "NOME NÃO ENCONTRADO");
-    console.log("Email:", data.email || "EMAIL NÃO ENCONTRADO");
-    console.log("Telefone:", data.phone || "TELEFONE NÃO ENCONTRADO");
-    console.log("Empresa:", data.company || "EMPRESA NÃO ENCONTRADA");
-    console.log("Tipo:", data.tipo || "TIPO NÃO ENCONTRADO");
-    console.log("CNPJ:", data.cnpj ? "***CNPJ FORNECIDO***" : "Não fornecido");
-    console.log("Como conheceu:", data.conheceu || "Não informado");
-    console.log("Dados completos:", JSON.stringify(data, null, 2));
 
     // Função para enviar email com fallback
     const sendEmailWithFallback = async (emailData: any) => {

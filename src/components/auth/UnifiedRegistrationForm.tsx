@@ -209,8 +209,8 @@ export function UnifiedRegistrationForm({
           body: {
             name: formData.name,
             email: formData.email,
-            telefone: formData.phone,
-            empresa: formData.company,
+            phone: formData.phone,
+            company: formData.company,
             tipo: formData.tipo,
             cnpj: formData.cnpj || undefined,
             conheceu: formData.conheceu || undefined,

@@ -48,6 +48,26 @@ const handler = async (req: Request): Promise<Response> => {
     console.log("Dados completos:", JSON.stringify(data, null, 2));
     console.log("RESEND_API_KEY configurada:", !!RESEND_API_KEY);
 
+    // Validar campos obrigatórios
+    const requiredFields = ['name', 'email', 'phone', 'company'];
+    const missingFields = requiredFields.filter(field => !data[field as keyof PreRegistrationRequest]);
+    
+    if (missingFields.length > 0) {
+      console.error("ERRO: Campos obrigatórios faltando:", missingFields);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: "Campos obrigatórios faltando",
+          missingFields,
+          receivedData: data
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json", ...corsHeaders }
+        }
+      );
+    }
+
     // Função para enviar email com fallback
     const sendEmailWithFallback = async (emailData: any) => {
       try {
