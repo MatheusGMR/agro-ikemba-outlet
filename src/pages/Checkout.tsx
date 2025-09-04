@@ -1,41 +1,72 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { useCart } from '@/contexts/CartContext';
 import { useToast } from '@/hooks/use-toast';
 import { OptimizedCheckoutFlow } from '@/components/checkout/OptimizedCheckoutFlow';
+import { CheckoutLoadingFallback } from '@/components/checkout/CheckoutLoadingFallback';
 
 const Checkout = () => {
   const { items } = useCart();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [isInitializing, setIsInitializing] = useState(true);
   
   // Scroll to top on mount
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
   }, []);
 
-  // Check if cart is empty
+  // Initialize and validate cart with proper timing
   useEffect(() => {
-    if (items.length === 0) {
-      toast({
-        title: "Carrinho vazio",  
-        description: "Adicione produtos ao carrinho antes de finalizar a compra.",
-        variant: "destructive"
-      });
-      navigate('/products');
-    }
+    const initializeCheckout = () => {
+      // Add a small delay to ensure CartContext has loaded from localStorage
+      setTimeout(() => {
+        console.log('Checkout: Initializing with items:', items);
+        
+        if (items.length === 0) {
+          console.log('Checkout: Empty cart, redirecting to products');
+          toast({
+            title: "Carrinho vazio",  
+            description: "Adicione produtos ao carrinho antes de finalizar a compra.",
+            variant: "destructive"
+          });
+          navigate('/products');
+        } else {
+          console.log('Checkout: Cart has items, proceeding with checkout');
+          setIsInitializing(false);
+        }
+      }, 100);
+    };
+
+    initializeCheckout();
   }, [items, navigate, toast]);
 
-    const checkoutItems = items.map(item => ({
-      id: item.id,
-      name: item.name,
-      sku: item.sku,
-      price: item.dynamicPrice || item.price,
-      quantity: item.volume,
-      manufacturer: item.manufacturer,
-    }));
+  // Show loading while initializing
+  if (isInitializing) {
+    console.log('Checkout: Still initializing...');
+    return <CheckoutLoadingFallback />;
+  }
+
+  // Defensive mapping with error handling
+  const checkoutItems = items.map(item => {
+    if (!item) {
+      console.error('Checkout: Invalid item found:', item);
+      return null;
+    }
+    
+    return {
+      id: item.id || `temp-${Date.now()}`,
+      name: item.name || 'Produto sem nome',
+      sku: item.sku || '',
+      price: item.dynamicPrice || item.price || 0,
+      quantity: item.volume || 1,
+      manufacturer: item.manufacturer || '',
+    };
+  }).filter(Boolean); // Remove null items
+
+  console.log('Checkout: Mapped items:', checkoutItems);
 
   const handleOrderComplete = (orderData: any) => {
     toast({
