@@ -40,3 +40,39 @@ export function gtagReportConversion(conversionLabel: string, value?: number, ur
 export function reportSignupConversion(value?: number, url?: string) {
   return gtagReportConversion('lersCN3M6JMbELfc3aZB', value, url);
 }
+
+/**
+ * Reports the Add to Cart conversion event
+ * @param value - Optional conversion value in BRL
+ * @param url - Optional URL to redirect to after conversion is tracked
+ */
+export function reportAddToCartConversion(value?: number, url?: string) {
+  return gtagReportConversion('ADD_TO_CART_LABEL', value, url);
+}
+
+/**
+ * Reports the Quote Request conversion event
+ * @param value - Optional conversion value in BRL
+ * @param url - Optional URL to redirect to after conversion is tracked
+ */
+export function reportQuoteRequestConversion(value?: number, url?: string) {
+  return gtagReportConversion('QUOTE_REQUEST_LABEL', value, url);
+}
+
+/**
+ * Reports the Product View conversion event
+ * @param value - Optional conversion value in BRL
+ * @param url - Optional URL to redirect to after conversion is tracked
+ */
+export function reportProductViewConversion(value?: number, url?: string) {
+  return gtagReportConversion('PRODUCT_VIEW_LABEL', value, url);
+}
+
+/**
+ * Reports the Purchase conversion event
+ * @param value - Optional conversion value in BRL
+ * @param url - Optional URL to redirect to after conversion is tracked
+ */
+export function reportPurchaseConversion(value?: number, url?: string) {
+  return gtagReportConversion('PURCHASE_LABEL', value, url);
+}

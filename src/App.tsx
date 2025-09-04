@@ -21,6 +21,7 @@ import RepresentativeRegistration from "./pages/RepresentativeRegistration";
 import RepresentativeLogin from "./pages/RepresentativeLogin";
 import TestPage from '@/pages/TestPage';
 import Simulador from './pages/Simulador';
+import LandingPage from './pages/LandingPage';
 import Representative from './pages/Representative';
 import ProposalView from './pages/ProposalView';
 import { TooltipProvider } from '@radix-ui/react-tooltip';
@@ -82,6 +83,7 @@ function App() {
                     </RepresentativeProtectedRoute>
                   } />
                   <Route path="/simulador" element={<Simulador />} />
+                  <Route path="/landing" element={<LandingPage />} />
                   <Route path="/proposta/:publicLink" element={<ProposalView />} />
                   <Route path="/test-openai" element={<TestPage />} />
                   <Route path="*" element={<NotFound />} />

@@ -169,6 +169,9 @@ export default function Navbar() {
         {/* Desktop Nav */}
         <nav className="hidden md:flex items-center gap-6">
           <div className="flex items-center gap-4 mr-4">
+            <Link to="/landing" className="text-primary font-semibold hover:text-primary/80 transition-colors animate-pulse">
+              🔥 OFERTA ESPECIAL
+            </Link>
             <Link to="/products" className="text-foreground hover:text-primary transition-colors">
               Produtos
             </Link>
@@ -232,6 +235,7 @@ export default function Navbar() {
       {isMenuOpen && <div className="fixed inset-0 z-50 bg-background md:hidden pt-16">
           <nav className="container-custom py-4">
             <ul className="space-y-4 text-lg">
+              <NavItem href="/landing" className="text-primary font-semibold animate-pulse">🔥 OFERTA ESPECIAL</NavItem>
               <NavItem href="/products">Produtos</NavItem>
               <NavItem href="/sobre">Sobre Nós</NavItem>
               <NavItem href="/blog">Blog</NavItem>
