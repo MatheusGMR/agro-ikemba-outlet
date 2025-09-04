@@ -11,6 +11,8 @@ import Footer from '@/components/layout/Footer';
 import { useToast } from '@/hooks/use-toast';
 import { useCart } from '@/contexts/CartContext';
 import { useInventoryBySku, useProductDocuments } from '@/hooks/useInventory';
+import { useProductImage } from '@/hooks/useProductImages';
+import { ProductImage } from '@/components/ui/custom/ProductImage';
 import DynamicPriceCard from '@/components/inventory/DynamicPriceCard';
 import { ProductDocuments } from '@/components/inventory/ProductDocuments';
 import { RelatedProducts } from '@/components/inventory/RelatedProducts';
@@ -28,8 +30,9 @@ const ProductDetail = () => {
   // Fetch real product data
   const { data: inventoryItems = [], isLoading: inventoryLoading, error: inventoryError } = useInventoryBySku(sku || '');
   const { data: documents = [], isLoading: documentsLoading } = useProductDocuments(sku || '');
+  const { data: productImage } = useProductImage(sku || '');
   
-  const [selectedImage, setSelectedImage] = useState('/placeholder.svg');
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [selectedTier, setSelectedTier] = useState<any>(null);
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [quantity, setQuantity] = useState(1);
@@ -44,7 +47,11 @@ const ProductDetail = () => {
       const bestTier = inventoryItems.find(item => item.client_price === bestPrice);
       setSelectedTier(bestTier);
     }
-  }, [inventoryItems, selectedItem]);
+    // Set default product image
+    if (productImage?.image_url && !selectedImage) {
+      setSelectedImage(productImage.image_url);
+    }
+  }, [inventoryItems, selectedItem, productImage, selectedImage]);
 
   // Calculate price benefits
   const priceBenefits = inventoryItems.length > 0 ? InventoryService.calculatePriceBenefits(inventoryItems) : [];
@@ -113,7 +120,7 @@ const ProductDetail = () => {
       sku: productInfo.product_sku,
       price: selectedItem.client_price,
       manufacturer: productInfo.manufacturer,
-      image: '/placeholder.svg'
+      image: selectedImage || '/placeholder.svg'
     };
     
     // Check if volume was optimized (different from default 1000L or has savings)
@@ -209,21 +216,23 @@ const ProductDetail = () => {
             {/* Product Images */}
             <div className="w-full lg:w-2/5">
               <div className="border rounded-lg bg-white p-4 mb-4">
-                <img 
-                  src={selectedImage} 
+                <ProductImage 
+                  src={selectedImage}
                   alt={productInfo.product_name}
-                  className="object-contain w-full h-80"
+                  className="h-80"
+                  fallbackClassName="h-80"
                 />
               </div>
               <div className="flex gap-2">
                 <button
-                  onClick={() => setSelectedImage('/placeholder.svg')}
-                  className={`border rounded-md p-2 w-20 h-20 ${selectedImage === '/placeholder.svg' ? 'border-agro-green' : ''}`}
+                  onClick={() => setSelectedImage(selectedImage)}
+                  className="border rounded-md p-2 w-20 h-20 border-agro-green"
                 >
-                  <img 
-                    src="/placeholder.svg"
-                    alt="Produto"
-                    className="object-contain w-full h-full"
+                  <ProductImage 
+                    src={selectedImage}
+                    alt={productInfo.product_name}
+                    className="w-full h-full"
+                    fallbackClassName="w-full h-full"
                   />
                 </button>
               </div>

@@ -15,6 +15,8 @@ import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { useProductsWithInventory } from '@/hooks/useInventory';
+import { useAllProductImages, getProductImageUrl } from '@/hooks/useProductImages';
+import { ProductImage } from '@/components/ui/custom/ProductImage';
 import type { ProductWithInventory } from '@/types/inventory';
 
 // Helper function to get category from active ingredient
@@ -42,6 +44,7 @@ export default function ProductCatalogComponent() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { data: inventoryProducts = [], isLoading, error } = useProductsWithInventory();
+  const { data: productImages = [] } = useAllProductImages();
   
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchTerm, setSearchTerm] = useState('');
@@ -70,9 +73,9 @@ export default function ProductCatalogComponent() {
       category: getProductCategory(product.active_ingredient),
       documents: product.documents,
       expiryDate: product.expiry_date,
-      image: '/placeholder.svg' // Default image for now
+      image: getProductImageUrl(product.sku, productImages)
     }));
-  }, [inventoryProducts]);
+  }, [inventoryProducts, productImages]);
 
   // Dynamic filter options from real data
   const availableManufacturers = useMemo(() => {
@@ -392,10 +395,11 @@ export default function ProductCatalogComponent() {
                     >
                       <CardContent className={`p-0 ${viewMode === 'list' ? 'flex' : 'flex flex-col'} h-full`}>
                         <div className={`${viewMode === 'list' ? 'w-1/3' : 'w-full'}`}>
-                          <img 
+                          <ProductImage 
                             src={product.image} 
-                            alt={product.name} 
-                            className={`object-contain w-full ${viewMode === 'grid' ? 'h-48' : 'h-full'} p-4`}
+                            alt={product.name}
+                            className={`${viewMode === 'grid' ? 'h-48' : 'h-full'}`}
+                            fallbackClassName={`${viewMode === 'grid' ? 'h-48' : 'h-full'}`}
                           />
                         </div>
                         
