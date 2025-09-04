@@ -247,56 +247,35 @@ export default function LandingPage() {
                   </CardHeader>
 
                   <CardContent className="space-y-6">
-                    {/* Price Tiers */}
-                    <div className="space-y-3">
-                      <h4 className="font-semibold text-lg">Preços por Volume:</h4>
+                    {/* Price Range */}
+                    <div className="space-y-4">
+                      <h4 className="font-semibold text-lg">Faixa de Preços por Volume:</h4>
                       
-                      {/* Unit Price */}
-                      <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
-                        <div>
-                          <span className="text-sm text-muted-foreground">Preço Unitário</span>
-                          <p className="font-medium">Qualquer quantidade</p>
-                        </div>
-                        <span className="text-lg font-bold">
-                          {formatCurrency(unitPrice)}/L
-                        </span>
-                      </div>
-
-                      {/* Band Prices */}
-                      {product.all_items
-                        .filter(item => item.price_tier !== 'Preço Unitário')
-                        .sort((a, b) => a.client_price - b.client_price)
-                        .map((item, index) => {
-                          const savings = unitPrice - item.client_price;
-                          const savingsPercent = (savings / unitPrice) * 100;
+                      <div className="bg-gradient-to-r from-primary/10 to-primary/5 p-6 rounded-lg border border-primary/20">
+                        <div className="text-center">
+                          <div className="flex items-center justify-center gap-4 mb-3">
+                            <span className="text-2xl font-bold text-primary">
+                              {formatCurrency(bestPrice)}/L
+                            </span>
+                            <span className="text-muted-foreground">até</span>
+                            <span className="text-xl font-semibold text-muted-foreground line-through">
+                              {formatCurrency(unitPrice)}/L
+                            </span>
+                          </div>
                           
-                          return (
-                            <div 
-                              key={`${item.price_tier}-${index}`}
-                              className="flex justify-between items-center p-3 bg-primary/5 border border-primary/20 rounded-lg"
-                            >
-                              <div>
-                                <span className="text-sm text-primary font-medium">
-                                  {item.price_tier}
-                                </span>
-                                <p className="text-sm text-muted-foreground">
-                                  Volume mínimo: 1000L
-                                </p>
-                                <p className="text-xs text-primary">
-                                  Economia: {formatCurrency(savings)}/L ({savingsPercent.toFixed(1)}%)
-                                </p>
-                              </div>
-                              <div className="text-right">
-                                <span className="text-lg font-bold text-primary">
-                                  {formatCurrency(item.client_price)}/L
-                                </span>
-                                <p className="text-xs text-muted-foreground line-through">
-                                  {formatCurrency(unitPrice)}/L
-                                </p>
-                              </div>
-                            </div>
-                          );
-                        })}
+                          <div className="text-center mb-4">
+                            <Badge className="bg-destructive text-destructive-foreground text-lg px-4 py-2">
+                              ECONOMIZE ATÉ {maxSavings.toFixed(0)}%
+                            </Badge>
+                          </div>
+
+                          <div className="text-sm text-muted-foreground space-y-1">
+                            <p>💰 <strong>Preço unitário:</strong> {formatCurrency(unitPrice)}/L (qualquer quantidade)</p>
+                            <p>🎯 <strong>Melhor preço:</strong> {formatCurrency(bestPrice)}/L (volumes maiores)</p>
+                            <p>📦 <strong>Volume mínimo para desconto:</strong> 1.000L</p>
+                          </div>
+                        </div>
+                      </div>
                     </div>
 
                     <Separator />
