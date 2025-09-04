@@ -138,19 +138,35 @@ export function UnifiedRegistrationForm({
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
+
+    // Unique attempt id to correlate logs across steps
+    const attemptId = `reg-${Date.now()}-${Math.random().toString(36).slice(-6)}`;
+    const common = {
+      form_name: 'registration_form',
+      form_context: context,
+      form_id: 'unified_registration',
+      attempt_id: attemptId,
+    };
     
     try {
-      console.log('=== INÍCIO DO CADASTRO UNIFICADO ===');
-      console.log('Context:', context);
-      console.log('Dados:', formData);
+      console.log(`[REG][${attemptId}] Start unified registration`, { context, data: formData });
+      trackFormEvent('form_attempt_start', {
+        ...common,
+        account_type: formData.tipo,
+        has_cnpj: !!formData.cnpj,
+        how_found: formData.conheceu || 'not_specified',
+      });
 
       // Check if email already exists in users table
+      trackFormEvent('email_check_start', { ...common, email: formData.email });
       const { exists, error: checkError } = await userService.checkEmailExists(formData.email);
+      console.log(`[REG][${attemptId}] Email check result`, { exists, checkError });
       if (checkError) {
+        trackFormEvent('email_check_error', { ...common, message: checkError });
         throw new Error(`Erro ao verificar email: ${checkError}`);
       }
-      
       if (exists) {
+        trackFormEvent('email_already_exists', { ...common });
         toast.error('Este email já está cadastrado');
         setCurrentStep(5); // Go back to contact step
         return;
@@ -158,25 +174,30 @@ export function UnifiedRegistrationForm({
 
       // Create user directly in Supabase Auth with temporary password
       const tempPassword = Math.random().toString(36).slice(-12) + 'A1!'; // Ensure it meets password requirements
-      
+      trackFormEvent('auth_user_create_start', { ...common });
       const { data: authData, error: authError } = await supabase.functions.invoke('create-auth-user', {
         body: {
           email: formData.email,
           password: tempPassword,
-          name: formData.name
-        }
+          name: formData.name,
+        },
       });
-
+      console.log(`[REG][${attemptId}] Auth user create response`, { authData, authError });
       if (authError) {
         if (authError.message?.includes('email_exists') || authError.message?.includes('409')) {
+          trackFormEvent('auth_email_conflict', { ...common });
           toast.error('Este email já possui uma conta. Tente fazer login.');
           setCurrentStep(5);
           return;
         }
+        trackFormEvent('auth_user_create_error', { ...common, message: authError.message || String(authError) });
         throw new Error(`Erro ao criar usuário: ${authError.message}`);
+      } else {
+        trackFormEvent('auth_user_create_success', { ...common, user_id: (authData as any)?.user?.id || null });
       }
 
       // Add user to database with pending status
+      trackFormEvent('db_insert_start', { ...common });
       const { success, error: userError } = await userService.addUser({
         name: formData.name,
         email: formData.email,
@@ -186,25 +207,32 @@ export function UnifiedRegistrationForm({
         cnpj: formData.cnpj || undefined,
         conheceu: formData.conheceu || undefined,
       });
-
+      console.log(`[REG][${attemptId}] DB insert result`, { success, userError });
       if (!success || userError) {
+        trackFormEvent('db_insert_error', { ...common, message: userError });
         throw new Error(`Erro ao salvar cadastro: ${userError}`);
+      } else {
+        trackFormEvent('db_insert_success', { ...common });
       }
 
       // Auto sign in the user with the temporary password
+      trackFormEvent('auto_sign_in_start', { ...common });
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email: formData.email,
-        password: tempPassword
+        password: tempPassword,
       });
-
       if (signInError) {
-        console.error('Auto sign-in failed:', signInError);
+        console.warn(`[REG][${attemptId}] Auto sign-in failed`, signInError);
+        trackFormEvent('auto_sign_in_error', { ...common, message: signInError.message });
         // Don't throw error here, user can still login manually later
+      } else {
+        trackFormEvent('auto_sign_in_success', { ...common });
       }
 
       // Send registration email (non-critical)
       try {
         const emailFunction = context === 'preregistration' ? 'send-pre-registration' : 'send-registration';
+        trackFormEvent('email_send_start', { ...common, function: emailFunction });
         const { data: emailResult, error: emailError } = await supabase.functions.invoke(emailFunction, {
           body: {
             name: formData.name,
@@ -214,31 +242,34 @@ export function UnifiedRegistrationForm({
             tipo: formData.tipo,
             cnpj: formData.cnpj || undefined,
             conheceu: formData.conheceu || undefined,
-          }
+          },
         });
-
+        console.log(`[REG][${attemptId}] Email send response`, { emailResult, emailError });
         if (emailError) {
           console.warn('Aviso: Erro no envio de emails:', emailError);
-        } else if (emailResult?.success) {
+          trackFormEvent('email_send_error', { ...common, message: emailError.message || String(emailError) });
+        } else if ((emailResult as any)?.success) {
           console.log('Emails enviados com sucesso');
+          trackFormEvent('email_send_success', { ...common });
         } else {
           console.warn('Aviso: Falha no envio de emails:', emailResult);
+          trackFormEvent('email_send_failure', { ...common });
         }
       } catch (emailError) {
         console.warn('Aviso: Erro inesperado no envio de emails:', emailError);
+        trackFormEvent('email_send_exception', { ...common, message: String(emailError) });
       }
 
-      console.log('=== CADASTRO CONCLUÍDO COM SUCESSO ===');
+      console.log(`[REG][${attemptId}] Registration completed successfully`);
 
       // Track form_submit event
       trackFormEvent('form_submit', {
-        form_name: 'registration_form',
-        form_context: context,
-        form_id: 'unified_registration',
+        ...common,
         account_type: formData.tipo,
         has_cnpj: !!formData.cnpj,
-        how_found: formData.conheceu || 'not_specified'
+        how_found: formData.conheceu || 'not_specified',
       });
+      trackFormEvent('registration_success', { ...common });
 
       // Track Google Ads Sign-up conversion
       const { reportSignupConversion } = await import('@/utils/googleAdsConversions');
@@ -249,7 +280,7 @@ export function UnifiedRegistrationForm({
         localStorage.setItem('user', JSON.stringify(formData));
       }
 
-      const successMessage = context === 'preregistration' 
+      const successMessage = context === 'preregistration'
         ? 'Pré-cadastro enviado com sucesso! Entraremos em contato em breve via WhatsApp.'
         : 'Cadastro realizado com sucesso! Sua solicitação foi enviada para análise.';
 
@@ -262,9 +293,13 @@ export function UnifiedRegistrationForm({
       if (onSuccess) {
         onSuccess(formData);
       }
-      
+
     } catch (error) {
-      console.error('Registration error:', error);
+      console.error(`[REG][${attemptId}] Registration error`, error);
+      trackFormEvent('registration_error', {
+        ...common,
+        message: error instanceof Error ? error.message : String(error),
+      });
       toast.error('Erro ao criar conta. Tente novamente.');
     } finally {
       setIsSubmitting(false);
