@@ -189,6 +189,9 @@ export default function LandingPage() {
               const unitPrice = product.main_item.client_price;
               const bestPrice = Math.min(...product.all_items.map(item => item.client_price));
               const maxSavings = ((unitPrice - bestPrice) / unitPrice) * 100;
+              const volumeForCalculation = 1000; // 1000L para calcular economia
+              const savingsPerLiter = unitPrice - bestPrice;
+              const totalSavingsForVolume = savingsPerLiter * volumeForCalculation;
 
               return (
                 <Card 
@@ -198,11 +201,14 @@ export default function LandingPage() {
                   }`}
                   onClick={() => handleProductClick(product.sku)}
                 >
-                  {maxSavings > 0 && (
+                  {totalSavingsForVolume > 0 && (
                     <div className="absolute top-4 right-4 z-10">
-                      <Badge className="bg-destructive text-destructive-foreground animate-pulse">
-                        ECONOMIZE {maxSavings.toFixed(0)}%
+                      <Badge className="bg-destructive text-destructive-foreground animate-pulse text-sm font-bold">
+                        ECONOMIZE {formatCurrency(totalSavingsForVolume)}
                       </Badge>
+                      <p className="text-xs text-center mt-1 text-muted-foreground bg-white/90 px-2 py-1 rounded">
+                        em 1.000L
+                      </p>
                     </div>
                   )}
                   
@@ -240,8 +246,11 @@ export default function LandingPage() {
                           
                           <div className="text-center mb-4">
                             <Badge className="bg-destructive text-destructive-foreground text-lg px-4 py-2">
-                              ECONOMIZE ATÉ {maxSavings.toFixed(0)}%
+                              ECONOMIZE {formatCurrency(totalSavingsForVolume)} em 1.000L
                             </Badge>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              ({maxSavings.toFixed(0)}% de desconto)
+                            </p>
                           </div>
 
                           <div className="text-sm text-muted-foreground space-y-1">
