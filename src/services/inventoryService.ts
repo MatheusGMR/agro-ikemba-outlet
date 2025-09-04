@@ -126,17 +126,23 @@ export class InventoryService {
           all_items: inventory.filter(inv => inv.product_sku === item.product_sku)
         });
       }
-
-      const product = productMap.get(key)!;
-      product.total_volume += item.volume_available;
     }
 
-    // Calcular contagem de locais únicos
+    // Calcular volume total e contagem de locais únicos usando apenas localizações físicas únicas
     for (const product of productMap.values()) {
-      const uniqueLocations = new Set(
-        product.all_items.map(item => `${item.city}-${item.state}`)
-      );
-      product.locations_count = uniqueLocations.size;
+      const uniqueLocationVolumes = new Map<string, number>();
+      
+      // Agrupar por localização física única (cidade-estado) e somar volumes apenas uma vez
+      for (const item of product.all_items) {
+        const locationKey = `${item.city}-${item.state}`;
+        if (!uniqueLocationVolumes.has(locationKey)) {
+          uniqueLocationVolumes.set(locationKey, item.volume_available);
+        }
+      }
+      
+      // Somar volumes únicos por localização
+      product.total_volume = Array.from(uniqueLocationVolumes.values()).reduce((sum, vol) => sum + vol, 0);
+      product.locations_count = uniqueLocationVolumes.size;
     }
 
     return Array.from(productMap.values());
