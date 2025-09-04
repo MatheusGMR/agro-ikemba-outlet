@@ -178,9 +178,6 @@ export default function Navbar() {
             <Link to="/sobre" className="text-foreground hover:text-primary transition-colors">
               Sobre Nós
             </Link>
-            <Link to="/blog" className="text-foreground hover:text-primary transition-colors">
-              Blog
-            </Link>
             
           </div>
           <div className="flex items-center gap-2">
@@ -238,7 +235,6 @@ export default function Navbar() {
               <NavItem href="/landing" className="text-primary font-semibold animate-pulse">🔥 OFERTA ESPECIAL</NavItem>
               <NavItem href="/products">Produtos</NavItem>
               <NavItem href="/sobre">Sobre Nós</NavItem>
-              <NavItem href="/blog">Blog</NavItem>
               <NavItem href="/simulador">Simulador</NavItem>
               {isLoggedIn && <>
                   <NavItem href="/for-manufacturers">Para Fabricantes</NavItem>
