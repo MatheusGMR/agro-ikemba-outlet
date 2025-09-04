@@ -379,8 +379,17 @@ export default function ProductCatalogComponent() {
                   ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
                   : "flex flex-col gap-4"
                 }>
-                  {filteredProducts.map((product) => (
-                    <Card key={product.id} className={`${viewMode === 'list' ? "overflow-hidden" : ""} h-full flex flex-col`}>
+                   {filteredProducts.map((product) => (
+                    <Card 
+                      key={product.id} 
+                      className={`
+                        ${viewMode === 'list' ? "overflow-hidden" : ""} 
+                        h-full flex flex-col cursor-pointer group
+                        transition-all duration-300 hover:shadow-xl hover:scale-105 shadow-lg
+                        border-0 bg-gradient-to-br from-white to-gray-50/80
+                      `}
+                      onClick={() => navigate(`/product/${product.sku}`)}
+                    >
                       <CardContent className={`p-0 ${viewMode === 'list' ? 'flex' : 'flex flex-col'} h-full`}>
                         <div className={`${viewMode === 'list' ? 'w-1/3' : 'w-full'}`}>
                           <img 
@@ -392,9 +401,11 @@ export default function ProductCatalogComponent() {
                         
                         <div className={`p-4 ${viewMode === 'list' ? 'w-2/3' : 'flex-1'} flex flex-col`}>
                           <div className="flex-1">
-                            <h3 className="font-semibold text-lg mb-1 line-clamp-2">{product.name}</h3>
-                            <p className="text-sm text-muted-foreground mb-1">{product.manufacturer}</p>
-                            <p className="text-sm mb-2 line-clamp-1">
+                            <h3 className="font-semibold text-xl mb-1 line-clamp-2 text-primary group-hover:text-primary/80 transition-colors">
+                              {product.manufacturer}
+                            </h3>
+                            <p className="text-sm text-muted-foreground mb-1 line-clamp-1">{product.name}</p>
+                            <p className="text-xs text-muted-foreground mb-2 line-clamp-1">
                               SKU: {product.sku} {product.activeIngredient && `• ${product.activeIngredient}`}
                             </p>
                             
@@ -429,17 +440,17 @@ export default function ProductCatalogComponent() {
                           <div className="mt-auto">
                             <div className="mb-3">
                               <div className="flex justify-between items-center mb-1">
-                                <span className="text-sm font-medium">Preço por litro:</span>
-                                <span className="text-xs text-muted-foreground">Vol. mín: 1.000L</span>
+                                <span className="text-sm font-medium">Melhor preço:</span>
+                                <span className="text-xs text-muted-foreground">Vol. total</span>
                               </div>
                               
                               {product.minPrice === product.maxPrice ? (
-                                <p className="text-xl font-bold text-agro-green">
+                                <p className="text-xl font-bold text-primary">
                                   R$ {product.minPrice.toFixed(2).replace('.', ',')}
                                 </p>
                               ) : (
                                 <div>
-                                  <p className="text-lg font-bold text-agro-green">
+                                  <p className="text-lg font-bold text-primary">
                                     R$ {product.minPrice.toFixed(2).replace('.', ',')} - R$ {product.maxPrice.toFixed(2).replace('.', ',')}
                                   </p>
                                   <p className="text-xs text-muted-foreground">
@@ -453,31 +464,22 @@ export default function ProductCatalogComponent() {
                               </p>
                             </div>
                             
-                            <div className="flex gap-2">
-                              <Button 
-                                variant="outline" 
-                                size="sm" 
-                                className="flex-1"
-                                onClick={() => {
-                                  navigate(`/product/${product.sku}`);
-                                }}
-                              >
-                                Ver Detalhes
-                              </Button>
+                            <div className="w-full">
                               <Button 
                                 variant="default" 
                                 size="sm" 
-                                className="flex-1"
-                                onClick={() => {
+                                className="w-full group-hover:bg-primary/90 transition-colors"
+                                onClick={(e) => {
+                                  e.stopPropagation();
                                   toast({
-                                    title: "Produto adicionado",
-                                    description: `${product.name} foi adicionado ao carrinho.`
+                                    title: "Redirecionando...",
+                                    description: `Você será direcionado para os detalhes de ${product.name}.`
                                   });
                                 }}
                                 disabled={!product.inStock}
                               >
                                 <ShoppingCart className="mr-1 h-3 w-3" />
-                                {product.inStock ? 'Comprar' : 'Indisponível'}
+                                {product.inStock ? 'Ver Detalhes' : 'Indisponível'}
                               </Button>
                             </div>
                           </div>

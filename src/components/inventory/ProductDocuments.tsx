@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { FileText, Download, Shield, AlertTriangle } from 'lucide-react';
+import { FileText, ExternalLink, Shield, AlertTriangle } from 'lucide-react';
 import type { ProductDocument } from '@/types/inventory';
 
 interface ProductDocumentsProps {
@@ -31,17 +31,17 @@ export function ProductDocuments({ documents, productName }: ProductDocumentsPro
   const getDocumentLabel = (type: string) => {
     switch (type) {
       case 'bula':
-        return 'Bula';
+        return 'Bula Completa';
       case 'fisqp':
-        return 'FISQP';
+        return 'FISQP Completo';
       case 'fds':
-        return 'FDS';
+        return 'FDS Completo';
       case 'ficha_emergencia':
-        return 'Ficha de Emergência';
+        return 'Ficha de Emergência Completa';
       case 'adapar':
-        return 'ADAPAR';
+        return 'ADAPAR Completo';
       default:
-        return type.toUpperCase();
+        return `${type.toUpperCase()} Completo`;
     }
   };
 
@@ -80,8 +80,8 @@ export function ProductDocuments({ documents, productName }: ProductDocumentsPro
                 onClick={() => handleDocumentView(doc.document_url, doc.document_name)}
                 className="flex items-center gap-2"
               >
-                <Download className="w-3 h-3" />
-                Visualizar
+                <ExternalLink className="w-3 h-3" />
+                Acessar
               </Button>
             </div>
           ))}

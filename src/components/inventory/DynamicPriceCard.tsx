@@ -13,10 +13,13 @@ interface DynamicPriceCardProps {
   inventoryItems: InventoryItem[];
   onVolumeChange?: (volume: number, price: number, savings: number) => void;
   minVolume?: number;
+  initialVolumePercentage?: number;
 }
 
-export default function DynamicPriceCard({ inventoryItems, onVolumeChange, minVolume = 20 }: DynamicPriceCardProps) {
-  const [selectedVolume, setSelectedVolume] = useState(minVolume);
+export default function DynamicPriceCard({ inventoryItems, onVolumeChange, minVolume = 20, initialVolumePercentage = 100 }: DynamicPriceCardProps) {
+  const totalAvailable = inventoryItems.reduce((sum, item) => sum + item.volume_available, 0);
+  const initialVolume = Math.max(minVolume, Math.ceil(totalAvailable * (initialVolumePercentage / 100)));
+  const [selectedVolume, setSelectedVolume] = useState(initialVolume);
   const { user } = useAuth();
   const { isApproved, isPending } = useUserApproval();
   
@@ -27,7 +30,7 @@ export default function DynamicPriceCard({ inventoryItems, onVolumeChange, minVo
     return { min: minPrice, max: maxPrice };
   }, { min: Infinity, max: 0 });
 
-  const totalAvailable = inventoryItems.reduce((sum, item) => sum + item.volume_available, 0);
+  // totalAvailable already calculated above
   const maxPrice = priceRange.max;
   const minPrice = priceRange.min;
 
