@@ -105,14 +105,7 @@ export default function PendingApproval() {
                 <h3 className="font-semibold text-gray-900 mb-3">
                   Precisa de ajuda ou quer agilizar o processo?
                 </h3>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <a 
-                    href="mailto:contato@embalagemdistribuicao.com.br"
-                    className="flex items-center justify-center text-primary hover:text-primary/80 transition-colors"
-                  >
-                    <Mail className="h-4 w-4 mr-2" />
-                    contato@embalagemdistribuicao.com.br
-                  </a>
+                <div className="flex justify-center">
                   <a 
                     href="https://wa.me/5511999999999"
                     target="_blank"
