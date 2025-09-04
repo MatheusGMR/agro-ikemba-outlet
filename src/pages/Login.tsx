@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Lock, Mail, AlertCircle } from 'lucide-react';
+import { Lock, Mail, AlertCircle, Info } from 'lucide-react';
 import { toast } from 'sonner';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import Navbar from '@/components/layout/Navbar';
@@ -55,21 +55,36 @@ export default function Login() {
           toast.error('Erro ao fazer login. Tente novamente.');
         }
       } else {
-        // Login successful - ensure session is available before next steps
+        // Login successful - check user status and redirect appropriately
         try {
           const { data: { session } } = await supabase.auth.getSession();
           if (!session) {
             await new Promise((r) => setTimeout(r, 200));
           }
+          
+          // Check if user is a representative first
           const representative = await RepresentativeService.getCurrentRepresentative();
           if (representative) {
             navigate('/representative');
+            return;
+          }
+          
+          // Check user approval status
+          const { data: userData } = await supabase
+            .from('users')
+            .select('status')
+            .eq('email', email)
+            .maybeSingle();
+          
+          if (userData?.status === 'approved') {
+            navigate('/dashboard');
           } else {
-            navigate('/');
+            // User is pending approval
+            navigate('/pending-approval');
           }
         } catch (repError) {
-          console.log('Error checking representative status, redirecting to homepage:', repError);
-          navigate('/');
+          console.log('Error checking user status, redirecting to pending approval:', repError);
+          navigate('/pending-approval');
         }
       }
     } catch (error) {
@@ -89,6 +104,15 @@ export default function Login() {
           <CardHeader className="text-center">
             <CardTitle className="text-2xl font-bold">Entrar</CardTitle>
             <p className="text-gray-600">Entre com suas credenciais</p>
+            
+            {/* Information about approval process */}
+            <Alert className="mt-4 text-left">
+              <Info className="h-4 w-4" />
+              <AlertDescription>
+                <strong>Primeira vez?</strong> Após o login, sua conta passará por um processo de aprovação. 
+                Você receberá um email quando estiver liberada para compras.
+              </AlertDescription>
+            </Alert>
           </CardHeader>
           <CardContent>
             {error && (

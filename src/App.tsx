@@ -27,8 +27,8 @@ import { TooltipProvider } from '@radix-ui/react-tooltip';
 import { CartProvider } from '@/contexts/CartContext';
 import { AuthProvider } from '@/hooks/useAuth';
 import ScrollToTop from '@/components/layout/ScrollToTop';
-import { ApprovalBlockingModal } from '@/components/ui/ApprovalBlockingModal';
 import ApprovedProtectedRoute from '@/components/auth/ApprovedProtectedRoute';
+import PendingApproval from '@/pages/PendingApproval';
 
 const queryClient = new QueryClient();
 
@@ -42,8 +42,7 @@ function App() {
             <Sonner />
             <BrowserRouter>
               <ScrollToTop />
-              <AuthProvider>
-                <ApprovalBlockingModal />
+            <AuthProvider>
                 <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/sobre" element={<About />} />
@@ -65,6 +64,7 @@ function App() {
                   } />
                   <Route path="/register" element={<Registration />} />
                   <Route path="/login" element={<Login />} />
+                  <Route path="/pending-approval" element={<PendingApproval />} />
                   <Route path="/representative/login" element={<RepresentativeLogin />} />
                   <Route path="/representative/register" element={<RepresentativeRegistration />} />
                   {/* Legacy route for backwards compatibility */}
