@@ -24,7 +24,6 @@ import {
   Zap,
   Package
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
 import { ProductImage } from '@/components/ui/custom/ProductImage';
 
 export default function LandingPage() {
@@ -319,7 +318,7 @@ export default function LandingPage() {
             Preços especiais por tempo limitado. Garante já seus defensivos com a melhor qualidade e economia garantida.
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
+          <div className="flex justify-center mb-8">
             <Button 
               size="lg"
               variant="secondary"
@@ -332,15 +331,6 @@ export default function LandingPage() {
               <Zap className="mr-2 h-5 w-5" />
               CADASTRAR E COMPRAR
             </Button>
-            <Link to="/products">
-              <Button 
-                size="lg"
-                variant="outline"
-                className="text-lg px-8 py-4 border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/10"
-              >
-                VER TODOS OS PRODUTOS
-              </Button>
-            </Link>
           </div>
 
           <div className="text-sm text-primary-foreground/80">
