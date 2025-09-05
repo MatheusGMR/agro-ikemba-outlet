@@ -27,7 +27,7 @@ import { Link } from 'react-router-dom';
 
 export default function LandingPage() {
   const [selectedProduct, setSelectedProduct] = useState<string | null>(null);
-  const [urgencyTimer, setUrgencyTimer] = useState(3600); // 1 hour countdown
+  const [urgencyTimer, setUrgencyTimer] = useState(84180); // 23h 23min countdown
   
   const { data: products = [], isLoading } = useGroupedProductsForSales();
   const { trackProductView } = useProductAnalytics();
