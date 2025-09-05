@@ -69,7 +69,7 @@ export default function LandingPage() {
           value: product.main_item.client_price,
           items: [{
             item_id: sku,
-            item_name: product.name
+            item_name: product.active_ingredient || product.name
           }]
         });
       }
@@ -215,12 +215,10 @@ export default function LandingPage() {
                   <CardHeader className="pb-4">
                     <div className="flex items-start justify-between">
                       <div>
-                        <CardTitle className="text-2xl mb-2">{product.name}</CardTitle>
+                        <CardTitle className="text-2xl mb-2">{product.active_ingredient || product.name}</CardTitle>
                         <div className="space-y-1 text-sm text-muted-foreground">
                           <p><strong>Fabricante:</strong> {product.manufacturer}</p>
-                          {product.active_ingredient && (
-                            <p><strong>Ingrediente Ativo:</strong> {product.active_ingredient}</p>
-                          )}
+                          <p><strong>Nome Técnico:</strong> {product.name}</p>
                           <p><strong>SKU:</strong> {product.sku}</p>
                         </div>
                       </div>
