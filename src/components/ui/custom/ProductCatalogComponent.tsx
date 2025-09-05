@@ -475,10 +475,7 @@ export default function ProductCatalogComponent() {
                                 className="w-full group-hover:bg-primary/90 transition-colors"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  toast({
-                                    title: "Redirecionando...",
-                                    description: `Você será direcionado para os detalhes de ${product.activeIngredient}.`
-                                  });
+                                  navigate(`/product/${product.sku}`);
                                 }}
                                 disabled={!product.inStock}
                               >
