@@ -219,7 +219,6 @@ export default function LandingPage() {
                         <div className="space-y-1 text-sm text-muted-foreground">
                           <p><strong>Fabricante:</strong> {product.manufacturer}</p>
                           <p><strong>Nome Técnico:</strong> {product.name}</p>
-                          <p><strong>SKU:</strong> {product.sku}</p>
                         </div>
                       </div>
                     </div>
