@@ -45,9 +45,7 @@ export default function ProductCatalog() {
         </script>
       </Helmet>
 
-      <AuthGate>
-        <ProductCatalogComponent />
-      </AuthGate>
+      <ProductCatalogComponent />
     </>
   );
 }

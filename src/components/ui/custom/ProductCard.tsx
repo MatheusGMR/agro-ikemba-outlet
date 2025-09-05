@@ -63,28 +63,18 @@ export default function ProductCard({ id, name, manufacturer, category, rating, 
   const handleButtonClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     
-    if (!user) {
-      // Redirect to login/register
-      navigate('/register');
-      return;
-    }
-    
-    if (isPending) {
-      // Show message about pending approval
-      return;
-    }
-    
+    // Always allow viewing the product - redirect to product details
     navigate(`/product/${id}`);
   };
 
   const getButtonText = () => {
-    if (!user) return 'Fazer Login';
-    if (isPending) return 'Aguardando Aprovação';
+    if (!user) return 'Ver Produto';
+    if (isPending) return 'Ver Produto';
     return 'Comprar';
   };
 
   const getButtonIcon = () => {
-    if (!user || isPending) return <Lock className="w-4 h-4 mr-1" />;
+    if (!user || isPending) return null;
     return <ShoppingCart className="w-4 h-4 mr-1" color="#543921" />;
   };
 
@@ -118,12 +108,8 @@ export default function ProductCard({ id, name, manufacturer, category, rating, 
           <PriceDisplay price={price} size="md" />
           <Button 
             size="sm" 
-            className={cn(
-              "transition-all duration-200",
-              isApproved ? "bg-agro-green hover:bg-agro-green-light" : "bg-muted hover:bg-muted/80"
-            )}
+            className="transition-all duration-200 bg-primary hover:bg-primary/90"
             onClick={handleButtonClick}
-            disabled={isPending}
           >
             {getButtonIcon()}
             {getButtonText()}

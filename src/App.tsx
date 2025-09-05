@@ -48,16 +48,8 @@ function App() {
                   <Route path="/" element={<Index />} />
                   <Route path="/sobre" element={<About />} />
                   <Route path="/dashboard" element={<Dashboard />} />
-                  <Route path="/products" element={
-                    <ApprovedProtectedRoute>
-                      <ProductCatalog />
-                    </ApprovedProtectedRoute>
-                  } />
-                  <Route path="/product/:id" element={
-                    <ApprovedProtectedRoute>
-                      <ProductDetail />
-                    </ApprovedProtectedRoute>
-                  } />
+                  <Route path="/products" element={<ProductCatalog />} />
+                  <Route path="/product/:id" element={<ProductDetail />} />
                   <Route path="/checkout" element={
                     <ApprovedProtectedRoute>
                       <Checkout />
