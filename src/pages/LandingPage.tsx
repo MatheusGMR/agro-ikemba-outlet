@@ -202,9 +202,12 @@ export default function LandingPage() {
                   onClick={() => handleProductClick(product.sku)}
                 >
                   {totalSavingsForVolume > 0 && (
-                    <div className="absolute top-4 right-4 z-10 max-w-[120px]">
-                      <Badge className="bg-destructive text-destructive-foreground animate-pulse text-xs font-bold whitespace-nowrap">
-                        ECONOMIZE {formatCurrency(totalSavingsForVolume)}
+                    <div className="absolute top-4 right-4 z-10 w-auto min-w-[100px]">
+                      <Badge className="bg-destructive text-destructive-foreground animate-pulse text-xs font-bold px-2 py-1 block text-center">
+                        ECONOMIZE
+                      </Badge>
+                      <Badge className="bg-destructive text-destructive-foreground text-xs font-bold px-1 py-0.5 block text-center mt-1">
+                        {formatCurrency(totalSavingsForVolume)}
                       </Badge>
                       <p className="text-xs text-center mt-1 text-muted-foreground bg-white/90 px-1 py-0.5 rounded">
                         em 1.000L
