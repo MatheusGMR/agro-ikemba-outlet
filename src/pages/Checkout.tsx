@@ -73,7 +73,7 @@ const Checkout = () => {
       title: "Pedido realizado com sucesso!",
       description: `Seu pedido foi confirmado.`,
     });
-    navigate('/products');
+    // Don't redirect immediately - user might want to see confirmation and download PDF
   };
 
   return (

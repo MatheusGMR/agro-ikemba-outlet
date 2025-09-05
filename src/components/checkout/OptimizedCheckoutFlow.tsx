@@ -15,12 +15,16 @@ import {
   ArrowLeftRight, 
   CheckCircle,
   Download,
-  AlertTriangle
+  AlertTriangle,
+  Eye
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useCheckoutAnalytics } from '@/hooks/useAnalytics';
-import { PDFGenerator } from '@/utils/pdfGenerator';
+import { useAuth } from '@/hooks/useAuth';
+import { useCart } from '@/contexts/CartContext';
+import { supabase } from '@/integrations/supabase/client';
 import DynamicPriceCard from '@/components/inventory/DynamicPriceCard';
+import jsPDF from 'jspdf';
 
 interface OptimizedCheckoutFlowProps {
   cartItems: Array<{
@@ -82,8 +86,10 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
   const navigate = useNavigate();
   const { toast } = useToast();
   const { trackCheckoutStep, trackConversion } = useCheckoutAnalytics();
+  const { user } = useAuth();
+  const { clearCart } = useCart();
   
-  const [currentStep, setCurrentStep] = useState<'volume_selection' | 'logistics' | 'payment' | 'confirmation'>('volume_selection');
+  const [currentStep, setCurrentStep] = useState<'volume_selection' | 'logistics' | 'review' | 'payment' | 'confirmation'>('volume_selection');
   const [hasOptimizedVolumes, setHasOptimizedVolumes] = useState(false);
   const [selectedVolumes, setSelectedVolumes] = useState<Record<string, { volume: number; price: number }>>({});
   const [selectedLogistics, setSelectedLogistics] = useState<string>('pickup');
@@ -92,7 +98,9 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
   const [selectedPayment, setSelectedPayment] = useState<string>('');
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [generatedDocument, setGeneratedDocument] = useState<string | null>(null);
+  const [documentUrl, setDocumentUrl] = useState<string | null>(null);
   const [orderData, setOrderData] = useState<any>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   // Check if items are already optimized and set initial step
   useEffect(() => {
@@ -118,7 +126,8 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
 
   // Track step entries
   useEffect(() => {
-    trackCheckoutStep(currentStep, 'enter_step');
+    const analyticsStep = currentStep === 'review' ? 'payment' : currentStep;
+    trackCheckoutStep(analyticsStep as any, 'enter_step');
   }, [currentStep, trackCheckoutStep]);
 
   // Calculate totals
@@ -147,69 +156,176 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
     }
     
     trackCheckoutStep('logistics', 'complete', { 
-      logistics_type: 'pickup', // Always pickup
+      logistics_type: 'pickup',
       delivery_quote_requested: deliveryQuoteRequested,
       delivery_info: deliveryInfo 
     });
-    setCurrentStep('payment');
+    setCurrentStep('review');
+  };
+
+  const generateBoletoPDF = async (orderData: any): Promise<string> => {
+    const pdf = new jsPDF();
+    const pageWidth = pdf.internal.pageSize.width;
+    
+    // Header
+    pdf.setFontSize(20);
+    pdf.text('BOLETO BANCÁRIO', pageWidth / 2, 30, { align: 'center' });
+    
+    // Order info
+    pdf.setFontSize(12);
+    pdf.text(`Pedido: ${orderData.orderNumber}`, 20, 50);
+    pdf.text(`Data: ${new Date(orderData.createdAt).toLocaleDateString('pt-BR')}`, 20, 60);
+    pdf.text(`Total: R$ ${orderData.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, 20, 70);
+    
+    // Bank details (mock data)
+    pdf.text('DADOS BANCÁRIOS:', 20, 90);
+    pdf.text('Banco: 341 - Itaú Unibanco', 20, 100);
+    pdf.text('Agência: 1234', 20, 110);
+    pdf.text('Conta: 12345-6', 20, 120);
+    pdf.text('Favorecido: AgroIkemba Ltda', 20, 130);
+    
+    // Payment instructions
+    pdf.text('INSTRUÇÕES DE PAGAMENTO:', 20, 150);
+    pdf.text('• Pagamento até 7 dias corridos após a emissão', 20, 160);
+    pdf.text('• Após o pagamento, envie o comprovante via WhatsApp', 20, 170);
+    pdf.text('• Produtos liberados após confirmação do pagamento', 20, 180);
+    
+    // Items
+    pdf.text('ITENS DO PEDIDO:', 20, 200);
+    let yPos = 210;
+    orderData.items.forEach((item: any) => {
+      pdf.text(`${item.name} - ${item.volume.toLocaleString('pt-BR')}L x R$ ${item.price.toFixed(2)} = R$ ${item.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, 20, yPos);
+      yPos += 10;
+    });
+    
+    const pdfBlob = pdf.output('blob');
+    return URL.createObjectURL(pdfBlob);
   };
 
   const handlePaymentComplete = async () => {
-    const orderNum = `ORD-${Date.now()}`;
+    if (!user) {
+      toast({
+        title: "Erro de autenticação",
+        description: "Você precisa estar logado para finalizar o pedido.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsProcessing(true);
     
-    const finalOrderData = {
-      orderNumber: orderNum,
-      items: cartItems.map(item => {
-        const volumeData = selectedVolumes[item.id] || { volume: item.quantity, price: item.price };
-        return {
-          id: item.id,
-          name: item.name,
-          sku: item.sku,
-          volume: volumeData.volume,
-          price: volumeData.price,
-          total: volumeData.volume * volumeData.price
-        };
-      }),
-      logistics: 'pickup', // Always pickup - delivery is not available yet
-      deliveryQuoteRequested,
-      deliveryInfo,
-      paymentMethod: selectedPayment,
-      total,
-      createdAt: new Date().toISOString()
-    };
-
     try {
-      // Generate PDF document (simplified for now)
-      const docType = selectedPayment === 'boleto' ? 'Boleto Bancário' : 
-                     selectedPayment === 'pix' ? 'Instruções PIX' : 'Instruções TED';
-      
-      // Simulate PDF generation - in production, implement actual PDF generation
-      console.log('Generating PDF:', docType, finalOrderData);
+      const finalOrderData = {
+        orderNumber: `ORD-${Date.now()}`,
+        items: cartItems.map(item => {
+          const volumeData = selectedVolumes[item.id] || { volume: item.quantity, price: item.price };
+          return {
+            id: item.id,
+            name: item.name,
+            sku: item.sku,
+            volume: volumeData.volume,
+            price: volumeData.price,
+            total: volumeData.volume * volumeData.price
+          };
+        }),
+        logistics: 'pickup',
+        deliveryQuoteRequested,
+        deliveryInfo,
+        paymentMethod: selectedPayment,
+        total,
+        createdAt: new Date().toISOString()
+      };
 
+      // Save order to database
+      const { data: orderResult, error: orderError } = await supabase
+        .from('orders')
+        .insert({
+          user_id: user.id,
+          items: finalOrderData.items,
+          total_amount: total,
+          payment_method: selectedPayment,
+          logistics_option: 'pickup',
+          status: 'pending'
+        })
+        .select()
+        .single();
+
+      if (orderError) {
+        console.error('Error saving order:', orderError);
+        throw new Error('Erro ao salvar pedido no banco de dados');
+      }
+
+      console.log('Order saved successfully:', orderResult);
+
+      // Generate PDF
+      let docUrl = '';
+      let docType = '';
+      
+      if (selectedPayment === 'boleto') {
+        docType = 'Boleto Bancário';
+        docUrl = await generateBoletoPDF(finalOrderData);
+        
+        // Upload PDF to Supabase Storage
+        const pdfResponse = await fetch(docUrl);
+        const pdfBlob = await pdfResponse.blob();
+        const fileName = `boleto-${orderResult.order_number}-${Date.now()}.pdf`;
+        
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('media-assets')
+          .upload(`order-docs/${fileName}`, pdfBlob, {
+            contentType: 'application/pdf',
+            cacheControl: '3600'
+          });
+
+        if (uploadError) {
+          console.error('Error uploading PDF:', uploadError);
+        } else {
+          // Save document record
+          const { error: docError } = await supabase
+            .from('order_documents')
+            .insert({
+              user_id: user.id,
+              order_id: orderResult.order_number,
+              document_type: 'boleto',
+              document_url: `${supabase.storage.from('media-assets').getPublicUrl(`order-docs/${fileName}`).data.publicUrl}`
+            });
+
+          if (docError) {
+            console.error('Error saving document record:', docError);
+          }
+        }
+      } else {
+        docType = selectedPayment === 'pix' ? 'Instruções PIX' : 'Instruções TED';
+      }
       
       setGeneratedDocument(docType);
-      setOrderData(finalOrderData);
+      setDocumentUrl(docUrl);
+      setOrderData({ ...finalOrderData, orderNumber: orderResult.order_number });
       setCurrentStep('confirmation');
       setShowConfirmation(true);
 
+      // Clear cart
+      clearCart();
+
       // Track conversion
       trackConversion('purchase', total);
-      trackCheckoutStep('confirmation', 'complete', { order_number: orderNum });
       
       onOrderComplete?.(finalOrderData);
 
       toast({
         title: "Pedido realizado com sucesso!",
-        description: `Pedido ${orderNum} foi criado e o documento foi gerado.`,
+        description: `Pedido ${orderResult.order_number} foi criado e salvo no banco de dados.`,
       });
 
     } catch (error) {
-      console.error('Error generating PDF:', error);
+      console.error('Error processing order:', error);
       toast({
-        title: "Erro na geração do documento",
-        description: "Ocorreu um erro ao gerar o documento. Tente novamente.",
+        title: "Erro ao processar pedido",
+        description: error instanceof Error ? error.message : "Ocorreu um erro inesperado. Tente novamente.",
         variant: "destructive"
       });
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -404,11 +520,106 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
               Voltar aos Volumes
             </Button>
             <Button onClick={handleLogisticsNext}>
-              Continuar para Pagamento
+              Revisar Pedido
             </Button>
           </div>
         </CardContent>
       </Card>
+    </div>
+  );
+
+  const renderReviewStep = () => (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Eye className="w-5 h-5 text-primary" />
+            Revisão do Pedido
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground mb-4">
+            Revise todos os detalhes do seu pedido antes de prosseguir para o pagamento.
+          </p>
+        </CardContent>
+      </Card>
+
+      {/* Items Review */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Produtos Selecionados</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {cartItems.map((item) => {
+              const volumeData = selectedVolumes[item.id] || { volume: item.quantity, price: item.price };
+              return (
+                <div key={item.id} className="flex justify-between items-center p-3 border rounded-lg">
+                  <div className="flex-1">
+                    <div className="font-medium">{item.name}</div>
+                    <div className="text-sm text-muted-foreground">
+                      SKU: {item.sku} | Fabricante: {item.manufacturer}
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      Volume: {volumeData.volume.toLocaleString('pt-BR')}L × R$ {volumeData.price.toFixed(2)}
+                    </div>
+                  </div>
+                  <div className="font-semibold">
+                    R$ {(volumeData.volume * volumeData.price).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  </div>
+                </div>
+              );
+            })}
+            
+            <Separator />
+            
+            <div className="flex justify-between items-center font-semibold text-lg">
+              <span>Total:</span>
+              <span className="text-primary">
+                R$ {total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              </span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Logistics Review */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Logística</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            <div className="flex justify-between">
+              <span>Opção de Entrega:</span>
+              <span className="font-medium">Retirada no Local (Gratuito)</span>
+            </div>
+            {deliveryQuoteRequested && (
+              <>
+                <div className="flex justify-between">
+                  <span>Cotação de Entrega:</span>
+                  <span className="font-medium text-blue-600">Solicitada</span>
+                </div>
+                {deliveryInfo && (
+                  <div className="mt-2 p-2 bg-muted/50 rounded text-sm">
+                    <strong>Informações para cotação:</strong>
+                    <p className="mt-1">{deliveryInfo}</p>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="flex justify-between">
+        <Button variant="outline" onClick={() => setCurrentStep('logistics')}>
+          Voltar à Logística
+        </Button>
+        <Button onClick={() => setCurrentStep('payment')} size="lg">
+          Continuar para Pagamento
+        </Button>
+      </div>
     </div>
   );
 
@@ -491,11 +702,15 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
       </Card>
 
       <div className="flex justify-between">
-        <Button variant="outline" onClick={() => setCurrentStep('logistics')}>
-          Voltar
+        <Button variant="outline" onClick={() => setCurrentStep('review')}>
+          Voltar à Revisão
         </Button>
-        <Button onClick={handlePaymentComplete} disabled={!selectedPayment} size="lg">
-          Finalizar Pedido
+        <Button 
+          onClick={handlePaymentComplete} 
+          disabled={!selectedPayment || isProcessing} 
+          size="lg"
+        >
+          {isProcessing ? 'Processando...' : 'Finalizar Pedido'}
         </Button>
       </div>
     </div>
@@ -544,12 +759,13 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
           
           <div className="grid grid-cols-2 gap-2">
             <Button 
-              onClick={() => window.open('#', '_blank')} 
+              onClick={() => documentUrl ? window.open(documentUrl, '_blank') : undefined} 
               variant="outline"
               size="sm"
+              disabled={!documentUrl}
             >
               <Download className="w-4 h-4 mr-2" />
-              Salvar PDF
+              {documentUrl ? 'Baixar PDF' : 'PDF N/D'}
             </Button>
             <Button 
               onClick={() => navigate('/dashboard')}
@@ -567,6 +783,7 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
     <div className="space-y-6">
       {currentStep === 'volume_selection' && renderVolumeStep()}
       {currentStep === 'logistics' && renderLogisticsStep()}
+      {currentStep === 'review' && renderReviewStep()}
       {currentStep === 'payment' && renderPaymentStep()}
       {renderConfirmation()}
     </div>
