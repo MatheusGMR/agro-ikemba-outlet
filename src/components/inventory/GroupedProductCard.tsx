@@ -18,10 +18,10 @@ export function GroupedProductCard({ product, onViewDistribution, className }: G
   return (
     <Card className={`hover:shadow-md transition-shadow ${className}`}>
       <CardHeader className="pb-3">
-        <CardTitle className="text-lg">{product.name}</CardTitle>
+        <CardTitle className="text-lg">{product.active_ingredient || product.name}</CardTitle>
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Beaker className="h-4 w-4" />
-          {product.active_ingredient || 'N/A'}
+          {product.name}
         </div>
         <div className="text-sm text-muted-foreground">
           {product.manufacturer} • SKU: {product.sku}

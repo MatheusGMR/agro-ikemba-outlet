@@ -242,7 +242,7 @@ const ProductDetail = () => {
             <div className="w-full lg:w-3/5">
               <div className="flex flex-col border rounded-lg bg-white p-6">
                 <div className="mb-6">
-                  <h1 className="text-2xl md:text-3xl font-bold">{productInfo.product_name}</h1>
+                  <h1 className="text-2xl md:text-3xl font-bold">{productInfo.active_ingredient || productInfo.product_name}</h1>
                   <div className="flex gap-2 items-center mt-2">
                     <span className="text-muted-foreground">Fabricante:</span>
                     <span className="text-agro-green font-medium">{productInfo.manufacturer}</span>
@@ -257,8 +257,8 @@ const ProductDetail = () => {
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                   <div className="flex flex-col">
-                    <span className="text-sm text-muted-foreground">Ingrediente Ativo</span>
-                    <span className="font-medium">{productInfo.active_ingredient || 'N/A'}</span>
+                    <span className="text-sm text-muted-foreground">Nome Técnico</span>
+                    <span className="font-medium">{productInfo.product_name}</span>
                   </div>
                   <div className="flex flex-col">
                     <span className="text-sm text-muted-foreground">Embalagem</span>

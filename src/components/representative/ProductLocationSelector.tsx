@@ -147,7 +147,7 @@ export default function ProductLocationSelector({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Package className="h-5 w-5" />
-            Selecionar Localidades - {product.name}
+            Selecionar Localidades - {product.active_ingredient || product.name}
           </DialogTitle>
         </DialogHeader>
 

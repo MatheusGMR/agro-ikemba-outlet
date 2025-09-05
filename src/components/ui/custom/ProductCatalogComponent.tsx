@@ -406,11 +406,11 @@ export default function ProductCatalogComponent() {
                         <div className={`p-4 ${viewMode === 'list' ? 'w-2/3' : 'flex-1'} flex flex-col`}>
                           <div className="flex-1">
                             <h3 className="font-semibold text-xl mb-1 line-clamp-2 text-primary group-hover:text-primary/80 transition-colors">
-                              {product.manufacturer}
+                              {product.activeIngredient}
                             </h3>
                             <p className="text-sm text-muted-foreground mb-1 line-clamp-1">{product.name}</p>
                             <p className="text-xs text-muted-foreground mb-2 line-clamp-1">
-                              SKU: {product.sku} {product.activeIngredient && `• ${product.activeIngredient}`}
+                              SKU: {product.sku} {product.name && `• ${product.name}`}
                             </p>
                             
                             <div className="flex items-center gap-2 mb-2 flex-wrap">
@@ -477,7 +477,7 @@ export default function ProductCatalogComponent() {
                                   e.stopPropagation();
                                   toast({
                                     title: "Redirecionando...",
-                                    description: `Você será direcionado para os detalhes de ${product.name}.`
+                                    description: `Você será direcionado para os detalhes de ${product.activeIngredient}.`
                                   });
                                 }}
                                 disabled={!product.inStock}

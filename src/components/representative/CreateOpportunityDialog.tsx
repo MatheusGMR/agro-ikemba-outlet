@@ -534,7 +534,7 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
             <CardContent className="p-3">
               <div className="flex items-center justify-between">
                 <div className="flex-1">
-                  <div className="font-medium text-sm">{product.name}</div>
+                  <div className="font-medium text-sm">{product.active_ingredient || product.name}</div>
                   <div className="text-xs text-muted-foreground">
                     {product.manufacturer} • {product.total_volume.toFixed(0)}L disponível
                   </div>

@@ -44,7 +44,7 @@ export function ProductDistributionDialog({ product, open, onOpenChange }: Produ
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Package className="h-5 w-5" />
-            Distribuição do Estoque - {product.name}
+            Distribuição do Estoque - {product.active_ingredient || product.name}
           </DialogTitle>
           <p className="text-sm text-muted-foreground">
             {product.manufacturer} • SKU: {product.sku}
@@ -193,8 +193,8 @@ export function ProductDistributionDialog({ product, open, onOpenChange }: Produ
             </CardHeader>
             <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
               <div>
-                <span className="font-medium">Ingrediente Ativo:</span>
-                <p className="text-muted-foreground">{product.active_ingredient || 'N/A'}</p>
+                <span className="font-medium">Nome Técnico:</span>
+                <p className="text-muted-foreground">{product.name}</p>
               </div>
               <div>
                 <span className="font-medium">Embalagem:</span>

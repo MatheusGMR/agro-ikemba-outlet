@@ -15,7 +15,7 @@ export function InventoryCard({ product, className }: InventoryCardProps) {
   return (
     <Card className={className}>
       <CardHeader>
-        <CardTitle className="text-lg">{product.name}</CardTitle>
+        <CardTitle className="text-lg">{product.active_ingredient || product.name}</CardTitle>
         <p className="text-sm text-muted-foreground">
           {product.manufacturer} • SKU: {product.sku}
         </p>

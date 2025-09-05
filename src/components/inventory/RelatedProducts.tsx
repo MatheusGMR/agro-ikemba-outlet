@@ -41,13 +41,13 @@ export function RelatedProducts({ currentSku, maxItems = 4 }: RelatedProductsPro
                 </div>
                 
                 <h4 className="font-semibold text-sm mb-1 line-clamp-2 text-primary group-hover:text-primary/80 transition-colors">
-                  {product.manufacturer}
+                  {product.active_ingredient || 'N/A'}
                 </h4>
                 <p className="text-xs text-muted-foreground mb-1 line-clamp-1">
-                  {product.name}
+                  {product.manufacturer}
                 </p>
                 <p className="text-xs text-muted-foreground mb-2">
-                  SKU: {product.sku}
+                  SKU: {product.sku} • Técnico: {product.name}
                 </p>
                 
                 <div className="flex items-center justify-between text-xs mb-2">
