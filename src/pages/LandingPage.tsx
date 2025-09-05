@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { ProductImage } from '@/components/ui/custom/ProductImage';
+import { ProductImageDiagnostic } from '@/components/ui/custom/ProductImageDiagnostic';
 
 export default function LandingPage() {
   const [selectedProduct, setSelectedProduct] = useState<string | null>(null);
@@ -348,6 +349,9 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* Development Image Diagnostic */}
+      <ProductImageDiagnostic />
     </div>
   );
 }
