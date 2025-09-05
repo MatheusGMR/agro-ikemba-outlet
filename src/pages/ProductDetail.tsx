@@ -18,6 +18,8 @@ import { ProductDocuments } from '@/components/inventory/ProductDocuments';
 import { RelatedProducts } from '@/components/inventory/RelatedProducts';
 import { InventoryService } from '@/services/inventoryService';
 import { analyticsService } from '@/services/analyticsService';
+import { useAuth } from '@/hooks/useAuth';
+import { useUserApproval } from '@/hooks/useUserApproval';
 
 // Mock data removed - using real data from inventory service
 
@@ -26,6 +28,10 @@ const ProductDetail = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { addToCart } = useCart();
+  
+  // Authentication hooks
+  const { user } = useAuth();
+  const { isApproved, isPending, isLoading: approvalLoading } = useUserApproval();
   
   // Fetch real product data
   const { data: inventoryItems = [], isLoading: inventoryLoading, error: inventoryError } = useInventoryBySku(sku || '');
@@ -70,36 +76,38 @@ const ProductDetail = () => {
     return acc;
   }, {} as Record<string, { items: any[], totalVolume: number }>);
   
-  // Check user permissions and track page view
+  // Authentication check and redirection
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem('user') || 'null');
+    if (approvalLoading) return; // Wait for approval check to complete
     
     if (!user) {
+      navigate('/');
+      return;
+    }
+    
+    if (!isApproved && !isPending) {
       toast({
         title: "Acesso negado",
-        description: "Você precisa estar logado para acessar os detalhes do produto.",
+        description: "Você precisa completar seu cadastro para acessar os detalhes do produto.",
         variant: "destructive"
       });
       navigate('/');
       return;
     }
-
-    if (!user.verified) {
-      toast({
-        title: "Acesso pendente",
-        description: "Seu acesso ainda não foi aprovado pelo administrador. Você será redirecionado para a página inicial.",
-        variant: "destructive"
-      });
-      navigate('/');
+    
+    if (isPending) {
+      navigate('/pending-approval');
       return;
     }
+  }, [user, isApproved, isPending, approvalLoading, navigate, toast]);
 
-    // Track page view and product interaction
-    if (sku) {
+  // Track page view after authentication check
+  useEffect(() => {
+    if (sku && user && isApproved) {
       analyticsService.trackPageView(`/products/${sku}`, `Produto: ${sku}`);
       analyticsService.trackProductView(sku);
     }
-  }, [navigate, toast, sku]);
+  }, [sku, user, isApproved]);
   
   const increaseQuantity = () => {
     setQuantity(prev => prev + 1);
@@ -144,8 +152,8 @@ const ProductDetail = () => {
   
   const totalPrice = selectedItem ? (selectedItem.currentPrice || selectedItem.preco_unitario) * quantity : 0;
   
-  // Loading state
-  if (inventoryLoading) {
+  // Loading state - include approval loading
+  if (inventoryLoading || approvalLoading) {
     return (
       <div className="min-h-screen flex flex-col">
         <Navbar />
