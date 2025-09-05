@@ -8,8 +8,8 @@ interface ApprovedProtectedRouteProps {
 }
 
 export default function ApprovedProtectedRoute({ children }: ApprovedProtectedRouteProps) {
-  const { user } = useAuth();
-  const { isApproved, isLoading } = useUserApproval();
+  const { user, isLoading: authLoading } = useAuth();
+  const { isApproved, isLoading: approvalLoading } = useUserApproval();
   const location = useLocation();
 
   // Save current location for redirect after login
@@ -19,7 +19,12 @@ export default function ApprovedProtectedRoute({ children }: ApprovedProtectedRo
     }
   }, [user, location]);
 
-  if (isLoading) return null;
+  if (authLoading || approvalLoading) return null;
+
+  // For checkout page specifically, require authentication
+  if (location.pathname === '/checkout' && !user) {
+    return <Navigate to="/login" replace />;
+  }
 
   // Allow unauthenticated users to reach the page so AuthGate can handle login/registration
   if (!user) {

@@ -18,7 +18,7 @@ export function useUserApproval(): UserApprovalStatus {
 
   useEffect(() => {
     const checkApprovalStatus = async () => {
-      if (!user?.email) {
+      if (!user?.email || !user?.id) {
         setIsApproved(false);
         setIsPending(false);
         setUserRecord(null);
@@ -59,7 +59,7 @@ export function useUserApproval(): UserApprovalStatus {
     };
 
     checkApprovalStatus();
-  }, [user?.email, session]);
+  }, [user?.email, user?.id, session]);
 
   return {
     isApproved,

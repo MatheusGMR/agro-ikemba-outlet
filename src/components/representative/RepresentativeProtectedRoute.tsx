@@ -10,14 +10,14 @@ interface RepresentativeProtectedRouteProps {
 
 export default function RepresentativeProtectedRoute({ children }: RepresentativeProtectedRouteProps) {
   const navigate = useNavigate();
+  const { user, isLoading: authLoading } = useAuth();
   const { data: representative, isLoading, error, isFetching, isFetched } = useCurrentRepresentative();
-  const auth = useAuth();
 
   console.log('=== REPRESENTATIVE PROTECTED ROUTE ===');
   console.log('Estado atual:', { 
-    authLoading: auth.isLoading,
-    userId: auth.user?.id ?? null,
-    hasUser: !!auth.user,
+    authLoading: authLoading,
+    userId: user?.id ?? null,
+    hasUser: !!user,
     repIsLoading: isLoading,
     repIsFetching: isFetching,
     repIsFetched: isFetched,
@@ -28,20 +28,20 @@ export default function RepresentativeProtectedRoute({ children }: Representativ
 
   useEffect(() => {
     // Only redirect once auth finished and there's no user
-    if (!auth.isLoading && !auth.user) {
+    if (!authLoading && !user) {
       console.log('Redirecting to login - no user authenticated');
       navigate('/representative/login');
     }
-  }, [auth.isLoading, auth.user, navigate]);
+  }, [authLoading, user, navigate]);
 
   // Show loading while auth is loading
-  if (auth.isLoading) {
+  if (authLoading) {
     console.log('Auth loading...');
     return <LoadingFallback />;
   }
 
   // If no user, redirect (useEffect will handle this)
-  if (!auth.user) {
+  if (!user) {
     console.log('No user - redirecting...');
     return null;
   }
