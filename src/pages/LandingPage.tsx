@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useGroupedProductsForSales } from '@/hooks/useInventory';
+import { useAllProductImages, getProductImageUrl } from '@/hooks/useProductImages';
 import { usePageAnalytics, useProductAnalytics, useCheckoutAnalytics } from '@/hooks/useAnalytics';
 import { 
   gtagReportConversion, 
@@ -24,12 +25,14 @@ import {
   Package
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { ProductImage } from '@/components/ui/custom/ProductImage';
 
 export default function LandingPage() {
   const [selectedProduct, setSelectedProduct] = useState<string | null>(null);
   const [urgencyTimer, setUrgencyTimer] = useState(84180); // 23h 23min countdown
   
   const { data: products = [], isLoading } = useGroupedProductsForSales();
+  const { data: productImages = [] } = useAllProductImages();
   const { trackProductView } = useProductAnalytics();
   const { trackConversion } = useCheckoutAnalytics();
 
@@ -214,6 +217,16 @@ export default function LandingPage() {
                       </p>
                     </div>
                   )}
+                  
+                  {/* Product Image */}
+                  <div className="relative h-48 mb-4">
+                    <ProductImage
+                      src={getProductImageUrl(product.sku, productImages)}
+                      alt={`${product.active_ingredient || product.name} - ${product.manufacturer}`}
+                      className="w-full h-full"
+                      fallbackClassName="w-full h-full"
+                    />
+                  </div>
                   
                   <CardHeader className="pb-4 pr-32">
                     <div className="flex items-start justify-between">
