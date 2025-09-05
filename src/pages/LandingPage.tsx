@@ -62,13 +62,13 @@ export default function LandingPage() {
     
     const product = products.find(p => p.sku === sku);
     if (product) {
-      reportProductViewConversion(product.main_item.client_price);
+      reportProductViewConversion(product.main_item.preco_unitario);
       
       // Google Ads event for product interest
       if (window.gtag) {
         window.gtag('event', 'view_item', {
           currency: 'BRL',
-          value: product.main_item.client_price,
+          value: product.main_item.preco_unitario,
           items: [{
             item_id: sku,
             item_name: product.active_ingredient || product.name
@@ -188,8 +188,8 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {topProducts.map((product) => {
               const hasMultipleTiers = product.all_items.length > 1;
-              const unitPrice = product.main_item.client_price;
-              const bestPrice = Math.min(...product.all_items.map(item => item.client_price));
+              const unitPrice = product.main_item.preco_unitario;
+              const bestPrice = Math.min(product.main_item.preco_banda_menor, product.main_item.preco_banda_maior);
               const maxSavings = ((unitPrice - bestPrice) / unitPrice) * 100;
               const volumeForCalculation = 1000; // 1000L para calcular economia
               const savingsPerLiter = unitPrice - bestPrice;

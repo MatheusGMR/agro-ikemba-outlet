@@ -68,7 +68,7 @@ export default function ProductLocationSelector({
         items,
         totalVolume,
         proximity,
-        mainItem: items.find(item => item.price_tier === 'Preço Unitário') || items[0]
+        mainItem: items[0] // Since all items now have the same prices, just use the first one
       };
     }).sort((a, b) => {
       // Sort by proximity first, then by volume
@@ -192,7 +192,7 @@ export default function ProductLocationSelector({
                         
                         <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground mb-3">
                           <div>Volume disponível: {locationGroup.totalVolume.toLocaleString()} {locationGroup.mainItem.unit}</div>
-                          <div>Preço unitário: R$ {locationGroup.mainItem.client_price.toFixed(2)}</div>
+                          <div>Preço unitário: R$ {locationGroup.mainItem.preco_unitario.toFixed(2)}</div>
                         </div>
 
                         <div className="flex items-center gap-2">

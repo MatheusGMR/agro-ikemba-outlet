@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Slider } from '@/components/ui/slider';
@@ -25,12 +25,21 @@ export default function DynamicPriceCard({ inventoryItems, onVolumeChange, minVo
   const { user } = useAuth();
   const { isApproved, isPending } = useUserApproval();
   
-  // Calculate price ranges and available volume
-  const priceRange = inventoryItems.reduce((acc, item) => {
-    const minPrice = Math.min(acc.min, item.client_price, item.base_price);
-    const maxPrice = Math.max(acc.max, item.client_price, item.base_price);
-    return { min: minPrice, max: maxPrice };
-  }, { min: Infinity, max: 0 });
+  const priceRange = useMemo(() => {
+    if (!inventoryItems.length) return { min: 0, max: 0 };
+    
+    const firstItem = inventoryItems[0];
+    const prices = [
+      firstItem.preco_unitario,
+      firstItem.preco_banda_menor,
+      firstItem.preco_banda_maior
+    ];
+    
+    return {
+      min: Math.min(...prices),
+      max: Math.max(...prices)
+    };
+  }, [inventoryItems]);
 
   // totalAvailable already calculated above
   const maxPrice = priceRange.max;

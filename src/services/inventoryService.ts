@@ -7,7 +7,7 @@ export class InventoryService {
       .from('inventory')
       .select('*')
       .eq('product_sku', sku)
-      .order('price_tier', { ascending: true });
+      .order('product_name', { ascending: true });
 
     if (error) {
       console.error('Error fetching inventory:', error);
@@ -60,7 +60,11 @@ export class InventoryService {
           active_ingredient: item.active_ingredient,
           total_volume: 0,
           locations: [],
-          price_tiers: [],
+          price_tiers: [
+            { tier: 'Preço Unitário', price: item.preco_unitario },
+            { tier: 'Preço Banda menor', price: item.preco_banda_menor },
+            { tier: 'Preço Banda maior', price: item.preco_banda_maior }
+          ],
           documents,
           expiry_date: item.expiry_date
         });
@@ -85,15 +89,6 @@ export class InventoryService {
       } else {
         locationExists.volume += item.volume_available;
       }
-      
-      // Add price tier if not exists
-      const tierExists = product.price_tiers.find(tier => tier.tier === item.price_tier);
-      if (!tierExists) {
-        product.price_tiers.push({
-          tier: item.price_tier,
-          price: item.client_price
-        });
-      }
     }
 
     return Array.from(productMap.values());
@@ -108,19 +103,12 @@ export class InventoryService {
       const key = item.product_sku;
       
       if (!productMap.has(key)) {
-        // Buscar o item com preço unitário para exibir como principal
-        const unitaryItem = inventory.find(
-          inv => inv.product_sku === item.product_sku && inv.price_tier === 'Preço Unitário'
-        );
-        
-        if (!unitaryItem) continue; // Pular produtos sem preço unitário
-        
         productMap.set(key, {
           sku: item.product_sku,
           name: item.product_name,
           manufacturer: item.manufacturer,
           active_ingredient: item.active_ingredient,
-          main_item: unitaryItem,
+          main_item: item, // Use current item as main item
           total_volume: 0,
           locations_count: 0,
           all_items: inventory.filter(inv => inv.product_sku === item.product_sku)
@@ -128,11 +116,11 @@ export class InventoryService {
       }
     }
 
-    // Calcular volume total e contagem de locais únicos usando apenas localizações físicas únicas
+    // Calculate total volume and unique locations count
     for (const product of productMap.values()) {
       const uniqueLocationVolumes = new Map<string, number>();
       
-      // Agrupar por localização física única (cidade-estado) e somar volumes apenas uma vez
+      // Group by unique physical location and sum volumes
       for (const item of product.all_items) {
         const locationKey = `${item.city}-${item.state}`;
         if (!uniqueLocationVolumes.has(locationKey)) {
@@ -140,7 +128,7 @@ export class InventoryService {
         }
       }
       
-      // Somar volumes únicos por localização
+      // Sum unique volumes by location
       product.total_volume = Array.from(uniqueLocationVolumes.values()).reduce((sum, vol) => sum + vol, 0);
       product.locations_count = uniqueLocationVolumes.size;
     }
@@ -151,27 +139,30 @@ export class InventoryService {
   static calculatePriceBenefits(inventory: InventoryItem[]): PriceTierBenefit[] {
     if (inventory.length === 0) return [];
 
-    // Group by price tier and get the best price for each tier
-    const tierMap = new Map<string, number>();
-    inventory.forEach(item => {
-      const currentPrice = tierMap.get(item.price_tier);
-      if (!currentPrice || item.client_price < currentPrice) {
-        tierMap.set(item.price_tier, item.client_price);
+    const firstItem = inventory[0];
+    
+    const benefits: PriceTierBenefit[] = [
+      {
+        tier: 'Preço Unitário',
+        price: firstItem.preco_unitario,
+        savings: 0,
+        savings_percentage: 0
+      },
+      {
+        tier: 'Preço Banda menor',
+        price: firstItem.preco_banda_menor,
+        savings: firstItem.preco_unitario - firstItem.preco_banda_menor,
+        savings_percentage: ((firstItem.preco_unitario - firstItem.preco_banda_menor) / firstItem.preco_unitario) * 100
+      },
+      {
+        tier: 'Preço Banda maior',
+        price: firstItem.preco_banda_maior,
+        savings: firstItem.preco_unitario - firstItem.preco_banda_maior,
+        savings_percentage: ((firstItem.preco_unitario - firstItem.preco_banda_maior) / firstItem.preco_unitario) * 100
       }
-    });
+    ];
 
-    const tiers = Array.from(tierMap.entries()).map(([tier, price]) => ({ tier, price }));
-    tiers.sort((a, b) => b.price - a.price); // Sort by price descending
-
-    const highestPrice = tiers[0]?.price || 0;
-
-    return tiers.map((tier, index) => ({
-      tier: tier.tier as any,
-      price: tier.price,
-      savings: highestPrice - tier.price,
-      savings_percentage: highestPrice > 0 ? ((highestPrice - tier.price) / highestPrice) * 100 : 0,
-      volume_required: index === 0 ? undefined : 1000 // Example threshold
-    }));
+    return benefits;
   }
 
   static getTotalVolumeAvailable(): Promise<number> {

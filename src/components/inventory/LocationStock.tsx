@@ -34,9 +34,10 @@ export function LocationStock({ inventory }: LocationStockProps) {
         <div className="space-y-4">
           {Object.values(locationGroups).map((location, index) => {
             const totalVolume = location.items.reduce((sum, item) => sum + item.volume_available, 0);
+            const firstItem = location.items[0];
             const priceRange = {
-              min: Math.min(...location.items.map(item => item.client_price)),
-              max: Math.max(...location.items.map(item => item.client_price))
+              min: firstItem.preco_banda_menor,
+              max: firstItem.preco_banda_maior
             };
             
             return (
@@ -65,11 +66,15 @@ export function LocationStock({ inventory }: LocationStockProps) {
                 </div>
                 
                 <div className="flex gap-1 flex-wrap">
-                  {[...new Set(location.items.map(item => item.price_tier))].map((tier, tierIndex) => (
-                    <Badge key={tierIndex} variant="secondary" className="text-xs">
-                      {tier.replace('Preço ', '')}
-                    </Badge>
-                  ))}
+                  <Badge variant="secondary" className="text-xs">
+                    Unitário: R$ {firstItem.preco_unitario.toFixed(2)}
+                  </Badge>
+                  <Badge variant="secondary" className="text-xs">
+                    Banda Menor: R$ {firstItem.preco_banda_menor.toFixed(2)}
+                  </Badge>
+                  <Badge variant="secondary" className="text-xs">
+                    Banda Maior: R$ {firstItem.preco_banda_maior.toFixed(2)}
+                  </Badge>
                 </div>
               </div>
             );

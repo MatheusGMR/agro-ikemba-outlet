@@ -43,8 +43,8 @@ const ProductDetail = () => {
     if (inventoryItems.length > 0 && !selectedItem) {
       setSelectedItem(inventoryItems[0]);
       // Set the price tier with the best price
-      const bestPrice = Math.min(...inventoryItems.map(item => item.client_price));
-      const bestTier = inventoryItems.find(item => item.client_price === bestPrice);
+      const bestPrice = Math.min(inventoryItems[0].preco_banda_menor, inventoryItems[0].preco_banda_maior);
+      const bestTier = inventoryItems[0]; // Since all items have same prices now
       setSelectedTier(bestTier);
     }
     // Set default product image

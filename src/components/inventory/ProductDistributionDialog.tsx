@@ -25,18 +25,12 @@ export function ProductDistributionDialog({ product, open, onOpenChange }: Produ
     return acc;
   }, {} as Record<string, { items: typeof product.all_items, totalVolume: number }>);
 
-  // Agrupar por tier de preço
-  const priceGroups = product.all_items.reduce((acc, item) => {
-    if (!acc[item.price_tier]) {
-      acc[item.price_tier] = [];
-    }
-    acc[item.price_tier].push(item);
-    return acc;
-  }, {} as Record<string, typeof product.all_items>);
-
-  const unitaryPrice = product.main_item.client_price;
-  const minorBandPrice = priceGroups['Preço Banda menor']?.[0]?.client_price;
-  const majorBandPrice = priceGroups['Preço Banda maior']?.[0]?.client_price;
+  // Agrupar por tier de preço - não é mais necessário já que temos os 3 preços em cada item
+  const firstItem = product.main_item;
+  
+  const unitaryPrice = firstItem.preco_unitario;
+  const minorBandPrice = firstItem.preco_banda_menor;
+  const majorBandPrice = firstItem.preco_banda_maior;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -166,15 +160,14 @@ export function ProductDistributionDialog({ product, open, onOpenChange }: Produ
                           <div key={index} className="flex items-center justify-between text-sm">
                             <div className="flex items-center gap-2">
                               <Badge 
-                                variant={item.price_tier === 'Preço Unitário' ? 'default' : 'outline'} 
+                                variant="outline" 
                                 className="text-xs"
                               >
-                                {item.price_tier.replace('Preço ', '')}
+                                {item.volume_available.toLocaleString()}L
                               </Badge>
-                              <span>{item.volume_available.toLocaleString()}L</span>
                             </div>
                             <span className="font-medium">
-                              {formatCurrency(item.client_price)}
+                              {formatCurrency(item.preco_unitario)}
                             </span>
                           </div>
                         ))}

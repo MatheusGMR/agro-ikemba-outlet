@@ -58,7 +58,7 @@ export function GroupedProductCard({ product, onViewDistribution, className }: G
             <div>
               <div className="text-sm font-medium text-primary">Preço Unitário</div>
               <div className="text-2xl font-bold text-primary">
-                {formatCurrency(product.main_item.client_price)}
+                {formatCurrency(product.main_item.preco_unitario)}
               </div>
               <div className="text-xs text-muted-foreground">por {product.main_item.unit}</div>
             </div>

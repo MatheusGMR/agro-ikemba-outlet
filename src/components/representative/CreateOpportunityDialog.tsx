@@ -32,7 +32,7 @@ interface LocationSelection {
 interface OpportunityProduct {
   sku: string;
   name: string;
-  client_price: number;
+  preco_unitario: number;
   commission_unit: number;
   available_locations: string[];
   selectedLocations: LocationSelection[];
@@ -171,7 +171,7 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
       const newProduct: OpportunityProduct = {
         sku: product.sku,
         name: product.name,
-        client_price: product.main_item.client_price,
+        preco_unitario: product.main_item.preco_unitario,
         commission_unit: product.main_item.commission_unit,
         available_locations: availableLocations,
         selectedLocations: locations.map(loc => ({
@@ -215,7 +215,7 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
   const calculateTotals = useMemo(() => {
     const totalValue = selectedProducts.reduce((sum, item) => {
       const itemTotal = item.selectedLocations.reduce((itemSum, loc) => 
-        itemSum + (loc.quantity * item.client_price), 0);
+        itemSum + (loc.quantity * item.preco_unitario), 0);
       return sum + itemTotal;
     }, 0);
     
@@ -306,8 +306,8 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
               product_sku: product.sku,
               product_name: product.name,
               quantity: location.quantity,
-              unit_price: product.client_price,
-              total_price: location.quantity * product.client_price,
+              unit_price: product.preco_unitario,
+              total_price: location.quantity * product.preco_unitario,
               commission_unit: product.commission_unit,
               total_commission: location.quantity * product.commission_unit
             });
@@ -507,7 +507,7 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
                     </div>
                   )}
                   <div className="text-xs text-muted-foreground mt-1">
-                    R$ {item.client_price.toFixed(2)} • Comissão: R$ {item.commission_unit.toFixed(2)}
+                    R$ {item.preco_unitario.toFixed(2)} • Comissão: R$ {item.commission_unit.toFixed(2)}
                   </div>
                 </div>
                 
@@ -539,7 +539,7 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
                     {product.manufacturer} • {product.total_volume.toFixed(0)}L disponível
                   </div>
                   <div className="text-xs text-green-600">
-                    R$ {product.main_item.client_price.toFixed(2)} • {product.locations_count} local(is)
+                    R$ {product.main_item.preco_unitario.toFixed(2)} • {product.locations_count} local(is)
                   </div>
                 </div>
                 <Plus className="h-4 w-4 text-muted-foreground" />
@@ -698,14 +698,14 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
         <CardContent className="space-y-3">
           {selectedProducts.map(item => {
             const totalQuantity = item.selectedLocations.reduce((sum, loc) => sum + loc.quantity, 0);
-            const totalPrice = totalQuantity * item.client_price;
+            const totalPrice = totalQuantity * item.preco_unitario;
             const totalCommission = totalQuantity * item.commission_unit;
             
             return (
               <div key={item.sku} className="flex justify-between text-sm">
                 <div>
                   <div className="font-medium">{item.name}</div>
-                  <div className="text-muted-foreground">{totalQuantity.toLocaleString()}L x R$ {item.client_price.toFixed(2)}</div>
+                  <div className="text-muted-foreground">{totalQuantity.toLocaleString()}L x R$ {item.preco_unitario.toFixed(2)}</div>
                   {item.selectedLocations.map((loc, idx) => (
                     <div key={idx} className="text-xs text-muted-foreground">
                       {loc.city}, {loc.state}: {loc.quantity.toLocaleString()}L

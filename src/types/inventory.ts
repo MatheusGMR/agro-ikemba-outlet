@@ -11,9 +11,10 @@ export interface InventoryItem {
   state: string;
   city: string;
   expiry_date: string;
-  price_tier: 'Preço Unitário' | 'Preço Banda menor' | 'Preço Banda maior';
   base_price: number;
-  client_price: number;
+  preco_unitario: number;
+  preco_banda_menor: number;
+  preco_banda_maior: number;
   commission_unit: number;
   net_commission: number;
   commission_percentage: number;

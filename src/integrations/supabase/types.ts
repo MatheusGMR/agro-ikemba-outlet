@@ -244,7 +244,6 @@ export type Database = {
           active_ingredient: string | null
           base_price: number
           city: string
-          client_price: number
           commission_percentage: number
           commission_unit: number
           created_at: string
@@ -254,7 +253,9 @@ export type Database = {
           mapa_number: string | null
           net_commission: number
           packaging: string
-          price_tier: string
+          preco_banda_maior: number | null
+          preco_banda_menor: number | null
+          preco_unitario: number | null
           product_name: string
           product_sku: string
           rep_percentage: number
@@ -268,7 +269,6 @@ export type Database = {
           active_ingredient?: string | null
           base_price: number
           city: string
-          client_price: number
           commission_percentage: number
           commission_unit: number
           created_at?: string
@@ -278,7 +278,9 @@ export type Database = {
           mapa_number?: string | null
           net_commission: number
           packaging?: string
-          price_tier: string
+          preco_banda_maior?: number | null
+          preco_banda_menor?: number | null
+          preco_unitario?: number | null
           product_name: string
           product_sku: string
           rep_percentage: number
@@ -292,7 +294,6 @@ export type Database = {
           active_ingredient?: string | null
           base_price?: number
           city?: string
-          client_price?: number
           commission_percentage?: number
           commission_unit?: number
           created_at?: string
@@ -302,7 +303,9 @@ export type Database = {
           mapa_number?: string | null
           net_commission?: number
           packaging?: string
-          price_tier?: string
+          preco_banda_maior?: number | null
+          preco_banda_menor?: number | null
+          preco_unitario?: number | null
           product_name?: string
           product_sku?: string
           rep_percentage?: number

@@ -61,7 +61,7 @@ export function RelatedProducts({ currentSku, maxItems = 4 }: RelatedProductsPro
                 
                 <div className="mb-3">
                   <div className="text-lg font-bold text-primary">
-                    R$ {product.main_item.client_price.toFixed(2)}
+                    R$ {product.main_item.preco_unitario.toFixed(2)}
                   </div>
                   <div className="text-xs text-muted-foreground">
                     por litro
