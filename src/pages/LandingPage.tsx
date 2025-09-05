@@ -148,7 +148,7 @@ export default function LandingPage() {
       {/* Trust Indicators */}
       <section className="py-12 bg-white">
         <div className="container-custom">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-8 text-center justify-items-center items-center">
             <div className="flex flex-col items-center">
               <Shield className="h-12 w-12 text-primary mb-3" />
               <h3 className="font-semibold">100% Originais</h3>
