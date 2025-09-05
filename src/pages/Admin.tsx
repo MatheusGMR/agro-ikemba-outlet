@@ -25,6 +25,7 @@ import { PendingUser, AdminStats } from '@/types/admin';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { Check, X, Eye, Users, UserCheck, UserX, Clock, LogOut, RefreshCw } from 'lucide-react';
 import { userService } from '@/services/userService';
+import { ImageUploader } from '@/components/admin/ImageUploader';
 
 export default function Admin() {
   const [pendingUsers, setPendingUsers] = useState<PendingUser[]>([]);
@@ -174,6 +175,11 @@ export default function Admin() {
               Sair
             </Button>
           </div>
+        </div>
+
+        {/* Image Upload Section */}
+        <div className="mb-8">
+          <ImageUploader />
         </div>
 
         {/* Stats Cards */}
