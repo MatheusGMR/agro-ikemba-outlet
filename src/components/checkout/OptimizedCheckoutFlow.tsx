@@ -8,6 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Slider } from '@/components/ui/slider';
 import { 
   Package, 
   FileText, 
@@ -16,14 +17,16 @@ import {
   CheckCircle,
   Download,
   AlertTriangle,
-  Eye
+  Eye,
+  TrendingUp,
+  Edit3
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useCheckoutAnalytics } from '@/hooks/useAnalytics';
 import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/contexts/CartContext';
 import { supabase } from '@/integrations/supabase/client';
-import DynamicPriceCard from '@/components/inventory/DynamicPriceCard';
+import { ProgressiveForm, ProgressiveFormStep } from '@/components/ui/progressive-form';
 import jsPDF from 'jspdf';
 
 interface OptimizedCheckoutFlowProps {
@@ -89,9 +92,8 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
   const { user } = useAuth();
   const { clearCart } = useCart();
   
-  const [currentStep, setCurrentStep] = useState<'volume_selection' | 'logistics' | 'review' | 'payment' | 'confirmation'>('volume_selection');
-  const [hasOptimizedVolumes, setHasOptimizedVolumes] = useState(false);
-  const [selectedVolumes, setSelectedVolumes] = useState<Record<string, { volume: number; price: number }>>({});
+  const [currentStep, setCurrentStep] = useState(1);
+  const [selectedVolumes, setSelectedVolumes] = useState<Record<string, { volume: number; price: number; savings?: number }>>({});
   const [selectedLogistics, setSelectedLogistics] = useState<string>('pickup');
   const [deliveryInfo, setDeliveryInfo] = useState('');
   const [deliveryQuoteRequested, setDeliveryQuoteRequested] = useState(false);
@@ -102,31 +104,24 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
   const [orderData, setOrderData] = useState<any>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Check if items are already optimized and set initial step
+  // Initialize with cart data
   useEffect(() => {
-    // Check if any items in the cart were marked as optimized from the product page
-    const hasOptimizedItems = cartItems.some(item => {
-      // Check for volumes >= 1000L which indicates optimization was done
-      return item.quantity >= 1000;
-    });
-    
-    setHasOptimizedVolumes(hasOptimizedItems);
-    
-    // If items appear to be optimized, start at logistics step
-    if (hasOptimizedItems) {
-      setCurrentStep('logistics');
-      // Initialize selected volumes with current cart data
-      const initialVolumes = cartItems.reduce((acc, item) => {
-        acc[item.id] = { volume: item.quantity, price: item.price };
-        return acc;
-      }, {} as Record<string, { volume: number; price: number }>);
-      setSelectedVolumes(initialVolumes);
-    }
+    // Initialize selected volumes with current cart data
+    const initialVolumes = cartItems.reduce((acc, item) => {
+      acc[item.id] = { 
+        volume: item.quantity, 
+        price: item.price,
+        savings: 0 // Will be calculated based on optimizations
+      };
+      return acc;
+    }, {} as Record<string, { volume: number; price: number; savings?: number }>);
+    setSelectedVolumes(initialVolumes);
   }, [cartItems]);
 
   // Track step entries
   useEffect(() => {
-    const analyticsStep = currentStep === 'review' ? 'payment' : currentStep;
+    const stepNames = ['logistics', 'review', 'payment'];
+    const analyticsStep = stepNames[currentStep - 1] || 'logistics';
     trackCheckoutStep(analyticsStep as any, 'enter_step');
   }, [currentStep, trackCheckoutStep]);
 
@@ -138,29 +133,48 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
 
   const total = subtotal; // No additional fees in optimized flow
 
-  const handleVolumeOptimization = (itemId: string, volume: number, price: number) => {
+  const handleVolumeOptimization = (itemId: string, volume: number, price: number, savings: number = 0) => {
     setSelectedVolumes(prev => ({
       ...prev,
-      [itemId]: { volume, price }
+      [itemId]: { volume, price, savings }
     }));
   };
 
-  const handleLogisticsNext = () => {
+  const getTotalSavings = () => {
+    return Object.values(selectedVolumes).reduce((total, item) => total + (item.savings || 0), 0);
+  };
+
+  const getOriginalTotal = () => {
+    return cartItems.reduce((sum, item) => sum + (item.quantity * item.price), 0);
+  };
+
+  const validateLogistics = () => {
     if (deliveryQuoteRequested && !deliveryInfo.trim()) {
       toast({
         title: "Informações necessárias",
         description: "Por favor, informe os detalhes para cotação de entrega.",
         variant: "destructive"
       });
-      return;
+      return false;
     }
-    
-    trackCheckoutStep('logistics', 'complete', { 
-      logistics_type: 'pickup',
-      delivery_quote_requested: deliveryQuoteRequested,
-      delivery_info: deliveryInfo 
-    });
-    setCurrentStep('review');
+    return true;
+  };
+
+  const validateReview = () => {
+    // All items must have valid volumes and prices
+    return Object.keys(selectedVolumes).length === cartItems.length;
+  };
+
+  const validatePayment = () => {
+    if (!selectedPayment) {
+      toast({
+        title: "Forma de pagamento necessária",
+        description: "Por favor, selecione uma forma de pagamento.",
+        variant: "destructive"
+      });
+      return false;
+    }
+    return true;
   };
 
   const generateBoletoPDF = async (orderData: any): Promise<string> => {
@@ -301,7 +315,6 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
       setGeneratedDocument(docType);
       setDocumentUrl(docUrl);
       setOrderData({ ...finalOrderData, orderNumber: orderResult.order_number });
-      setCurrentStep('confirmation');
       setShowConfirmation(true);
 
       // Clear cart
@@ -329,105 +342,87 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
     }
   };
 
-  const renderVolumeStep = () => (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Package className="w-5 h-5 text-primary" />
-            Otimização de Volume e Preços
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground mb-4">
-            Ajuste os volumes para obter os melhores preços. Volume mínimo: 1.000L por produto.
-          </p>
+  // Simplified volume editor for review step
+  const renderVolumeEditor = (item: any) => {
+    const volumeData = selectedVolumes[item.id] || { volume: item.quantity, price: item.price, savings: 0 };
+    const maxVolume = 50000; // Mock max available
+    const basePrice = item.price;
+    const minVolume = Math.max(1000, item.quantity);
+    
+    // Simple price calculation (linear interpolation for demo)
+    const calculatePrice = (volume: number) => {
+      const ratio = Math.min(volume / 10000, 1); // Max discount at 10,000L
+      const discount = ratio * 0.15; // Up to 15% discount
+      return basePrice * (1 - discount);
+    };
+
+    const handleVolumeChange = (newVolume: number[]) => {
+      const volume = newVolume[0];
+      const newPrice = calculatePrice(volume);
+      const savings = (basePrice - newPrice) * volume;
+      handleVolumeOptimization(item.id, volume, newPrice, savings);
+    };
+
+    return (
+      <Card key={item.id} className="mb-4">
+        <CardContent className="p-4">
+          <div className="flex justify-between items-start mb-4">
+            <div>
+              <h4 className="font-semibold">{item.name}</h4>
+              <p className="text-sm text-muted-foreground">{item.manufacturer}</p>
+            </div>
+            <Badge variant={volumeData.savings && volumeData.savings > 0 ? "default" : "secondary"}>
+              {volumeData.savings && volumeData.savings > 0 ? 
+                `Economia: R$ ${volumeData.savings.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` :
+                'Sem otimização'
+              }
+            </Badge>
+          </div>
+          
+          <div className="space-y-4">
+            <div>
+              <Label className="text-sm font-medium">Volume: {volumeData.volume.toLocaleString('pt-BR')}L</Label>
+              <Slider
+                value={[volumeData.volume]}
+                onValueChange={handleVolumeChange}
+                min={minVolume}
+                max={maxVolume}
+                step={100}
+                className="mt-2"
+              />
+              <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                <span>{minVolume.toLocaleString('pt-BR')}L</span>
+                <span>{maxVolume.toLocaleString('pt-BR')}L</span>
+              </div>
+            </div>
+            
+            <div className="flex justify-between items-center">
+              <div>
+                <span className="text-sm text-muted-foreground">Preço por litro:</span>
+                <div className="font-semibold">
+                  R$ {volumeData.price.toFixed(2)}
+                  {volumeData.savings && volumeData.savings > 0 && (
+                    <span className="text-xs text-green-600 ml-2">
+                      (antes: R$ {basePrice.toFixed(2)})
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div className="text-right">
+                <span className="text-sm text-muted-foreground">Total:</span>
+                <div className="font-semibold">
+                  R$ {(volumeData.volume * volumeData.price).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                </div>
+              </div>
+            </div>
+          </div>
         </CardContent>
       </Card>
-
-      {cartItems.map((item) => (
-        <DynamicPriceCard
-          key={item.id}
-          inventoryItems={[{
-            id: item.id,
-            product_sku: item.sku,
-            product_name: item.name,
-            manufacturer: item.manufacturer,
-            client_price: item.price,
-            volume_available: 50000, // Mock available volume
-            // ... other required fields with mock data
-            active_ingredient: '',
-            mapa_number: '',
-            packaging: '1000L',
-            unit: 'L',
-            state: 'SP',
-            city: 'Campinas',
-            expiry_date: '2024-12-31',
-            price_tier: 'Preço Banda maior',
-            base_price: item.price,
-            commission_unit: 0,
-            net_commission: 0,
-            commission_percentage: 0,
-            rep_percentage: 0,
-            supplier_net: 0,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          }]}
-          onVolumeChange={(volume, price, savings) => {
-            handleVolumeOptimization(item.id, volume, price);
-          }}
-          minVolume={1000}
-        />
-      ))}
-
-      <div className="flex justify-end">
-        <Button onClick={() => setCurrentStep('logistics')} size="lg">
-          Continuar para Logística
-        </Button>
-      </div>
-    </div>
-  );
+    );
+  };
 
   const renderLogisticsStep = () => (
     <div className="space-y-6">
-      {/* Show optimized volumes summary if starting from logistics */}
-      {hasOptimizedVolumes && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-green-600">
-              <CheckCircle className="w-5 h-5" />
-              Volumes Otimizados
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground mb-4">
-              Seus volumes foram otimizados na página do produto para obter os melhores preços.
-            </p>
-            <div className="space-y-2">
-              {cartItems.map((item) => {
-                const volumeData = selectedVolumes[item.id] || { volume: item.quantity, price: item.price };
-                return (
-                  <div key={item.id} className="flex justify-between items-center text-sm">
-                    <span className="font-medium">{item.name}</span>
-                    <span className="text-muted-foreground">
-                      {volumeData.volume.toLocaleString('pt-BR')}L × R$ {volumeData.price.toFixed(2)}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="mt-3"
-              onClick={() => setCurrentStep('volume_selection')}
-            >
-              Ajustar Volumes
-            </Button>
-          </CardContent>
-        </Card>
-      )}
-      
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -484,187 +479,140 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
                     </Label>
                     <p className="text-sm text-muted-foreground mt-1">{service.description}</p>
                     <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-800">
-                      <strong>Importante:</strong> Este serviço não substitui a retirada no local. 
-                      Ele apenas ajuda você a conseguir orçamentos para futura entrega por transportadoras.
+                      <strong>Importante:</strong> Este serviço não substitui a retirada no local.
                     </div>
                   </div>
                 </div>
                 
                 {deliveryQuoteRequested && (
-                  <div className="ml-7 p-3 bg-muted/50 rounded-lg">
-                    <Label htmlFor="delivery-info" className="text-sm font-medium">
-                      Informações para Cotação de Entrega
+                  <div className="ml-8 space-y-2">
+                    <Label htmlFor="delivery-info" className="text-sm">
+                      Informações para cotação (endereço, volume, etc.)
                     </Label>
                     <Textarea
                       id="delivery-info"
-                      placeholder="Informe o endereço completo de entrega, CEP, e outras informações relevantes para a cotação..."
+                      placeholder="Digite o endereço de entrega, volumes totais e outras informações relevantes..."
                       value={deliveryInfo}
                       onChange={(e) => setDeliveryInfo(e.target.value)}
-                      className="mt-2"
-                      rows={3}
+                      className="min-h-[80px]"
                     />
-                    <p className="text-xs text-muted-foreground mt-2">
-                      ⏱️ Prazo para resposta: até 90 minutos durante horário comercial
-                    </p>
                   </div>
                 )}
               </div>
             ))}
           </div>
-        
-          <div className="flex justify-between">
-            <Button 
-              variant="outline" 
-              onClick={() => setCurrentStep('volume_selection')}
-            >
-              Voltar aos Volumes
-            </Button>
-            <Button onClick={handleLogisticsNext}>
-              Revisar Pedido
-            </Button>
-          </div>
         </CardContent>
       </Card>
     </div>
   );
 
-  const renderReviewStep = () => (
+  const renderReviewStep = () => {
+    const totalSavings = getTotalSavings();
+    const originalTotal = getOriginalTotal();
+    const savingsPercentage = originalTotal > 0 ? (totalSavings / originalTotal) * 100 : 0;
+
+    return (
+      <div className="space-y-6">
+        {/* Savings Summary Card */}
+        {totalSavings > 0 && (
+          <Card className="border-green-200 bg-green-50">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                  <TrendingUp className="w-6 h-6 text-green-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-green-800">Parabéns! Você está economizando</h3>
+                  <div className="flex items-center gap-4 mt-1">
+                    <span className="text-2xl font-bold text-green-600">
+                      R$ {totalSavings.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    </span>
+                    <Badge variant="secondary" className="bg-green-100 text-green-700">
+                      {savingsPercentage.toFixed(1)}% de desconto
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Products with Inline Editing */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Edit3 className="w-5 h-5 text-primary" />
+              Revisão e Otimização dos Produtos
+            </CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Ajuste os volumes abaixo para otimizar ainda mais seus preços
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {cartItems.map((item) => renderVolumeEditor(item))}
+          </CardContent>
+        </Card>
+
+        {/* Order Summary */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Resumo do Pedido</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {totalSavings > 0 && (
+                <>
+                  <div className="flex justify-between text-muted-foreground">
+                    <span>Subtotal original:</span>
+                    <span className="line-through">R$ {originalTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                  </div>
+                  <div className="flex justify-between text-green-600">
+                    <span>Economia conquistada:</span>
+                    <span>-R$ {totalSavings.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                  </div>
+                  <Separator />
+                </>
+              )}
+              <div className="flex justify-between items-center font-semibold text-lg">
+                <span>Total do Pedido:</span>
+                <span className="text-primary">R$ {total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Logistics Summary */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Logística</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Forma de entrega:</span>
+                <span>Retirada no Local</span>
+              </div>
+              {deliveryQuoteRequested && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Cotação solicitada:</span>
+                  <Badge variant="secondary">Sim</Badge>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  };
+
+  const renderPaymentStep = () => (
     <div className="space-y-6">
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Eye className="w-5 h-5 text-primary" />
-            Revisão do Pedido
+            <FileText className="w-5 h-5 text-primary" />
+            Forma de Pagamento
           </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground mb-4">
-            Revise todos os detalhes do seu pedido antes de prosseguir para o pagamento.
-          </p>
-        </CardContent>
-      </Card>
-
-      {/* Items Review */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Produtos Selecionados</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {cartItems.map((item) => {
-              const volumeData = selectedVolumes[item.id] || { volume: item.quantity, price: item.price };
-              return (
-                <div key={item.id} className="flex justify-between items-center p-3 border rounded-lg">
-                  <div className="flex-1">
-                    <div className="font-medium">{item.name}</div>
-                    <div className="text-sm text-muted-foreground">
-                      SKU: {item.sku} | Fabricante: {item.manufacturer}
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      Volume: {volumeData.volume.toLocaleString('pt-BR')}L × R$ {volumeData.price.toFixed(2)}
-                    </div>
-                  </div>
-                  <div className="font-semibold">
-                    R$ {(volumeData.volume * volumeData.price).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                  </div>
-                </div>
-              );
-            })}
-            
-            <Separator />
-            
-            <div className="flex justify-between items-center font-semibold text-lg">
-              <span>Total:</span>
-              <span className="text-primary">
-                R$ {total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-              </span>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Logistics Review */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Logística</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            <div className="flex justify-between">
-              <span>Opção de Entrega:</span>
-              <span className="font-medium">Retirada no Local (Gratuito)</span>
-            </div>
-            {deliveryQuoteRequested && (
-              <>
-                <div className="flex justify-between">
-                  <span>Cotação de Entrega:</span>
-                  <span className="font-medium text-blue-600">Solicitada</span>
-                </div>
-                {deliveryInfo && (
-                  <div className="mt-2 p-2 bg-muted/50 rounded text-sm">
-                    <strong>Informações para cotação:</strong>
-                    <p className="mt-1">{deliveryInfo}</p>
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      <div className="flex justify-between">
-        <Button variant="outline" onClick={() => setCurrentStep('logistics')}>
-          Voltar à Logística
-        </Button>
-        <Button onClick={() => setCurrentStep('payment')} size="lg">
-          Continuar para Pagamento
-        </Button>
-      </div>
-    </div>
-  );
-
-  const renderPaymentStep = () => (
-    <div className="space-y-6">
-      {/* Order Summary */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Resumo do Pedido</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {cartItems.map((item) => {
-              const volumeData = selectedVolumes[item.id] || { volume: item.quantity, price: item.price };
-              return (
-                <div key={item.id} className="flex justify-between items-center">
-                  <div>
-                    <div className="font-medium">{item.name}</div>
-                    <div className="text-sm text-muted-foreground">
-                      {volumeData.volume.toLocaleString('pt-BR')}L × R$ {volumeData.price.toFixed(2)}
-                    </div>
-                  </div>
-                  <div className="font-semibold">
-                    R$ {(volumeData.volume * volumeData.price).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                  </div>
-                </div>
-              );
-            })}
-            
-            <Separator />
-            
-            <div className="flex justify-between items-center font-semibold text-lg">
-              <span>Total:</span>
-              <span className="text-primary">
-                R$ {total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-              </span>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Payment Methods */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Forma de Pagamento</CardTitle>
         </CardHeader>
         <CardContent>
           <RadioGroup value={selectedPayment} onValueChange={setSelectedPayment}>
@@ -672,27 +620,18 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
               {PAYMENT_METHODS.map((method) => {
                 const IconComponent = method.icon;
                 return (
-                  <div key={method.id} className="space-y-3">
-                    <div className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-muted/50">
-                      <RadioGroupItem value={method.id} id={method.id} className="mt-1" />
-                      <IconComponent className="w-5 h-5 mt-1 text-primary" />
-                      <div className="flex-1">
-                        <Label htmlFor={method.id} className="font-medium cursor-pointer">
-                          {method.name}
-                        </Label>
-                        <p className="text-sm text-muted-foreground">{method.description}</p>
+                  <div key={method.id} className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-muted/50">
+                    <RadioGroupItem value={method.id} id={method.id} className="mt-1" />
+                    <div className="flex-1">
+                      <Label htmlFor={method.id} className="flex items-center gap-2 font-medium cursor-pointer">
+                        <IconComponent className="w-4 h-4" />
+                        {method.name}
+                      </Label>
+                      <p className="text-sm text-muted-foreground mt-1">{method.description}</p>
+                      <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-xs text-blue-800">
+                        <strong>Aviso:</strong> {method.warning}
                       </div>
                     </div>
-                    
-                    {selectedPayment === method.id && (
-                      <div className="ml-7 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                        <div className="flex items-center gap-2">
-                          <AlertTriangle className="w-4 h-4 text-yellow-600" />
-                          <span className="text-sm text-yellow-800 font-medium">Importante:</span>
-                        </div>
-                        <p className="text-sm text-yellow-700 mt-1">{method.warning}</p>
-                      </div>
-                    )}
                   </div>
                 );
               })}
@@ -701,91 +640,194 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
         </CardContent>
       </Card>
 
-      <div className="flex justify-between">
-        <Button variant="outline" onClick={() => setCurrentStep('review')}>
-          Voltar à Revisão
-        </Button>
-        <Button 
-          onClick={handlePaymentComplete} 
-          disabled={!selectedPayment || isProcessing} 
-          size="lg"
-        >
-          {isProcessing ? 'Processando...' : 'Finalizar Pedido'}
-        </Button>
-      </div>
+      {/* Order Summary for payment step */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Resumo Final</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            <div className="flex justify-between items-center font-semibold text-lg">
+              <span>Total a Pagar:</span>
+              <span className="text-primary">R$ {total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+            </div>
+            {getTotalSavings() > 0 && (
+              <div className="text-sm text-green-600">
+                Você economizou R$ {getTotalSavings().toLocaleString('pt-BR', { minimumFractionDigits: 2 })} neste pedido!
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 
-  const renderConfirmation = () => (
-    <Dialog open={showConfirmation} onOpenChange={setShowConfirmation}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-green-600">
-            <CheckCircle className="w-6 h-6" />
-            Pedido Realizado com Sucesso!
-          </DialogTitle>
-        </DialogHeader>
-        
-        <div className="space-y-4">
-          <div className="text-center">
-            <div className="text-lg font-semibold mb-2">
-              Pedido: {orderData?.orderNumber}
-            </div>
-            <div className="text-sm text-muted-foreground mb-4">
-              Documento gerado: <strong>{generatedDocument}</strong>
+  // Define steps for ProgressiveForm
+  const steps: ProgressiveFormStep[] = [
+    {
+      id: 'logistics',
+      title: 'Logística de Entrega',
+      description: 'Configure como você deseja receber seus produtos',
+      component: renderLogisticsStep(),
+      validate: () => validateLogistics()
+    },
+    {
+      id: 'review',
+      title: 'Revisão e Otimização',
+      description: 'Revise seu pedido e otimize volumes para melhores preços',
+      component: renderReviewStep(),
+      validate: () => validateReview()
+    },
+    {
+      id: 'payment',
+      title: 'Forma de Pagamento',
+      description: 'Selecione como deseja pagar seu pedido',
+      component: renderPaymentStep(),
+      validate: () => validatePayment()
+    }
+  ];
+
+  const handleStepChange = (step: number) => {
+    setCurrentStep(step);
+    
+    // Track analytics for each step
+    const stepNames = ['logistics', 'review', 'payment'];
+    const analyticsStep = stepNames[step - 1];
+    if (analyticsStep) {
+      trackCheckoutStep(analyticsStep as any, 'enter_step');
+    }
+  };
+
+  const handleFormSubmit = () => {
+    handlePaymentComplete();
+  };
+
+  // Show confirmation dialog
+  if (showConfirmation) {
+    return (
+      <Dialog open={showConfirmation} onOpenChange={() => setShowConfirmation(false)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-green-600">
+              <CheckCircle className="w-6 h-6" />
+              Pedido Realizado com Sucesso!
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            {orderData && (
+              <div className="text-center py-4">
+                <div className="text-lg font-semibold">
+                  Pedido: {orderData.orderNumber}
+                </div>
+                <div className="text-2xl font-bold text-primary mt-2">
+                  R$ {orderData.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                </div>
+              </div>
+            )}
+
+            <Card>
+              <CardContent className="p-4">
+                <h4 className="font-semibold mb-2">Próximos Passos:</h4>
+                <ul className="space-y-2 text-sm">
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                    <span>Pedido registrado em nosso sistema</span>
+                  </li>
+                  
+                  {selectedPayment === 'boleto' && (
+                    <>
+                      <li className="flex items-start gap-2">
+                        <FileText className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
+                        <span>Faça o download do boleto e efetue o pagamento em até 7 dias</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <Smartphone className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+                        <span>Envie o comprovante de pagamento via WhatsApp</span>
+                      </li>
+                    </>
+                  )}
+                  
+                  {(selectedPayment === 'pix' || selectedPayment === 'ted') && (
+                    <>
+                      <li className="flex items-start gap-2">
+                        <Smartphone className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+                        <span>Entraremos em contato com as instruções de pagamento</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <Smartphone className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+                        <span>Envie o comprovante de pagamento via WhatsApp</span>
+                      </li>
+                    </>
+                  )}
+                  
+                  <li className="flex items-start gap-2">
+                    <Package className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+                    <span>Agende a retirada dos produtos após confirmação do pagamento</span>
+                  </li>
+                </ul>
+              </CardContent>
+            </Card>
+
+            {deliveryQuoteRequested && (
+              <Card className="border-yellow-200 bg-yellow-50">
+                <CardContent className="p-4">
+                  <div className="flex items-start gap-2">
+                    <AlertTriangle className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <h4 className="font-semibold text-yellow-800">Cotação de Entrega Solicitada</h4>
+                      <p className="text-sm text-yellow-700 mt-1">
+                        Você receberá orçamentos de transportadoras em até 90 minutos via WhatsApp.
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            <div className="flex flex-col sm:flex-row gap-3">
+              {documentUrl && (
+                <Button asChild className="flex-1">
+                  <a href={documentUrl} download>
+                    <Download className="w-4 h-4 mr-2" />
+                    Download {generatedDocument}
+                  </a>
+                </Button>
+              )}
+              
+              <Button 
+                variant="outline" 
+                onClick={() => navigate('/dashboard')}
+                className="flex-1"
+              >
+                Ver Meus Pedidos
+              </Button>
+              
+              <Button 
+                variant="outline"
+                onClick={() => navigate('/products')}
+                className="flex-1"
+              >
+                Continuar Comprando
+              </Button>
             </div>
           </div>
-          
-          <Separator />
-          
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span>Total do Pedido:</span>
-              <span className="font-semibold">R$ {total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Forma de Pagamento:</span>
-              <span>{PAYMENT_METHODS.find(m => m.id === selectedPayment)?.name}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Logística:</span>
-              <span>Retirada no Local</span>
-            </div>
-          </div>
-          
-          <div className="bg-yellow-50 p-3 rounded-lg text-sm text-yellow-800 text-center">
-            <strong>Importante:</strong> Os produtos serão liberados somente após a confirmação do pagamento.
-          </div>
-          
-          <div className="grid grid-cols-2 gap-2">
-            <Button 
-              onClick={() => documentUrl ? window.open(documentUrl, '_blank') : undefined} 
-              variant="outline"
-              size="sm"
-              disabled={!documentUrl}
-            >
-              <Download className="w-4 h-4 mr-2" />
-              {documentUrl ? 'Baixar PDF' : 'PDF N/D'}
-            </Button>
-            <Button 
-              onClick={() => navigate('/dashboard')}
-              size="sm"
-            >
-              Ver Pedidos
-            </Button>
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   return (
-    <div className="space-y-6">
-      {currentStep === 'volume_selection' && renderVolumeStep()}
-      {currentStep === 'logistics' && renderLogisticsStep()}
-      {currentStep === 'review' && renderReviewStep()}
-      {currentStep === 'payment' && renderPaymentStep()}
-      {renderConfirmation()}
+    <div className="max-w-4xl mx-auto p-6">
+      <ProgressiveForm
+        steps={steps}
+        currentStep={currentStep}
+        onStepChange={handleStepChange}
+        onSubmit={handleFormSubmit}
+        isSubmitting={isProcessing}
+        submitText="Finalizar Pedido"
+        className="w-full"
+      />
     </div>
   );
 }
