@@ -318,43 +318,6 @@ const ProductDetail = () => {
                   />
                 </div>
 
-                {/* Distribution Info - Read Only */}
-                <div className="mb-6">
-                  <h3 className="text-lg font-semibold mb-3">Distribuição Disponível</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {Object.entries(locationGroups).map(([location, group]) => (
-                      <Card key={location} className="bg-muted/30">
-                        <CardContent className="p-4">
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <div className="flex items-center gap-2 mb-1">
-                                <MapPin className="h-4 w-4 text-muted-foreground" />
-                                <span className="font-medium">{location}</span>
-                              </div>
-                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                <Package className="h-3 w-3" />
-                                <span>{group.totalVolume.toLocaleString('pt-BR')} L disponíveis</span>
-                              </div>
-                              <div className="text-sm text-muted-foreground mt-1">
-                                {group.items.length} {group.items.length === 1 ? 'lote' : 'lotes'}
-                              </div>
-                            </div>
-                            <div className="text-right">
-                              <p className="font-bold text-primary">
-                                R$ {Math.min(...group.items.map(item => item.preco_unitario)).toFixed(2)}
-                              </p>
-                              <p className="text-xs text-muted-foreground">por L</p>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                  <div className="mt-3 text-sm text-muted-foreground bg-blue-50 p-3 rounded-lg">
-                    <Info className="w-4 h-4 inline mr-2" />
-                    O volume selecionado acima será distribuído automaticamente entre os locais disponíveis.
-                  </div>
-                </div>
                 
                 <div className="flex items-center gap-4 mb-6">
                   <div className="flex items-center border rounded-md">
