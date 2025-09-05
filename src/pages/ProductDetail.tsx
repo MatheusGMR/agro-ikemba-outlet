@@ -114,20 +114,23 @@ const ProductDetail = () => {
   const handleAddToCart = () => {
     if (!selectedItem || !productInfo) return;
     
+    // Use currentPrice from DynamicPriceCard if available, otherwise use preco_unitario
+    const itemPrice = selectedItem.currentPrice || selectedItem.preco_unitario;
+    const itemVolume = selectedItem.volume || 1000;
+    
     const cartItem = {
       id: selectedItem.id,
       name: productInfo.product_name,
       sku: productInfo.product_sku,
-      price: selectedItem.client_price,
+      price: itemPrice,
       manufacturer: productInfo.manufacturer,
       image: selectedImage || '/placeholder.svg'
     };
     
     // Check if volume was optimized (different from default 1000L or has savings)
-    const volume = selectedItem.volume || 1000;
-    const isOptimized = volume !== 1000 || (selectedItem.savings && selectedItem.savings > 0);
+    const isOptimized = itemVolume !== 1000 || (selectedItem.savings && selectedItem.savings > 0);
     
-    addToCart(cartItem, volume, selectedItem.client_price, selectedItem.savings || 0, isOptimized);
+    addToCart(cartItem, itemVolume, itemPrice, selectedItem.savings || 0, isOptimized);
     toast({
       title: "Produto adicionado",
       description: `${productInfo.product_name} foi adicionado ao carrinho.`
@@ -139,7 +142,7 @@ const ProductDetail = () => {
     navigate('/checkout');
   };
   
-  const totalPrice = selectedItem ? selectedItem.client_price * quantity : 0;
+  const totalPrice = selectedItem ? (selectedItem.currentPrice || selectedItem.preco_unitario) * quantity : 0;
   
   // Loading state
   if (inventoryLoading) {
@@ -289,6 +292,16 @@ const ProductDetail = () => {
                   <DynamicPriceCard 
                     inventoryItems={inventoryItems}
                     onVolumeChange={(volume, price, savings) => {
+                      // Update selected item with new pricing info
+                      if (selectedItem) {
+                        setSelectedItem({
+                          ...selectedItem,
+                          volume,
+                          savings,
+                          // Use the calculated price from DynamicPriceCard
+                          currentPrice: price
+                        });
+                      }
                       // Track volume changes for analytics
                       analyticsService.trackVolumeChange(productInfo.product_sku, volume, price);
                     }}
@@ -320,7 +333,7 @@ const ProductDetail = () => {
                             </div>
                             <div className="text-right">
                               <p className="font-bold text-primary">
-                                R$ {Math.min(...group.items.map(item => item.client_price)).toFixed(2)}
+                                R$ {Math.min(...group.items.map(item => item.preco_unitario)).toFixed(2)}
                               </p>
                               <p className="text-xs text-muted-foreground">por L</p>
                             </div>
@@ -364,7 +377,7 @@ const ProductDetail = () => {
                   <div>
                     <p className="text-sm text-muted-foreground mb-1">Preço por litro</p>
                     <p className="text-3xl font-bold">
-                      R$ {selectedItem ? selectedItem.client_price.toFixed(2) : '0.00'}
+                      R$ {selectedItem ? (selectedItem.currentPrice || selectedItem.preco_unitario).toFixed(2) : '0.00'}
                     </p>
                     <p className="text-xs text-muted-foreground">Local: {selectedItem ? `${selectedItem.city}/${selectedItem.state}` : 'Selecione'}</p>
                   </div>
