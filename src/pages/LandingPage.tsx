@@ -202,23 +202,23 @@ export default function LandingPage() {
                   onClick={() => handleProductClick(product.sku)}
                 >
                   {totalSavingsForVolume > 0 && (
-                    <div className="absolute top-4 right-4 z-10">
-                      <Badge className="bg-destructive text-destructive-foreground animate-pulse text-sm font-bold">
+                    <div className="absolute top-4 right-4 z-10 max-w-[120px]">
+                      <Badge className="bg-destructive text-destructive-foreground animate-pulse text-xs font-bold whitespace-nowrap">
                         ECONOMIZE {formatCurrency(totalSavingsForVolume)}
                       </Badge>
-                      <p className="text-xs text-center mt-1 text-muted-foreground bg-white/90 px-2 py-1 rounded">
+                      <p className="text-xs text-center mt-1 text-muted-foreground bg-white/90 px-1 py-0.5 rounded">
                         em 1.000L
                       </p>
                     </div>
                   )}
                   
-                  <CardHeader className="pb-4">
+                  <CardHeader className="pb-4 pr-32">
                     <div className="flex items-start justify-between">
-                      <div>
-                        <CardTitle className="text-2xl mb-2">{product.active_ingredient || product.name}</CardTitle>
+                      <div className="flex-1 pr-4">
+                        <CardTitle className="text-2xl mb-2 leading-tight">{product.active_ingredient || product.name}</CardTitle>
                         <div className="space-y-1 text-sm text-muted-foreground">
                           <p><strong>Fabricante:</strong> {product.manufacturer}</p>
-                          <p><strong>Nome Técnico:</strong> {product.name}</p>
+                          <p><strong>Nome do Produto:</strong> {product.name}</p>
                         </div>
                       </div>
                     </div>
