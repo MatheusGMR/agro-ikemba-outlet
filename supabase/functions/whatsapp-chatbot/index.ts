@@ -40,7 +40,7 @@ Sou seu assistente virtual. Como posso ajudá-lo hoje?
 };
 
 const sendWhatsAppMessage = async (phoneNumber: string, message: any) => {
-  const WHATSAPP_TOKEN = Deno.env.get('WHATSAPP_TOKEN');
+  const WHATSAPP_TOKEN = Deno.env.get('WHATSAPP_ACCESS_TOKEN');
   const WHATSAPP_PHONE_ID = Deno.env.get('WHATSAPP_PHONE_ID');
 
   if (!WHATSAPP_TOKEN || !WHATSAPP_PHONE_ID) {
