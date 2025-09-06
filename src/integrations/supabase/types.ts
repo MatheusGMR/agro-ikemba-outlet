@@ -113,6 +113,45 @@ export type Database = {
         }
         Relationships: []
       }
+      chatbot_analytics: {
+        Row: {
+          bot_response: string | null
+          created_at: string
+          id: string
+          menu_option: string | null
+          message_type: string
+          phone_number: string
+          response_time_ms: number | null
+          session_id: string | null
+          user_id: string | null
+          user_message: string | null
+        }
+        Insert: {
+          bot_response?: string | null
+          created_at?: string
+          id?: string
+          menu_option?: string | null
+          message_type: string
+          phone_number: string
+          response_time_ms?: number | null
+          session_id?: string | null
+          user_id?: string | null
+          user_message?: string | null
+        }
+        Update: {
+          bot_response?: string | null
+          created_at?: string
+          id?: string
+          menu_option?: string | null
+          message_type?: string
+          phone_number?: string
+          response_time_ms?: number | null
+          session_id?: string | null
+          user_id?: string | null
+          user_message?: string | null
+        }
+        Relationships: []
+      }
       checkout_funnel_logs: {
         Row: {
           action_type: string
@@ -1442,6 +1481,42 @@ export type Database = {
           savings_percentage?: number | null
           session_id?: string
           time_spent?: number | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      whatsapp_conversations: {
+        Row: {
+          conversation_state: Json | null
+          created_at: string
+          current_menu: string | null
+          id: string
+          last_interaction: string | null
+          phone_number: string
+          session_active: boolean | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          conversation_state?: Json | null
+          created_at?: string
+          current_menu?: string | null
+          id?: string
+          last_interaction?: string | null
+          phone_number: string
+          session_active?: boolean | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          conversation_state?: Json | null
+          created_at?: string
+          current_menu?: string | null
+          id?: string
+          last_interaction?: string | null
+          phone_number?: string
+          session_active?: boolean | null
+          updated_at?: string
           user_id?: string | null
         }
         Relationships: []
