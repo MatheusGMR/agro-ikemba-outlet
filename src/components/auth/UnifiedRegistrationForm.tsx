@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { GoogleReCaptchaProvider } from 'react-google-recaptcha-v3';
 import { ProgressiveForm, ProgressiveFormStep } from '@/components/ui/progressive-form';
 import { ProgressiveInput } from '@/components/ui/progressive-input';
 import { ButtonGrid } from '@/components/ui/button-grid';
@@ -7,6 +8,8 @@ import { User, Building, Mail, Phone, Users, Store, Tractor, Globe, Linkedin, In
 import { userService } from '@/services/userService';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useBotProtection } from '@/hooks/useBotProtection';
+import { HoneypotFields } from '@/components/auth/HoneypotFields';
 
 // Google Analytics helper function
 declare global {
@@ -77,7 +80,7 @@ const formatPhone = (value: string): string => {
   return digits.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
 };
 
-export function UnifiedRegistrationForm({
+function UnifiedRegistrationFormInner({
   context = 'main',
   onSuccess,
   onCancel,
@@ -98,6 +101,9 @@ export function UnifiedRegistrationForm({
     email: '',
     conheceu: '',
   });
+
+  // Bot protection hooks
+  const { honeypotData, updateHoneypot, validateBotProtection, formStartTime } = useBotProtection();
 
   const updateFormData = (field: keyof UnifiedRegistrationData, value: string) => {
     // Track form_start on first interaction
@@ -150,11 +156,28 @@ export function UnifiedRegistrationForm({
     
     try {
       console.log(`[REG][${attemptId}] Start unified registration`, { context, data: formData });
+      
+      // 🛡️ BOT PROTECTION - Check before processing
+      const botCheck = await validateBotProtection();
+      if (botCheck.isBot) {
+        console.log(`[REG][${attemptId}] Bot detected:`, botCheck);
+        trackFormEvent('bot_detected', {
+          ...common,
+          bot_reason: botCheck.reason,
+          recaptcha_score: botCheck.recaptchaScore,
+          form_time: Date.now() - formStartTime
+        });
+        toast.error('Verificação de segurança falhada. Tente novamente.');
+        return;
+      }
+
       trackFormEvent('form_attempt_start', {
         ...common,
         account_type: formData.tipo,
         has_cnpj: !!formData.cnpj,
         how_found: formData.conheceu || 'not_specified',
+        recaptcha_score: botCheck.recaptchaScore,
+        form_time: Date.now() - formStartTime
       });
 
       // Check if email already exists in users table
@@ -459,6 +482,9 @@ export function UnifiedRegistrationForm({
   return (
     <>
       <div className={className}>
+        {/* 🍯 Honeypot fields for bot detection */}
+        <HoneypotFields data={honeypotData} onChange={updateHoneypot} />
+        
         <ProgressiveForm
           steps={steps}
           currentStep={currentStep}
@@ -496,5 +522,17 @@ export function UnifiedRegistrationForm({
         </DialogContent>
       </Dialog>
     </>
+  );
+}
+
+// Main component with reCAPTCHA provider
+export function UnifiedRegistrationForm(props: UnifiedRegistrationFormProps) {
+  // Get reCAPTCHA site key from environment or use development key
+  const recaptchaSiteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY || '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI'; // Google test key
+
+  return (
+    <GoogleReCaptchaProvider reCaptchaKey={recaptchaSiteKey}>
+      <UnifiedRegistrationFormInner {...props} />
+    </GoogleReCaptchaProvider>
   );
 }
