@@ -181,6 +181,69 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
     return true;
   };
 
+  // Utility function to wait with jitter
+  const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+  // Create order with retry mechanism to handle race conditions
+  const createOrderWithRetry = async (finalOrderData: any, maxRetries = 3) => {
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        console.log(`🔄 Creating order attempt ${attempt}/${maxRetries}`);
+        
+        // Generate order number using database function
+        const { data: orderNumber, error: rpcError } = await supabase
+          .rpc('generate_order_number');
+
+        if (rpcError) {
+          console.error('❌ Error generating order number:', rpcError);
+          throw rpcError;
+        }
+
+        console.log('📋 Generated order number:', orderNumber);
+
+        // Insert order with generated number
+        const orderToInsert = {
+          user_id: user?.id,
+          order_number: orderNumber,
+          items: finalOrderData.items,
+          total_amount: finalOrderData.total,
+          payment_method: finalOrderData.paymentMethod,
+          logistics_option: 'pickup',
+          status: 'pending'
+        };
+
+        const { data: orderData, error: insertError } = await supabase
+          .from('orders')
+          .insert(orderToInsert)
+          .select()
+          .single();
+
+        if (!insertError) {
+          console.log('✅ Order created successfully:', orderData);
+          return orderData;
+        }
+
+        // Handle duplicate key constraint violation (23505)
+        if (insertError.code === '23505' && attempt < maxRetries) {
+          console.warn(`⚠️ Duplicate order number detected, retrying... (attempt ${attempt})`);
+          // Wait with jitter to reduce collision probability
+          await wait(200 + Math.random() * 300);
+          continue;
+        }
+
+        // If it's not a duplicate or we've exhausted retries, throw the error
+        throw insertError;
+      } catch (error) {
+        if (attempt === maxRetries) {
+          console.error('❌ Failed to create order after all retries:', error);
+          throw error;
+        }
+        console.warn(`⚠️ Order creation failed, attempt ${attempt}:`, error);
+        await wait(200 + Math.random() * 300);
+      }
+    }
+  };
+
   const generateBoletoPDF = async (orderData: any): Promise<string> => {
     const pdf = new jsPDF();
     const pageWidth = pdf.internal.pageSize.width;
@@ -308,20 +371,7 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
     console.log('Starting order processing for user:', user.id, 'payment method:', selectedPayment);
     
     try {
-      // Generate order number using database function
-      const { data: orderNumberData, error: orderNumberError } = await supabase
-        .rpc('generate_order_number');
-
-      if (orderNumberError) {
-        console.error('Error generating order number:', orderNumberError);
-        throw new Error('Erro ao gerar número do pedido');
-      }
-
-      const orderNumber = orderNumberData;
-      console.log('Generated order number:', orderNumber);
-
       const finalOrderData = {
-        orderNumber,
         items: cartItems.map(item => {
           const volumeData = selectedVolumes[item.id] || { volume: item.quantity, price: item.price };
           return {
@@ -341,32 +391,12 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
         createdAt: new Date().toISOString()
       };
 
-      console.log('Attempting to save order:', finalOrderData);
+      console.log('📦 Order data prepared:', finalOrderData);
 
-      // Save order to database with generated order number
-      const { data: orderResult, error: orderError } = await supabase
-        .from('orders')
-        .insert({
-          user_id: user.id,
-          order_number: orderNumber,
-          items: finalOrderData.items,
-          total_amount: total,
-          payment_method: selectedPayment,
-          logistics_option: 'pickup',
-          status: 'pending'
-        })
-        .select()
-        .single();
-
-      if (orderError) {
-        console.error('Database error saving order:', orderError);
-        if (orderError.code === '23505') {
-          throw new Error('Erro de sistema: número do pedido duplicado. Tente novamente.');
-        }
-        throw new Error(`Erro ao salvar pedido: ${orderError.message}`);
-      }
-
-      console.log('Order saved successfully:', orderResult);
+      // Create order with retry mechanism to handle duplicate order numbers
+      const orderResult = await createOrderWithRetry(finalOrderData);
+      
+      console.log('✅ Order saved successfully:', orderResult);
 
       // Generate payment-specific content
       let docUrl = '';
@@ -451,24 +481,30 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
       });
 
     } catch (error) {
-      console.error('Error processing order:', error);
+      console.error('❌ Error processing order:', error);
       
-      // Specific error handling
+      // Enhanced error handling with specific messages
       let errorTitle = "Erro ao processar pedido";
-      let errorDescription = "Ocorreu um erro inesperado. Tente novamente.";
+      let errorDescription = "Tente novamente - erro temporário do sistema";
       
       if (error instanceof Error) {
-        if (error.message.includes('autenticação')) {
+        if (error.message.includes('autenticação') || error.message.includes('auth')) {
           errorTitle = "Erro de autenticação";
           errorDescription = "Sessão expirada. Faça login novamente.";
+          navigate('/login');
+          return;
+        } else if ((error as any).code === '23505') {
+          errorTitle = "Erro temporário";
+          errorDescription = "Sistema ocupado, tente novamente em alguns segundos.";
+        } else if (error.message.includes('generate_order_number')) {
+          errorTitle = "Erro do sistema";
+          errorDescription = "Erro ao gerar número do pedido. Tente novamente.";
+        } else if (error.message.includes('network') || error.message.includes('timeout')) {
+          errorTitle = "Erro de conexão";
+          errorDescription = "Verifique sua conexão e tente novamente.";
         } else if (error.message.includes('banco de dados')) {
           errorTitle = "Erro no banco de dados";
           errorDescription = "Problema ao salvar o pedido. Tente novamente em alguns segundos.";
-        } else if (error.message.includes('duplicado')) {
-          errorTitle = "Erro de sistema";
-          errorDescription = "Tente novamente - erro temporário do sistema.";
-        } else {
-          errorDescription = error.message;
         }
       }
       
