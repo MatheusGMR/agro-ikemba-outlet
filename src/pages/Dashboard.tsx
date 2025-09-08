@@ -5,17 +5,30 @@ import { DashboardActions } from '@/components/dashboard/DashboardActions';
 import { RecentOrders } from '@/components/dashboard/RecentOrders';
 import { QuickStats } from '@/components/dashboard/QuickStats';
 import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar';
-import type { Order, Product } from '@/types/dashboard';
+import { useUserOrders } from '@/hooks/useUserOrders';
+import { useAuth } from '@/hooks/useAuth';
+import { LoadingFallback } from '@/components/ui/LoadingFallback';
+import type { Product } from '@/types/dashboard';
 
 export default function Dashboard() {
   const [userType] = useState<'manufacturer' | 'distributor'>('distributor');
-  
-  const orders: Order[] = [
-    { id: 'ORD-7829', product: 'Generic Herbicide Plus', date: '2025-04-08', status: 'pending', amount: 'R$25,400' },
-    { id: 'ORD-7823', product: 'Organic Fertilizer X-90', date: '2025-04-05', status: 'processing', amount: 'R$12,750' },
-    { id: 'ORD-7814', product: 'Insect Control Pro', date: '2025-04-02', status: 'delivered', amount: 'R$8,920' },
-    { id: 'ORD-7809', product: 'Soil Enhancer Mix', date: '2025-03-28', status: 'delivered', amount: 'R$6,300' },
-  ];
+  const { user, isLoading: isAuthLoading } = useAuth();
+  const { data: orders = [], isLoading: isLoadingOrders } = useUserOrders(5);
+
+  if (isAuthLoading) {
+    return <LoadingFallback />;
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold mb-2">Acesso Restrito</h2>
+          <p className="text-gray-600">Você precisa fazer login para ver seus pedidos.</p>
+        </div>
+      </div>
+    );
+  }
   
   const productSamples: Product[] = [
     {
@@ -57,7 +70,7 @@ export default function Dashboard() {
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2">
-            <RecentOrders orders={orders} />
+            <RecentOrders orders={orders} isLoading={isLoadingOrders} />
           </div>
           
           <DashboardSidebar products={productSamples} />
