@@ -105,6 +105,7 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
   const [documentUrl, setDocumentUrl] = useState<string | null>(null);
   const [orderData, setOrderData] = useState<any>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [processingStep, setProcessingStep] = useState<string>('');
   const [boletoStatus, setBoletoStatus] = useState<'idle' | 'generating' | 'ready' | 'failed'>('idle');
   const [boletoData, setBoletoData] = useState<{url?: string, line?: string, barcode?: string} | null>(null);
 
@@ -788,7 +789,11 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
         onStepChange={handleStepChange}
         onSubmit={handleFormSubmit}
         isSubmitting={isProcessing}
-        submitText="Finalizar Pedido"
+        submitText={
+          isProcessing 
+            ? (processingStep || 'Processando...') 
+            : `Finalizar Pedido - R$ ${total.toFixed(2)}`
+        }
         className="w-full"
       />
     </div>
