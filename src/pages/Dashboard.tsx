@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
+import Navbar from '@/components/layout/Navbar';
 import { DashboardActions } from '@/components/dashboard/DashboardActions';
 import { RecentOrders } from '@/components/dashboard/RecentOrders';
 import { QuickStats } from '@/components/dashboard/QuickStats';
@@ -62,7 +62,7 @@ export default function Dashboard() {
   
   return (
     <div className="min-h-screen bg-gray-50">
-      <DashboardHeader userType={userType} />
+      <Navbar />
       
       <div className="container-custom py-8">
         <DashboardActions userType={userType} />
