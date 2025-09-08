@@ -7,5 +7,10 @@ interface DashboardSidebarProps {
 export function DashboardSidebar({
   products
 }: DashboardSidebarProps) {
-  return;
+  return (
+    <div className="space-y-6">
+      <UpcomingEvents />
+      <RecommendedProducts products={products} />
+    </div>
+  );
 }
