@@ -167,11 +167,14 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
 
   const validatePayment = () => {
     if (!selectedPayment) {
-      toast({
-        title: "Forma de pagamento necessária",
-        description: "Por favor, selecione uma forma de pagamento.",
-        variant: "destructive"
-      });
+      // Only show the toast if we're actually on the payment step (step 3)
+      if (currentStep === 3) {
+        toast({
+          title: "Forma de pagamento necessária",
+          description: "Por favor, selecione uma forma de pagamento.",
+          variant: "destructive"
+        });
+      }
       return false;
     }
     return true;
