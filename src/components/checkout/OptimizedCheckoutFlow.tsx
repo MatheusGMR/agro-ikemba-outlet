@@ -26,6 +26,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { useCheckoutAnalytics } from '@/hooks/useAnalytics';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import { useCart } from '@/contexts/CartContext';
 import { ProgressiveForm, ProgressiveFormStep } from '@/components/ui/progressive-form';
 import { BANK_DETAILS } from '@/constants/bankDetails';
@@ -183,7 +184,68 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
     return true;
   };
 
-  // Removed createOrderWithRetry function - no longer needed for simplified flow
+  // Utility function to wait with jitter
+  const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+  // Create order with retry mechanism to handle race conditions
+  const createOrderWithRetry = async (finalOrderData: any, maxRetries = 3) => {
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        console.log(`🔄 Creating order attempt ${attempt}/${maxRetries}`);
+        
+        // Generate order number using database function
+        const { data: orderNumber, error: rpcError } = await supabase
+          .rpc('generate_order_number');
+
+        if (rpcError) {
+          console.error('❌ Error generating order number:', rpcError);
+          throw rpcError;
+        }
+
+        console.log('📋 Generated order number:', orderNumber);
+
+        // Insert order with generated number
+        const orderToInsert = {
+          user_id: user?.id,
+          order_number: orderNumber,
+          items: finalOrderData.items,
+          total_amount: finalOrderData.total,
+          payment_method: finalOrderData.paymentMethod,
+          logistics_option: 'pickup',
+          status: 'pending'
+        };
+
+        const { data: orderData, error: insertError } = await supabase
+          .from('orders')
+          .insert(orderToInsert)
+          .select()
+          .single();
+
+        if (!insertError) {
+          console.log('✅ Order created successfully:', orderData);
+          return orderData;
+        }
+
+        // Handle duplicate key constraint violation (23505)
+        if (insertError.code === '23505' && attempt < maxRetries) {
+          console.warn(`⚠️ Duplicate order number detected, retrying... (attempt ${attempt})`);
+          // Wait with jitter to reduce collision probability
+          await wait(200 + Math.random() * 300);
+          continue;
+        }
+
+        // If it's not a duplicate or we've exhausted retries, throw the error
+        throw insertError;
+      } catch (error) {
+        if (attempt === maxRetries) {
+          console.error('❌ Failed to create order after all retries:', error);
+          throw error;
+        }
+        console.warn(`⚠️ Order creation failed, attempt ${attempt}:`, error);
+        await wait(200 + Math.random() * 300);
+      }
+    }
+  };
 
   // Removed fake document generation - now handled by Edge Functions
 
@@ -192,45 +254,80 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
     setIsProcessing(true);
     
     try {
-      // Generate mock order number for display
-      const mockOrderNumber = `ORD${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}-${new Date().getFullYear()}`;
-      
-      const finalOrderData = {
-        items: cartItems.map(item => {
-          const volumeData = selectedVolumes[item.id] || { volume: item.quantity, price: item.price };
-          return {
-            id: item.id,
-            name: item.name,
-            sku: item.sku,
-            volume: volumeData.volume,
-            price: volumeData.price,
-            total: volumeData.volume * volumeData.price
-          };
-        }),
-        logistics: selectedLogistics || 'pickup',
-        paymentMethod: PAYMENT_METHODS.find(p => p.id === selectedPayment)?.name || 'Não especificado',
-        total,
-        orderNumber: mockOrderNumber,
-        createdAt: new Date().toISOString()
-      };
+      if (!user?.id) {
+        throw new Error('User not authenticated');
+      }
 
-      console.log('Order data captured:', finalOrderData);
-      setOrderData(finalOrderData);
+      // Create order in database
+      const { data: orderData, error: orderError } = await supabase
+        .from('orders')
+        .insert({
+          user_id: user.id,
+          items: cartItems.map(item => {
+            const volumeData = selectedVolumes[item.id] || { volume: item.quantity, price: item.price };
+            return {
+              id: item.id,
+              name: item.name,
+              sku: item.sku,
+              quantity: volumeData.volume,
+              price: volumeData.price,
+              total: volumeData.volume * volumeData.price
+            };
+          }),
+          total_amount: total,
+          payment_method: PAYMENT_METHODS.find(p => p.id === selectedPayment)?.name || 'Não especificado',
+          logistics_option: selectedLogistics || 'pickup',
+          status: 'pending'
+        })
+        .select()
+        .single();
+
+      if (orderError) throw orderError;
+
+      // Get user data for email
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('name, email, phone, company')
+        .eq('id', user.id)
+        .single();
+
+      if (userError) throw userError;
+
+      // Send order confirmation
+      const { error: emailError } = await supabase.functions.invoke('send-order-confirmation', {
+        body: {
+          orderData: {
+            order_number: orderData.order_number,
+            total_amount: orderData.total_amount,
+            payment_method: orderData.payment_method,
+            logistics_option: orderData.logistics_option,
+            items: orderData.items
+          },
+          userData: {
+            name: userData.name,
+            email: userData.email,
+            phone: userData.phone,
+            company: userData.company
+          }
+        }
+      });
+
+      if (emailError) {
+        console.error('Error sending confirmation emails:', emailError);
+        // Continue with success even if email fails
+      }
+
+      console.log('Order created successfully:', orderData.order_number);
+      setOrderData({ ...orderData, items: orderData.items });
       setShowConfirmation(true);
       clearCart();
       trackConversion('purchase', total);
-      onOrderComplete?.(finalOrderData);
-
-      toast({
-        title: "Pedido realizado!",
-        description: "Entraremos em contato via WhatsApp em alguns minutos.",
-      });
-
+      onOrderComplete?.({ orderNumber: orderData.order_number });
     } catch (error) {
-      console.error('Error processing order:', error);
+      console.error('Error creating order:', error);
       toast({
         title: "Erro ao processar pedido",
-        description: "Tente novamente.",
+        description: "Tente novamente ou entre em contato conosco.",
         variant: "destructive"
       });
     } finally {
