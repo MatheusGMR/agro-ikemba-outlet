@@ -49,41 +49,64 @@ serve(async (req) => {
     // Generate payment-specific instructions or documents
     switch (paymentMethod) {
       case 'boleto':
-        console.log('Generating boleto...');
+        console.log('Processing boleto payment method - async mode');
         
-        // Calculate due date (7 days from now)
-        const dueDate = new Date();
-        dueDate.setDate(dueDate.getDate() + 7);
-        
-        // Call create-boleto function
-        const boletoResponse = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/create-boleto`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            orderId: orderId,
-            customerName: userInfo.name,
-            customerCpfCnpj: userInfo.cpfCnpj || '000.000.000-00',
-            customerEmail: userInfo.email,
-            customerPhone: userInfo.phone,
-            amount: orderValue,
-            description: `Pedido ${orderId} - AgroIkemba`,
-            dueDate: dueDate.toISOString().split('T')[0],
-          }),
-        });
-
-        if (!boletoResponse.ok) {
-          const errorData = await boletoResponse.text();
-          throw new Error(`Boleto generation failed: ${errorData}`);
-        }
-
-        const boletoData = await boletoResponse.json();
+        // Return immediately with pending status
         result = {
           type: 'boleto',
-          ...boletoData.boleto,
+          status: 'pending',
+          message: 'Boleto sendo gerado. Aguarde...'
         };
+
+        // Start boleto generation in background
+        EdgeRuntime.waitUntil(
+          (async () => {
+            try {
+              console.log('Starting background boleto generation for order:', orderId);
+              
+              // Call create-boleto function
+              const { data: boletoData, error: boletoError } = await supabaseAdmin.functions.invoke(
+                'create-boleto',
+                {
+                  body: {
+                    orderId: orderId,
+                    customerName: userInfo.name,
+                    customerCpfCnpj: userInfo.cpfCnpj || '000.000.000-00',
+                    customerEmail: userInfo.email,
+                    customerPhone: userInfo.phone,
+                    amount: orderValue,
+                    description: `Pedido ${orderId} - AgroIkemba`,
+                    dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                  }
+                }
+              );
+
+              if (boletoError) {
+                console.error('Background boleto generation failed:', boletoError);
+                // Update order status to failed
+                await supabaseAdmin
+                  .from('orders')
+                  .update({ 
+                    status: 'payment_generation_failed',
+                    updated_at: new Date().toISOString()
+                  })
+                  .eq('id', orderId);
+              } else {
+                console.log('Background boleto generation completed for order:', orderId);
+              }
+            } catch (error) {
+              console.error('Background boleto generation error:', error);
+              await supabaseAdmin
+                .from('orders')
+                .update({ 
+                  status: 'payment_generation_failed',
+                  updated_at: new Date().toISOString()
+                })
+                .eq('id', orderId);
+            }
+          })()
+        );
+        
         break;
 
       case 'pix':

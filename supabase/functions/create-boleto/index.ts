@@ -46,14 +46,23 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
+    // Asaas API configuration with environment support
+    const ASAAS_API_KEY = Deno.env.get('ASAAS_API_KEY');
+    const ASAAS_BASE_URL = Deno.env.get('ASAAS_API_BASE_URL') || 'https://sandbox.asaas.com/api/v3';
+
+    console.log('Using Asaas environment:', ASAAS_BASE_URL);
+
+    if (!ASAAS_API_KEY) {
+      throw new Error('ASAAS_API_KEY not configured');
+    }
+
     // Create customer in Asaas if doesn't exist
-    const asaasApiKey = Deno.env.get('ASAAS_API_KEY');
     console.log('Creating/updating customer in Asaas...');
 
-    const customerResponse = await fetch('https://www.asaas.com/api/v3/customers', {
+    const customerResponse = await fetch(`${ASAAS_BASE_URL}/customers`, {
       method: 'POST',
       headers: {
-        'access_token': asaasApiKey!,
+        'access_token': ASAAS_API_KEY!,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -73,9 +82,9 @@ serve(async (req) => {
     // If customer already exists, get their ID
     if (customerData.errors && customerData.errors[0]?.code === 'already_exists') {
       console.log('Customer already exists, searching...');
-      const searchResponse = await fetch(`https://www.asaas.com/api/v3/customers?cpfCnpj=${customerCpfCnpj}`, {
+      const searchResponse = await fetch(`${ASAAS_BASE_URL}/customers?cpfCnpj=${customerCpfCnpj}`, {
         headers: {
-          'access_token': asaasApiKey!,
+          'access_token': ASAAS_API_KEY!,
         },
       });
       const searchData = await searchResponse.json();
@@ -90,10 +99,10 @@ serve(async (req) => {
 
     // Create boleto payment in Asaas
     console.log('Creating boleto payment...');
-    const paymentResponse = await fetch('https://www.asaas.com/api/v3/payments', {
+    const paymentResponse = await fetch(`${ASAAS_BASE_URL}/payments`, {
       method: 'POST',
       headers: {
-        'access_token': asaasApiKey!,
+        'access_token': ASAAS_API_KEY!,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({

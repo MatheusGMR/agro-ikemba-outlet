@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -105,6 +105,8 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
   const [documentUrl, setDocumentUrl] = useState<string | null>(null);
   const [orderData, setOrderData] = useState<any>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [boletoStatus, setBoletoStatus] = useState<'idle' | 'generating' | 'ready' | 'failed'>('idle');
+  const [boletoData, setBoletoData] = useState<{url?: string, line?: string, barcode?: string} | null>(null);
 
   // Initialize with cart data
   useEffect(() => {
@@ -327,29 +329,83 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
       console.log('✅ Payment processed successfully:', paymentResult);
 
       setOrderData({ ...finalOrderData, orderNumber: orderResult.order_number, id: orderResult.id });
-      setGeneratedDocument(paymentResult.paymentInfo);
-      setDocumentUrl(paymentResult.paymentInfo.boletoUrl || paymentResult.paymentInfo.instructions);
-      setShowConfirmation(true);
+
+      // Handle boleto async generation
+      if (selectedPayment === 'boleto') {
+        setBoletoStatus('generating');
+        setShowConfirmation(true);
+        
+        // Start polling for boleto completion
+        const pollBoleto = async () => {
+          let attempts = 0;
+          const maxAttempts = 30; // 30 seconds timeout
+          
+          const poll = async () => {
+            try {
+              const { data: orderData } = await supabase
+                .from('orders')
+                .select('status, boleto_url, boleto_line, boleto_barcode')
+                .eq('id', orderResult.id)
+                .single();
+
+              if (orderData?.status === 'boleto_generated' && orderData.boleto_url) {
+                setBoletoStatus('ready');
+                setBoletoData({
+                  url: orderData.boleto_url,
+                  line: orderData.boleto_line,
+                  barcode: orderData.boleto_barcode
+                });
+                return;
+              } else if (orderData?.status === 'payment_generation_failed') {
+                setBoletoStatus('failed');
+                return;
+              }
+
+              attempts++;
+              if (attempts < maxAttempts) {
+                setTimeout(poll, 1000);
+              } else {
+                setBoletoStatus('failed');
+              }
+            } catch (error) {
+              console.error('Error polling boleto status:', error);
+              setBoletoStatus('failed');
+            }
+          };
+
+          await poll();
+        };
+
+        pollBoleto();
+
+        toast({
+          title: "Pedido criado!",
+          description: `Pedido ${orderResult.order_number} criado. Gerando boleto...`,
+        });
+        
+      } else {
+        // For other payment methods
+        setGeneratedDocument(paymentResult.paymentInfo);
+        setDocumentUrl(paymentResult.paymentInfo.instructions);
+        setShowConfirmation(true);
+
+        // Payment-specific success messages  
+        let successMessage = '';
+        if (selectedPayment === 'pix') {
+          successMessage = `Pedido ${orderResult.order_number} criado! PIX em desenvolvimento.`;
+        } else if (selectedPayment === 'ted') {
+          successMessage = `Pedido ${orderResult.order_number} criado! TED em desenvolvimento.`;
+        }
+
+        toast({
+          title: "Pedido realizado com sucesso!",
+          description: successMessage,
+        });
+      }
 
       // Track conversion
       trackConversion('purchase', total);
-      
       onOrderComplete?.(finalOrderData);
-
-      // Payment-specific success messages
-      let successMessage = '';
-      if (selectedPayment === 'boleto') {
-        successMessage = `Pedido ${orderResult.order_number} criado! Boleto bancário gerado com sucesso.`;
-      } else if (selectedPayment === 'pix') {
-        successMessage = `Pedido ${orderResult.order_number} criado! PIX em desenvolvimento.`;
-      } else if (selectedPayment === 'ted') {
-        successMessage = `Pedido ${orderResult.order_number} criado! TED em desenvolvimento.`;
-      }
-
-      toast({
-        title: "Pedido realizado com sucesso!",
-        description: successMessage,
-      });
 
     } catch (error) {
       console.error('❌ Error processing order:', error);
@@ -385,7 +441,10 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
         variant: "destructive"
       });
     } finally {
-      setIsProcessing(false);
+      // Only set processing to false if not generating boleto
+      if (selectedPayment !== 'boleto' || boletoStatus !== 'generating') {
+        setIsProcessing(false);
+      }
     }
   };
 
@@ -758,111 +817,91 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
           navigate('/products'); 
         } 
       }}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-green-600">
-              <CheckCircle className="w-6 h-6" />
-              Pedido Realizado com Sucesso!
+            <DialogTitle className="text-center text-xl font-semibold text-foreground">
+              {boletoStatus === 'generating' ? '⏳ Gerando Boleto...' : 
+               boletoStatus === 'ready' ? '🎉 Pedido Confirmado!' :
+               boletoStatus === 'failed' ? '❌ Erro na Geração' : '🎉 Pedido Confirmado!'}
             </DialogTitle>
+            <DialogDescription className="text-center text-muted-foreground">
+              {boletoStatus === 'generating' ? 'Aguarde enquanto geramos seu boleto bancário...' :
+               boletoStatus === 'ready' ? 'Seu boleto foi gerado com sucesso!' :
+               boletoStatus === 'failed' ? 'Ocorreu um erro ao gerar o boleto. Tente novamente.' :
+               'Seu pedido foi processado com sucesso.'}
+            </DialogDescription>
           </DialogHeader>
-          
+
           <div className="space-y-4">
             {orderData && (
-              <div className="text-center py-4">
-                <div className="text-lg font-semibold">
-                  Pedido: {orderData.orderNumber}
-                </div>
-                <div className="text-2xl font-bold text-primary mt-2">
-                  R$ {orderData.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+                <div>
+                  <span className="text-sm font-medium">Pedido: {orderData.orderNumber}</span>
+                  <div className="text-lg font-bold text-primary">
+                    R$ {total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  </div>
                 </div>
               </div>
             )}
 
-            <Card>
-              <CardContent className="p-4">
-                <h4 className="font-semibold mb-2">Próximos Passos:</h4>
-                <ul className="space-y-2 text-sm">
-                  <li className="flex items-start gap-2">
-                    <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                    <span>Pedido registrado em nosso sistema</span>
-                  </li>
-                  
-                  {selectedPayment === 'boleto' && (
-                    <>
-                      <li className="flex items-start gap-2">
-                        <FileText className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
-                        <span>Faça o download do boleto e efetue o pagamento em até 7 dias</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <Smartphone className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                        <span>Envie o comprovante de pagamento via WhatsApp</span>
-                      </li>
-                    </>
-                  )}
-                  
-                  {(selectedPayment === 'pix' || selectedPayment === 'ted') && (
-                    <>
-                      <li className="flex items-start gap-2">
-                        <Smartphone className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                        <span>Entraremos em contato com as instruções de pagamento</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <Smartphone className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                        <span>Envie o comprovante de pagamento via WhatsApp</span>
-                      </li>
-                    </>
-                  )}
-                  
-                  <li className="flex items-start gap-2">
-                    <Package className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                    <span>Agende a retirada dos produtos após confirmação do pagamento</span>
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
-
-            {deliveryQuoteRequested && (
-              <Card className="border-yellow-200 bg-yellow-50">
-                <CardContent className="p-4">
-                  <div className="flex items-start gap-2">
-                    <AlertTriangle className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" />
-                    <div>
-                      <h4 className="font-semibold text-yellow-800">Cotação de Entrega Solicitada</h4>
-                      <p className="text-sm text-yellow-700 mt-1">
-                        Você receberá orçamentos de transportadoras em até 90 minutos via WhatsApp.
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+            {boletoStatus === 'generating' && (
+              <div className="flex items-center justify-center p-4">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                <span className="ml-3 text-sm">Processando...</span>
+              </div>
             )}
 
-            <div className="flex flex-col sm:flex-row gap-3">
-              {documentUrl && (
-                <Button asChild className="flex-1">
-                  <a href={documentUrl} download>
-                    <Download className="w-4 h-4 mr-2" />
-                    Download {generatedDocument}
-                  </a>
+            {boletoStatus === 'ready' && boletoData?.url && (
+              <div className="space-y-3">
+                <Button 
+                  onClick={() => window.open(boletoData.url, '_blank')}
+                  className="w-full"
+                  variant="default"
+                >
+                  📄 Baixar Boleto
                 </Button>
-              )}
-              
-              <Button 
-                variant="outline" 
-                onClick={() => { clearCart(); navigate('/dashboard'); }}
-                className="flex-1"
-              >
-                Ver Meus Pedidos
-              </Button>
-              
-              <Button 
-                variant="outline"
-                onClick={() => { clearCart(); navigate('/products'); }}
-                className="flex-1"
-              >
-                Continuar Comprando
-              </Button>
+                {boletoData.line && (
+                  <div className="p-3 bg-muted/50 rounded text-xs">
+                    <div className="font-medium mb-1">Linha digitável:</div>
+                    <div className="font-mono break-all">{boletoData.line}</div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {boletoStatus === 'failed' && (
+              <div className="text-center p-4 bg-destructive/10 rounded-lg text-destructive">
+                Entre em contato conosco para resolver este problema.
+              </div>
+            )}
+
+            {selectedPayment !== 'boleto' && generatedDocument && (
+              <div className="space-y-3">
+                <div className="p-4 bg-muted/50 rounded-lg">
+                  <div className="text-sm text-muted-foreground">{typeof generatedDocument === 'string' ? generatedDocument : 'Instruções em desenvolvimento'}</div>
+                </div>
+              </div>
+            )}
+
+            <div className="text-sm text-center text-muted-foreground">
+              Você receberá uma confirmação por email em breve.
             </div>
+          </div>
+
+          <div className="flex flex-col gap-2 pt-4">
+            <Button 
+              onClick={() => {
+                setShowConfirmation(false);
+                setBoletoStatus('idle');
+                setBoletoData(null);
+                clearCart();
+                navigate('/products');
+              }}
+              className="w-full"
+              variant={boletoStatus === 'ready' ? 'outline' : 'default'}
+            >
+              Continuar Comprando
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
