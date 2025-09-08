@@ -220,22 +220,108 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
     return URL.createObjectURL(pdfBlob);
   };
 
+  const generatePixInstructions = (orderData: any) => {
+    const pixContent = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <h2 style="color: #1976d2; text-align: center;">Instruções de Pagamento PIX</h2>
+        <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
+          <h3>Pedido: ${orderData.orderNumber}</h3>
+          <p><strong>Total:</strong> R$ ${orderData.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+          <p><strong>Data:</strong> ${new Date(orderData.createdAt).toLocaleDateString('pt-BR')}</p>
+        </div>
+        <div style="background: #e3f2fd; padding: 20px; border-radius: 8px; margin: 20px 0;">
+          <h3>Dados para PIX:</h3>
+          <p><strong>Banco:</strong> ${BANK_DETAILS.bank}</p>
+          <p><strong>Favorecido:</strong> ${BANK_DETAILS.beneficiary}</p>
+          <p><strong>CNPJ:</strong> 12.345.678/0001-90</p>
+          <p><strong>Chave PIX:</strong> agro@ikemba.com.br</p>
+        </div>
+        <div style="background: #fff3e0; padding: 20px; border-radius: 8px; margin: 20px 0;">
+          <h3>Instruções:</h3>
+          <ul>
+            <li>Faça o PIX no valor exato de R$ ${orderData.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</li>
+            <li>Após o pagamento, envie o comprovante via WhatsApp</li>
+            <li>Produtos liberados após confirmação do pagamento</li>
+            <li>Prazo para pagamento: 24 horas</li>
+          </ul>
+        </div>
+      </div>
+    `;
+    return `data:text/html;charset=utf-8,${encodeURIComponent(pixContent)}`;
+  };
+
+  const generateTedInstructions = (orderData: any) => {
+    const tedContent = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <h2 style="color: #1976d2; text-align: center;">Instruções de Transferência TED</h2>
+        <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
+          <h3>Pedido: ${orderData.orderNumber}</h3>
+          <p><strong>Total:</strong> R$ ${orderData.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+          <p><strong>Data:</strong> ${new Date(orderData.createdAt).toLocaleDateString('pt-BR')}</p>
+        </div>
+        <div style="background: #e3f2fd; padding: 20px; border-radius: 8px; margin: 20px 0;">
+          <h3>Dados Bancários:</h3>
+          <p><strong>Banco:</strong> ${BANK_DETAILS.bank}</p>
+          <p><strong>Agência:</strong> ${BANK_DETAILS.agency}</p>
+          <p><strong>Conta:</strong> ${BANK_DETAILS.account}</p>
+          <p><strong>Favorecido:</strong> ${BANK_DETAILS.beneficiary}</p>
+          <p><strong>CNPJ:</strong> 12.345.678/0001-90</p>
+        </div>
+        <div style="background: #fff3e0; padding: 20px; border-radius: 8px; margin: 20px 0;">
+          <h3>Instruções:</h3>
+          <ul>
+            <li>Faça a transferência no valor exato de R$ ${orderData.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</li>
+            <li>Após a transferência, envie o comprovante via WhatsApp</li>
+            <li>Produtos liberados após confirmação do pagamento</li>
+            <li>Prazo para pagamento: 2 dias úteis</li>
+          </ul>
+        </div>
+      </div>
+    `;
+    return `data:text/html;charset=utf-8,${encodeURIComponent(tedContent)}`;
+  };
+
   const handlePaymentComplete = async () => {
-    if (!user?.id) {
+    // Enhanced user authentication validation
+    if (!user?.id || typeof user.id !== 'string') {
+      console.error('Authentication error: Invalid user', { user });
       toast({
         title: "Erro de autenticação",
-        description: "Você precisa estar logado para finalizar o pedido.",
+        description: "Você precisa estar logado para finalizar o pedido. Redirecionando...",
         variant: "destructive"
       });
       navigate('/login');
       return;
     }
 
+    // Enhanced payment method validation
+    if (!selectedPayment) {
+      toast({
+        title: "Forma de pagamento necessária",
+        description: "Por favor, selecione uma forma de pagamento.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsProcessing(true);
+    console.log('Starting order processing for user:', user.id, 'payment method:', selectedPayment);
     
     try {
+      // Generate order number using database function
+      const { data: orderNumberData, error: orderNumberError } = await supabase
+        .rpc('generate_order_number');
+
+      if (orderNumberError) {
+        console.error('Error generating order number:', orderNumberError);
+        throw new Error('Erro ao gerar número do pedido');
+      }
+
+      const orderNumber = orderNumberData;
+      console.log('Generated order number:', orderNumber);
+
       const finalOrderData = {
-        orderNumber: `ORD-${Date.now()}`,
+        orderNumber,
         items: cartItems.map(item => {
           const volumeData = selectedVolumes[item.id] || { volume: item.quantity, price: item.price };
           return {
@@ -255,11 +341,14 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
         createdAt: new Date().toISOString()
       };
 
-      // Save order to database
+      console.log('Attempting to save order:', finalOrderData);
+
+      // Save order to database with generated order number
       const { data: orderResult, error: orderError } = await supabase
         .from('orders')
         .insert({
           user_id: user.id,
+          order_number: orderNumber,
           items: finalOrderData.items,
           total_amount: total,
           payment_method: selectedPayment,
@@ -270,51 +359,67 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
         .single();
 
       if (orderError) {
-        console.error('Error saving order:', orderError);
-        throw new Error('Erro ao salvar pedido no banco de dados');
+        console.error('Database error saving order:', orderError);
+        if (orderError.code === '23505') {
+          throw new Error('Erro de sistema: número do pedido duplicado. Tente novamente.');
+        }
+        throw new Error(`Erro ao salvar pedido: ${orderError.message}`);
       }
 
       console.log('Order saved successfully:', orderResult);
 
-      // Generate PDF
+      // Generate payment-specific content
       let docUrl = '';
       let docType = '';
       
       if (selectedPayment === 'boleto') {
-        docType = 'Boleto Bancário';
-        docUrl = await generateBoletoPDF(finalOrderData);
-        
-        // Upload PDF to Supabase Storage
-        const pdfResponse = await fetch(docUrl);
-        const pdfBlob = await pdfResponse.blob();
-        const fileName = `boleto-${orderResult.order_number}-${Date.now()}.pdf`;
-        
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from('media-assets')
-          .upload(`order-docs/${fileName}`, pdfBlob, {
-            contentType: 'application/pdf',
-            cacheControl: '3600'
-          });
-
-        if (uploadError) {
-          console.error('Error uploading PDF:', uploadError);
-        } else {
-          // Save document record
-          const { error: docError } = await supabase
-            .from('order_documents')
-            .insert({
-              user_id: user.id,
-              order_id: orderResult.order_number,
-              document_type: 'boleto',
-              document_url: `${supabase.storage.from('media-assets').getPublicUrl(`order-docs/${fileName}`).data.publicUrl}`
+        try {
+          docType = 'Boleto Bancário';
+          docUrl = await generateBoletoPDF(finalOrderData);
+          
+          // Upload PDF to Supabase Storage
+          const pdfResponse = await fetch(docUrl);
+          const pdfBlob = await pdfResponse.blob();
+          const fileName = `boleto-${orderResult.order_number}-${Date.now()}.pdf`;
+          
+          const { data: uploadData, error: uploadError } = await supabase.storage
+            .from('media-assets')
+            .upload(`order-docs/${fileName}`, pdfBlob, {
+              contentType: 'application/pdf',
+              cacheControl: '3600'
             });
 
-          if (docError) {
-            console.error('Error saving document record:', docError);
+          if (uploadError) {
+            console.error('Error uploading PDF:', uploadError);
+          } else {
+            // Save document record
+            const { error: docError } = await supabase
+              .from('order_documents')
+              .insert({
+                user_id: user.id,
+                order_id: orderResult.order_number,
+                document_type: 'boleto',
+                document_url: `${supabase.storage.from('media-assets').getPublicUrl(`order-docs/${fileName}`).data.publicUrl}`
+              });
+
+            if (docError) {
+              console.error('Error saving document record:', docError);
+            }
           }
+        } catch (pdfError) {
+          console.error('Error generating boleto PDF:', pdfError);
+          toast({
+            title: "Aviso",
+            description: "Pedido salvo, mas houve erro ao gerar o boleto. Entre em contato conosco.",
+            variant: "destructive"
+          });
         }
-      } else {
-        docType = selectedPayment === 'pix' ? 'Instruções PIX' : 'Instruções TED';
+      } else if (selectedPayment === 'pix') {
+        docType = 'Instruções PIX';
+        docUrl = generatePixInstructions(finalOrderData);
+      } else if (selectedPayment === 'ted') {
+        docType = 'Instruções TED';
+        docUrl = generateTedInstructions(finalOrderData);
       }
       
       setGeneratedDocument(docType);
@@ -330,16 +435,46 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
       
       onOrderComplete?.(finalOrderData);
 
+      // Payment-specific success messages
+      let successMessage = '';
+      if (selectedPayment === 'boleto') {
+        successMessage = `Pedido ${orderResult.order_number} criado! Faça o download do boleto para pagamento.`;
+      } else if (selectedPayment === 'pix') {
+        successMessage = `Pedido ${orderResult.order_number} criado! Veja as instruções PIX para pagamento.`;
+      } else if (selectedPayment === 'ted') {
+        successMessage = `Pedido ${orderResult.order_number} criado! Veja as instruções de transferência para pagamento.`;
+      }
+
       toast({
         title: "Pedido realizado com sucesso!",
-        description: `Pedido ${orderResult.order_number} foi criado e salvo no banco de dados.`,
+        description: successMessage,
       });
 
     } catch (error) {
       console.error('Error processing order:', error);
+      
+      // Specific error handling
+      let errorTitle = "Erro ao processar pedido";
+      let errorDescription = "Ocorreu um erro inesperado. Tente novamente.";
+      
+      if (error instanceof Error) {
+        if (error.message.includes('autenticação')) {
+          errorTitle = "Erro de autenticação";
+          errorDescription = "Sessão expirada. Faça login novamente.";
+        } else if (error.message.includes('banco de dados')) {
+          errorTitle = "Erro no banco de dados";
+          errorDescription = "Problema ao salvar o pedido. Tente novamente em alguns segundos.";
+        } else if (error.message.includes('duplicado')) {
+          errorTitle = "Erro de sistema";
+          errorDescription = "Tente novamente - erro temporário do sistema.";
+        } else {
+          errorDescription = error.message;
+        }
+      }
+      
       toast({
-        title: "Erro ao processar pedido",
-        description: error instanceof Error ? error.message : "Ocorreu um erro inesperado. Tente novamente.",
+        title: errorTitle,
+        description: errorDescription,
         variant: "destructive"
       });
     } finally {
