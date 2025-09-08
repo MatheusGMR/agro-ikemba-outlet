@@ -2,6 +2,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TrendingDown, Volume2 } from 'lucide-react';
 import type { PriceTierBenefit } from '@/types/inventory';
+import { formatVolume } from '@/lib/utils';
 
 interface PriceTierCardProps {
   benefit: PriceTierBenefit;
@@ -71,7 +72,7 @@ export function PriceTierCard({ benefit, isRecommended }: PriceTierCardProps) {
           <div className="flex items-center gap-2 text-muted-foreground">
             <Volume2 className="w-4 h-4" />
             <span className="text-sm">
-              Volume mínimo: {benefit.volume_required.toLocaleString()}L
+              Volume mínimo: {formatVolume(benefit.volume_required)}L
             </span>
           </div>
         )}

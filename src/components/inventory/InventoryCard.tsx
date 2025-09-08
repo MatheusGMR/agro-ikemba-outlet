@@ -39,7 +39,7 @@ export function InventoryCard({ product, className }: InventoryCardProps) {
             <span className="text-sm font-medium">Faixa de preços:</span>
             <div className="text-right">
               <div className="text-lg font-bold text-primary">
-                R$ {bestPrice.toFixed(2)} - {worstPrice.toFixed(2)}
+                R$ {bestPrice.toFixed(2)} - R$ {worstPrice.toFixed(2)}
               </div>
               <div className="text-xs text-muted-foreground">por litro</div>
             </div>
