@@ -21,7 +21,7 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const VERIFY_TOKEN = Deno.env.get('WHATSAPP_VERIFY_TOKEN') || 'meu_token_de_verificacao_123';
+    const VERIFY_TOKEN = Deno.env.get('WHATSAPP_VERIFY_TOKEN');
     
     // Webhook verification (GET request)
     if (req.method === 'GET') {
