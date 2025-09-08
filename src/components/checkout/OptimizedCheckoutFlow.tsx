@@ -188,64 +188,10 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
   // Utility function to wait with jitter
   const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-  // Create order with retry mechanism to handle race conditions
-  const createOrderWithRetry = async (finalOrderData: any, maxRetries = 3) => {
-    for (let attempt = 1; attempt <= maxRetries; attempt++) {
-      try {
-        console.log(`🔄 Creating order attempt ${attempt}/${maxRetries}`);
-        
-        // Generate order number using database function
-        const { data: orderNumber, error: rpcError } = await supabase
-          .rpc('generate_order_number');
-
-        if (rpcError) {
-          console.error('❌ Error generating order number:', rpcError);
-          throw rpcError;
-        }
-
-        console.log('📋 Generated order number:', orderNumber);
-
-        // Insert order with generated number
-        const orderToInsert = {
-          user_id: user?.id,
-          order_number: orderNumber,
-          items: finalOrderData.items,
-          total_amount: finalOrderData.total,
-          payment_method: finalOrderData.paymentMethod,
-          logistics_option: 'pickup',
-          status: 'pending'
-        };
-
-        const { data: orderData, error: insertError } = await supabase
-          .from('orders')
-          .insert(orderToInsert)
-          .select()
-          .single();
-
-        if (!insertError) {
-          console.log('✅ Order created successfully:', orderData);
-          return orderData;
-        }
-
-        // Handle duplicate key constraint violation (23505)
-        if (insertError.code === '23505' && attempt < maxRetries) {
-          console.warn(`⚠️ Duplicate order number detected, retrying... (attempt ${attempt})`);
-          // Wait with jitter to reduce collision probability
-          await wait(200 + Math.random() * 300);
-          continue;
-        }
-
-        // If it's not a duplicate or we've exhausted retries, throw the error
-        throw insertError;
-      } catch (error) {
-        if (attempt === maxRetries) {
-          console.error('❌ Failed to create order after all retries:', error);
-          throw error;
-        }
-        console.warn(`⚠️ Order creation failed, attempt ${attempt}:`, error);
-        await wait(200 + Math.random() * 300);
-      }
-    }
+  // Utility function for processing steps
+  const updateProcessingStep = (step: string) => {
+    setProcessingStep(step);
+    console.log(`📋 Processing step: ${step}`);
   };
 
   // Removed fake document generation - now handled by Edge Functions
@@ -258,6 +204,8 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
       if (!user?.id) {
         throw new Error('User not authenticated');
       }
+
+      updateProcessingStep('Salvando pedido...');
 
       // Create order in database
       const { data: orderData, error: orderError } = await supabase
@@ -285,26 +233,18 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
 
       if (orderError) throw orderError;
 
-      // Get user data for email (tolerant to missing profile)
-      const { data: userData, error: userError } = await supabase
-        .from('users')
-        .select('name, email, phone, company')
-        .eq('id', user.id)
-        .maybeSingle();
+      updateProcessingStep('Processando confirmação...');
 
-      if (userError) {
-        console.warn('User profile lookup warning (proceeding with auth data):', userError);
-      }
-
+      // Use auth data directly to avoid extra DB query
       const safeUser = {
-        name: userData?.name || user.email?.split('@')[0] || 'Cliente',
-        email: userData?.email || user.email || '',
-        phone: userData?.phone || '',
-        company: userData?.company || ''
+        name: user.email?.split('@')[0] || 'Cliente',
+        email: user.email || '',
+        phone: '',
+        company: ''
       };
 
-      // Send order confirmation
-      const { error: emailError } = await supabase.functions.invoke('send-order-confirmation', {
+      // Send order confirmation (non-blocking - handled by Edge Function background tasks)
+      supabase.functions.invoke('send-order-confirmation', {
         body: {
           orderData: {
             order_number: orderData.order_number,
@@ -315,17 +255,13 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
           },
           userData: safeUser
         }
+      }).catch(error => {
+        console.error('Error sending confirmation emails (non-blocking):', error);
       });
-
-      if (emailError) {
-        console.error('Error sending confirmation emails:', emailError);
-        // Continue with success even if email fails
-      }
 
       console.log('Order created successfully:', orderData.order_number);
       setOrderData({ ...orderData, items: orderData.items });
       setShowConfirmation(true);
-      // Don't clear cart here - let the confirmation dialog handle it
       trackConversion('purchase', total);
       onOrderComplete?.({ orderNumber: orderData.order_number });
     } catch (error) {
@@ -337,6 +273,7 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
       });
     } finally {
       setIsProcessing(false);
+      setProcessingStep('');
     }
   };
 
@@ -792,7 +729,7 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
         submitText={
           isProcessing 
             ? (processingStep || 'Processando...') 
-            : `Finalizar Pedido - R$ ${total.toFixed(2)}`
+            : 'Finalizar Pedido'
         }
         className="w-full"
       />
