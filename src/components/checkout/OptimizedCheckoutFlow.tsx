@@ -405,7 +405,12 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
       if (selectedPayment === 'boleto') {
         try {
           docType = 'Boleto Bancário';
-          docUrl = await generateBoletoPDF(finalOrderData);
+          const enrichedOrderData = { 
+            ...finalOrderData, 
+            orderNumber: orderResult.order_number, 
+            createdAt: orderResult.created_at 
+          };
+          docUrl = await generateBoletoPDF(enrichedOrderData);
           
           // Upload PDF to Supabase Storage
           const pdfResponse = await fetch(docUrl);
@@ -456,9 +461,6 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
       setDocumentUrl(docUrl);
       setOrderData({ ...finalOrderData, orderNumber: orderResult.order_number });
       setShowConfirmation(true);
-
-      // Clear cart
-      clearCart();
 
       // Track conversion
       trackConversion('purchase', total);
@@ -881,7 +883,12 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
   // Show confirmation dialog
   if (showConfirmation) {
     return (
-      <Dialog open={showConfirmation} onOpenChange={() => setShowConfirmation(false)}>
+      <Dialog open={showConfirmation} onOpenChange={(open) => { 
+        if (!open) { 
+          clearCart(); 
+          navigate('/products'); 
+        } 
+      }}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-green-600">
@@ -973,7 +980,7 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
               
               <Button 
                 variant="outline" 
-                onClick={() => navigate('/dashboard')}
+                onClick={() => { clearCart(); navigate('/dashboard'); }}
                 className="flex-1"
               >
                 Ver Meus Pedidos
@@ -981,7 +988,7 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
               
               <Button 
                 variant="outline"
-                onClick={() => navigate('/products')}
+                onClick={() => { clearCart(); navigate('/products'); }}
                 className="flex-1"
               >
                 Continuar Comprando
