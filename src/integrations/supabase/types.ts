@@ -709,7 +709,7 @@ export type Database = {
           status: string
           total_amount: number
           updated_at: string
-          user_id: string | null
+          user_id: string
         }
         Insert: {
           created_at?: string
@@ -721,7 +721,7 @@ export type Database = {
           status?: string
           total_amount: number
           updated_at?: string
-          user_id?: string | null
+          user_id: string
         }
         Update: {
           created_at?: string
@@ -733,7 +733,7 @@ export type Database = {
           status?: string
           total_amount?: number
           updated_at?: string
-          user_id?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -1523,7 +1523,26 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      orders_with_user_info: {
+        Row: {
+          created_at: string | null
+          id: string | null
+          items: Json | null
+          logistics_option: string | null
+          order_number: string | null
+          payment_method: string | null
+          status: string | null
+          total_amount: number | null
+          updated_at: string | null
+          user_company: string | null
+          user_email: string | null
+          user_id: string | null
+          user_name: string | null
+          user_phone: string | null
+          user_type: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       generate_order_number: {
@@ -1533,6 +1552,27 @@ export type Database = {
       generate_proposal_number: {
         Args: Record<PropertyKey, never>
         Returns: string
+      }
+      get_order_details: {
+        Args: { order_id: string }
+        Returns: {
+          created_at: string
+          id: string
+          items: Json
+          logistics_option: string
+          order_number: string
+          payment_method: string
+          products_summary: string
+          status: string
+          total_amount: number
+          updated_at: string
+          user_company: string
+          user_email: string
+          user_id: string
+          user_name: string
+          user_phone: string
+          user_type: string
+        }[]
       }
     }
     Enums: {
