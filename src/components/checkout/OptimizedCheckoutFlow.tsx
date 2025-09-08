@@ -89,26 +89,8 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
   const navigate = useNavigate();
   const { toast } = useToast();
   const { trackCheckoutStep, trackConversion } = useCheckoutAnalytics();
-  const { user, isLoading } = useAuth();
+  const { user } = useAuth();
   const { clearCart } = useCart();
-
-  // Early return if user is not authenticated
-  if (!user && !isLoading) {
-    navigate('/login');
-    return null;
-  }
-
-  // Show loading while auth is being checked
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Carregando checkout...</p>
-        </div>
-      </div>
-    );
-  }
   
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedVolumes, setSelectedVolumes] = useState<Record<string, { volume: number; price: number; savings?: number }>>({});

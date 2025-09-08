@@ -18,29 +18,22 @@ const Checkout = () => {
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
   }, []);
 
-  // Initialize and validate cart with proper timing
+  // Initialize and validate cart
   useEffect(() => {
-    const initializeCheckout = () => {
-      // Add a small delay to ensure CartContext has loaded from localStorage
-      setTimeout(() => {
-        console.log('Checkout: Initializing with items:', items);
-        
-        if (items.length === 0) {
-          console.log('Checkout: Empty cart, redirecting to products');
-          toast({
-            title: "Carrinho vazio",  
-            description: "Adicione produtos ao carrinho antes de finalizar a compra.",
-            variant: "destructive"
-          });
-          navigate('/products');
-        } else {
-          console.log('Checkout: Cart has items, proceeding with checkout');
-          setIsInitializing(false);
-        }
-      }, 100);
-    };
-
-    initializeCheckout();
+    console.log('Checkout: Initializing with items:', items);
+    
+    if (items.length === 0) {
+      console.log('Checkout: Empty cart, redirecting to products');
+      toast({
+        title: "Carrinho vazio",  
+        description: "Adicione produtos ao carrinho antes de finalizar a compra.",
+        variant: "destructive"
+      });
+      navigate('/products');
+    } else {
+      console.log('Checkout: Cart has items, proceeding with checkout');
+      setIsInitializing(false);
+    }
   }, [items, navigate, toast]);
 
   // Show loading while initializing

@@ -26,12 +26,23 @@ export function useUserApproval(): UserApprovalStatus {
         return;
       }
 
+      // Add timeout to prevent infinite loading
+      const timeoutId = setTimeout(() => {
+        console.warn('User approval check timed out');
+        setIsApproved(false);
+        setIsPending(true);
+        setUserRecord(null);
+        setIsLoading(false);
+      }, 10000); // 10 second timeout
+
       try {
         const { data: userData, error } = await supabase
           .from('users')
           .select('*')
           .eq('email', user.email)
           .maybeSingle();
+
+        clearTimeout(timeoutId);
 
         if (error) {
           console.error('Error checking user approval:', error);
@@ -49,6 +60,7 @@ export function useUserApproval(): UserApprovalStatus {
           setIsPending(true);
         }
       } catch (error) {
+        clearTimeout(timeoutId);
         console.error('Error in approval check:', error);
         setIsApproved(false);
         setIsPending(false);

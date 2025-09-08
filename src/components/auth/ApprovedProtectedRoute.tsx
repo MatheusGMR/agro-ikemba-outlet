@@ -19,7 +19,16 @@ export default function ApprovedProtectedRoute({ children }: ApprovedProtectedRo
     }
   }, [user, location]);
 
-  if (authLoading || approvalLoading) return null;
+  if (authLoading || approvalLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Carregando...</p>
+        </div>
+      </div>
+    );
+  }
 
   // For checkout page specifically, require authentication
   if (location.pathname === '/checkout' && !user) {
