@@ -18,7 +18,10 @@ export function useUserApproval(): UserApprovalStatus {
 
   useEffect(() => {
     const checkApprovalStatus = async () => {
+      console.log('🔍 UserApproval: Starting check for user:', user?.email, 'User ID:', user?.id);
+      
       if (!user?.email || !user?.id) {
+        console.log('🚫 UserApproval: No user email or ID, setting as not approved');
         setIsApproved(false);
         setIsPending(false);
         setUserRecord(null);
@@ -28,7 +31,7 @@ export function useUserApproval(): UserApprovalStatus {
 
       // Add timeout to prevent infinite loading
       const timeoutId = setTimeout(() => {
-        console.warn('User approval check timed out');
+        console.warn('⏰ UserApproval: Check timed out for user:', user.email);
         setIsApproved(false);
         setIsPending(true);
         setUserRecord(null);
@@ -36,6 +39,7 @@ export function useUserApproval(): UserApprovalStatus {
       }, 10000); // 10 second timeout
 
       try {
+        console.log('📡 UserApproval: Querying database for user:', user.email);
         const { data: userData, error } = await supabase
           .from('users')
           .select('*')
@@ -43,30 +47,38 @@ export function useUserApproval(): UserApprovalStatus {
           .maybeSingle();
 
         clearTimeout(timeoutId);
+        
+        console.log('📊 UserApproval: Database query result:', { userData, error });
 
         if (error) {
-          console.error('Error checking user approval:', error);
+          console.error('❌ UserApproval: Database error:', error);
           setIsApproved(false);
           setIsPending(false);
           setUserRecord(null);
         } else if (userData) {
+          console.log('✅ UserApproval: User found with status:', userData.status);
           setUserRecord(userData);
-          setIsApproved(userData.status === 'approved');
-          setIsPending(userData.status === 'pending');
+          const approved = userData.status === 'approved';
+          const pending = userData.status === 'pending';
+          setIsApproved(approved);
+          setIsPending(pending);
+          console.log('🎯 UserApproval: Final state - Approved:', approved, 'Pending:', pending);
         } else {
           // User exists in auth but not in users table - consider pending
+          console.log('⚠️ UserApproval: User exists in auth but not in users table');
           setUserRecord(null);
           setIsApproved(false);
           setIsPending(true);
         }
       } catch (error) {
         clearTimeout(timeoutId);
-        console.error('Error in approval check:', error);
+        console.error('💥 UserApproval: Exception in approval check:', error);
         setIsApproved(false);
         setIsPending(false);
         setUserRecord(null);
       } finally {
         setIsLoading(false);
+        console.log('🏁 UserApproval: Check completed, loading set to false');
       }
     };
 
