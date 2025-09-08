@@ -273,7 +273,6 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
     }
 
     setIsProcessing(true);
-    console.log('Starting order processing for user:', user.id, 'payment method:', selectedPayment);
     
     try {
       const finalOrderData = {
@@ -296,155 +295,34 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
         createdAt: new Date().toISOString()
       };
 
-      console.log('📦 Order data prepared:', finalOrderData);
-
-      // Create order with retry mechanism to handle duplicate order numbers
-      const orderResult = await createOrderWithRetry(finalOrderData);
+      // Generate order number for display
+      const orderNumber = `ORD${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}-${new Date().getFullYear()}`;
       
-      console.log('✅ Order saved successfully:', orderResult);
-
-      // Process payment using Edge Function (async)
-      console.log('Processing payment for order:', orderResult.id);
+      setOrderData({ ...finalOrderData, orderNumber });
+      setShowConfirmation(true);
       
-      const { data: paymentResult, error: paymentError } = await supabase.functions.invoke('process-order', {
-        body: {
-          orderId: orderResult.id,
-          paymentMethod: selectedPayment,
-          userInfo: {
-            name: user.user_metadata?.name || user.email || 'Cliente',
-            email: user.email || 'cliente@agroikemba.com',
-            phone: user.user_metadata?.phone || '(11) 99999-9999',
-            cpfCnpj: user.user_metadata?.cpf_cnpj,
-          },
-          orderValue: total,
-          items: finalOrderData.items
-        }
-      });
-
-      if (paymentError) {
-        console.error('Payment processing error:', paymentError);
-        throw new Error(`Erro no processamento: ${paymentError.message}`);
-      }
-
-      console.log('✅ Payment processed successfully:', paymentResult);
-
-      setOrderData({ ...finalOrderData, orderNumber: orderResult.order_number, id: orderResult.id });
-
-      // Handle boleto async generation
-      if (selectedPayment === 'boleto') {
-        setBoletoStatus('generating');
-        setShowConfirmation(true);
-        
-        // Start polling for boleto completion
-        const pollBoleto = async () => {
-          let attempts = 0;
-          const maxAttempts = 30; // 30 seconds timeout
-          
-          const poll = async () => {
-            try {
-              const { data: orderData } = await supabase
-                .from('orders')
-                .select('status, boleto_url, boleto_line, boleto_barcode')
-                .eq('id', orderResult.id)
-                .single();
-
-              if (orderData?.status === 'boleto_generated' && orderData.boleto_url) {
-                setBoletoStatus('ready');
-                setBoletoData({
-                  url: orderData.boleto_url,
-                  line: orderData.boleto_line,
-                  barcode: orderData.boleto_barcode
-                });
-                return;
-              } else if (orderData?.status === 'payment_generation_failed') {
-                setBoletoStatus('failed');
-                return;
-              }
-
-              attempts++;
-              if (attempts < maxAttempts) {
-                setTimeout(poll, 1000);
-              } else {
-                setBoletoStatus('failed');
-              }
-            } catch (error) {
-              console.error('Error polling boleto status:', error);
-              setBoletoStatus('failed');
-            }
-          };
-
-          await poll();
-        };
-
-        pollBoleto();
-
-        toast({
-          title: "Pedido criado!",
-          description: `Pedido ${orderResult.order_number} criado. Gerando boleto...`,
-        });
-        
-      } else {
-        // For other payment methods
-        setGeneratedDocument(paymentResult.paymentInfo);
-        setDocumentUrl(paymentResult.paymentInfo.instructions);
-        setShowConfirmation(true);
-
-        // Payment-specific success messages  
-        let successMessage = '';
-        if (selectedPayment === 'pix') {
-          successMessage = `Pedido ${orderResult.order_number} criado! PIX em desenvolvimento.`;
-        } else if (selectedPayment === 'ted') {
-          successMessage = `Pedido ${orderResult.order_number} criado! TED em desenvolvimento.`;
-        }
-
-        toast({
-          title: "Pedido realizado com sucesso!",
-          description: successMessage,
-        });
-      }
-
+      // Clear cart
+      clearCart();
+      
       // Track conversion
       trackConversion('purchase', total);
       onOrderComplete?.(finalOrderData);
 
+      toast({
+        title: "Pedido realizado!",
+        description: "Entraremos em contato via WhatsApp em alguns minutos.",
+      });
+
     } catch (error) {
       console.error('❌ Error processing order:', error);
       
-      // Enhanced error handling with specific messages
-      let errorTitle = "Erro ao processar pedido";
-      let errorDescription = "Tente novamente - erro temporário do sistema";
-      
-      if (error instanceof Error) {
-        if (error.message.includes('autenticação') || error.message.includes('auth')) {
-          errorTitle = "Erro de autenticação";
-          errorDescription = "Sessão expirada. Faça login novamente.";
-          navigate('/login');
-          return;
-        } else if ((error as any).code === '23505') {
-          errorTitle = "Erro temporário";
-          errorDescription = "Sistema ocupado, tente novamente em alguns segundos.";
-        } else if (error.message.includes('generate_order_number')) {
-          errorTitle = "Erro do sistema";
-          errorDescription = "Erro ao gerar número do pedido. Tente novamente.";
-        } else if (error.message.includes('network') || error.message.includes('timeout')) {
-          errorTitle = "Erro de conexão";
-          errorDescription = "Verifique sua conexão e tente novamente.";
-        } else if (error.message.includes('banco de dados')) {
-          errorTitle = "Erro no banco de dados";
-          errorDescription = "Problema ao salvar o pedido. Tente novamente em alguns segundos.";
-        }
-      }
-      
       toast({
-        title: errorTitle,
-        description: errorDescription,
+        title: "Erro ao processar pedido",
+        description: "Tente novamente.",
         variant: "destructive"
       });
     } finally {
-      // Only set processing to false if not generating boleto
-      if (selectedPayment !== 'boleto' || boletoStatus !== 'generating') {
-        setIsProcessing(false);
-      }
+      setIsProcessing(false);
     }
   };
 
@@ -819,16 +697,12 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
       }}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-center text-xl font-semibold text-foreground">
-              {boletoStatus === 'generating' ? '⏳ Gerando Boleto...' : 
-               boletoStatus === 'ready' ? '🎉 Pedido Confirmado!' :
-               boletoStatus === 'failed' ? '❌ Erro na Geração' : '🎉 Pedido Confirmado!'}
+            <DialogTitle className="text-center text-xl font-semibold text-green-600 flex items-center justify-center gap-2">
+              <CheckCircle className="w-6 h-6" />
+              Pedido Realizado!
             </DialogTitle>
             <DialogDescription className="text-center text-muted-foreground">
-              {boletoStatus === 'generating' ? 'Aguarde enquanto geramos seu boleto bancário...' :
-               boletoStatus === 'ready' ? 'Seu boleto foi gerado com sucesso!' :
-               boletoStatus === 'failed' ? 'Ocorreu um erro ao gerar o boleto. Tente novamente.' :
-               'Seu pedido foi processado com sucesso.'}
+              Seu pedido foi registrado com sucesso
             </DialogDescription>
           </DialogHeader>
 
@@ -840,65 +714,50 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
                   <div className="text-lg font-bold text-primary">
                     R$ {total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                   </div>
-                </div>
-              </div>
-            )}
-
-            {boletoStatus === 'generating' && (
-              <div className="flex items-center justify-center p-4">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                <span className="ml-3 text-sm">Processando...</span>
-              </div>
-            )}
-
-            {boletoStatus === 'ready' && boletoData?.url && (
-              <div className="space-y-3">
-                <Button 
-                  onClick={() => window.open(boletoData.url, '_blank')}
-                  className="w-full"
-                  variant="default"
-                >
-                  📄 Baixar Boleto
-                </Button>
-                {boletoData.line && (
-                  <div className="p-3 bg-muted/50 rounded text-xs">
-                    <div className="font-medium mb-1">Linha digitável:</div>
-                    <div className="font-mono break-all">{boletoData.line}</div>
+                  <div className="text-sm text-muted-foreground">
+                    Pagamento: {PAYMENT_METHODS.find(m => m.id === selectedPayment)?.name}
                   </div>
-                )}
-              </div>
-            )}
-
-            {boletoStatus === 'failed' && (
-              <div className="text-center p-4 bg-destructive/10 rounded-lg text-destructive">
-                Entre em contato conosco para resolver este problema.
-              </div>
-            )}
-
-            {selectedPayment !== 'boleto' && generatedDocument && (
-              <div className="space-y-3">
-                <div className="p-4 bg-muted/50 rounded-lg">
-                  <div className="text-sm text-muted-foreground">{typeof generatedDocument === 'string' ? generatedDocument : 'Instruções em desenvolvimento'}</div>
                 </div>
               </div>
             )}
 
-            <div className="text-sm text-center text-muted-foreground">
-              Você receberá uma confirmação por email em breve.
+            <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg text-center">
+              <div className="text-green-800 dark:text-green-200 font-medium mb-2">
+                📱 Próximos Passos
+              </div>
+              <div className="text-sm text-green-700 dark:text-green-300">
+                Entraremos em contato via <strong>WhatsApp em alguns minutos</strong> para 
+                tratar os detalhes do pagamento e entrega.
+              </div>
+            </div>
+
+            <div className="text-xs text-center text-muted-foreground">
+              💚 Obrigado por escolher a AgroIkemba!
             </div>
           </div>
 
           <div className="flex flex-col gap-2 pt-4">
             <Button 
               onClick={() => {
+                const whatsappUrl = `https://wa.me/5543984064141?text=${encodeURIComponent(
+                  `Olá! Acabei de fazer um pedido (${orderData?.orderNumber}) e gostaria de saber mais detalhes.`
+                )}`;
+                window.open(whatsappUrl, '_blank');
+              }}
+              className="w-full"
+              variant="default"
+            >
+              💬 Falar no WhatsApp
+            </Button>
+            
+            <Button 
+              onClick={() => {
                 setShowConfirmation(false);
-                setBoletoStatus('idle');
-                setBoletoData(null);
                 clearCart();
                 navigate('/products');
               }}
               className="w-full"
-              variant={boletoStatus === 'ready' ? 'outline' : 'default'}
+              variant="outline"
             >
               Continuar Comprando
             </Button>

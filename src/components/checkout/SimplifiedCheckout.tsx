@@ -12,8 +12,7 @@ import {
   ArrowLeftRight, 
   Package, 
   Calculator,
-  CheckCircle,
-  Download
+  CheckCircle
 } from 'lucide-react';
 
 interface CheckoutItem {
@@ -94,15 +93,10 @@ export function SimplifiedCheckout({ items, onOrderComplete }: SimplifiedCheckou
       logistics: selectedLogistics,
       paymentMethod: selectedPayment,
       total,
-      orderNumber: `ORD-${Date.now()}`,
+      orderNumber: `ORD${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}-${new Date().getFullYear()}`,
       createdAt: new Date().toISOString()
     };
-
-    // Generate appropriate document
-    const docType = selectedPayment === 'boleto' ? 'Boleto Bancário' : 
-                   selectedPayment === 'pix' ? 'Instruções PIX' : 'Instruções TED';
     
-    setGeneratedDocument(docType);
     setCurrentStep('confirmation');
     setShowConfirmation(true);
     
@@ -202,19 +196,14 @@ export function SimplifiedCheckout({ items, onOrderComplete }: SimplifiedCheckou
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-green-600">
             <CheckCircle className="w-6 h-6" />
-            Pedido Realizado com Sucesso!
+            Pedido Realizado!
           </DialogTitle>
         </DialogHeader>
         
         <div className="space-y-4">
           <div className="text-center">
             <div className="text-lg font-semibold mb-2">
-              Documento Gerado: {generatedDocument}
-            </div>
-            <div className="text-sm text-muted-foreground">
-              {selectedPayment === 'boleto' 
-                ? 'Seu boleto foi gerado e está sendo aberto em uma nova aba.'
-                : 'Suas instruções de pagamento estão sendo abertas em uma nova aba.'}
+              Seu pedido foi registrado com sucesso
             </div>
           </div>
           
@@ -231,16 +220,26 @@ export function SimplifiedCheckout({ items, onOrderComplete }: SimplifiedCheckou
             </div>
           </div>
           
-          <div className="bg-yellow-50 p-3 rounded-lg text-sm text-yellow-800 text-center">
-            <strong>Importante:</strong> Os produtos serão liberados somente após a confirmação do pagamento.
+          <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg text-center">
+            <div className="text-green-800 dark:text-green-200 font-medium mb-2">
+              📱 Próximos Passos
+            </div>
+            <div className="text-sm text-green-700 dark:text-green-300">
+              Entraremos em contato via <strong>WhatsApp em alguns minutos</strong> para 
+              tratar os detalhes do pagamento e entrega.
+            </div>
           </div>
           
           <Button 
-            onClick={() => window.open('#', '_blank')} 
+            onClick={() => {
+              const whatsappUrl = `https://wa.me/5543984064141?text=${encodeURIComponent(
+                'Olá! Acabei de fazer um pedido e gostaria de saber mais detalhes.'
+              )}`;
+              window.open(whatsappUrl, '_blank');
+            }}
             className="w-full"
           >
-            <Download className="w-4 h-4 mr-2" />
-            Salvar Documento PDF
+            💬 Falar no WhatsApp
           </Button>
         </div>
       </DialogContent>
