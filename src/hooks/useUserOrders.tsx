@@ -12,6 +12,12 @@ export interface UserOrder {
   items: any;
   created_at: string;
   updated_at: string;
+  user_id: string;
+  user_name: string;
+  user_phone: string;
+  user_email: string;
+  user_company?: string;
+  user_type: string;
 }
 
 export function useUserOrders(limit?: number) {
@@ -25,9 +31,8 @@ export function useUserOrders(limit?: number) {
       }
 
       let query = supabase
-        .from('orders')
+        .from('orders_with_user_info')
         .select('*')
-        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
       if (limit) {
