@@ -14,6 +14,8 @@ import {
   Calculator,
   CheckCircle
 } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 
 interface CheckoutItem {
   id: string;
@@ -68,11 +70,13 @@ const LOGISTICS_OPTIONS = [
 ];
 
 export function SimplifiedCheckout({ items, onOrderComplete }: SimplifiedCheckoutProps) {
+  const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState<'logistics' | 'payment' | 'confirmation'>('logistics');
   const [selectedLogistics, setSelectedLogistics] = useState<string>('pickup');
   const [selectedPayment, setSelectedPayment] = useState<string>('');
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [generatedDocument, setGeneratedDocument] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const subtotal = items.reduce((sum, item) => sum + item.total, 0);
   const logisticsCost = selectedLogistics === 'pickup' ? 0 : 0; // Quote-based has no immediate cost
@@ -87,20 +91,78 @@ export function SimplifiedCheckout({ items, onOrderComplete }: SimplifiedCheckou
     setCurrentStep('payment');
   };
 
-  const handlePaymentComplete = () => {
-    const orderData = {
-      items,
-      logistics: selectedLogistics,
-      paymentMethod: selectedPayment,
-      total,
-      orderNumber: `ORD${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}-${new Date().getFullYear()}`,
-      createdAt: new Date().toISOString()
-    };
+  const handlePaymentComplete = async () => {
+    setIsProcessing(true);
     
-    setCurrentStep('confirmation');
-    setShowConfirmation(true);
-    
-    onOrderComplete(orderData);
+    try {
+      if (!user?.id) {
+        throw new Error('User not authenticated');
+      }
+
+      // Create order in database
+      const { data: orderData, error: orderError } = await supabase
+        .from('orders')
+        .insert({
+          user_id: user.id,
+          items: items.map(item => ({
+            id: item.id,
+            name: item.name,
+            volume: item.volume,
+            price: item.price,
+            total: item.total
+          })),
+          total_amount: total,
+          payment_method: PAYMENT_METHODS.find(p => p.id === selectedPayment)?.name || 'Não especificado',
+          logistics_option: LOGISTICS_OPTIONS.find(l => l.id === selectedLogistics)?.name || 'Retirada',
+          status: 'pending'
+        })
+        .select()
+        .single();
+
+      if (orderError) throw orderError;
+
+      // Get user data for email
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('name, email, phone, company')
+        .eq('id', user.id)
+        .single();
+
+      if (userError) throw userError;
+
+      // Send order confirmation
+      const { error: emailError } = await supabase.functions.invoke('send-order-confirmation', {
+        body: {
+          orderData: {
+            order_number: orderData.order_number,
+            total_amount: orderData.total_amount,
+            payment_method: orderData.payment_method,
+            logistics_option: orderData.logistics_option,
+            items: orderData.items
+          },
+          userData: {
+            name: userData.name,
+            email: userData.email,
+            phone: userData.phone,
+            company: userData.company
+          }
+        }
+      });
+
+      if (emailError) {
+        console.error('Error sending confirmation emails:', emailError);
+        // Continue with success even if email fails
+      }
+
+      console.log('Order created successfully:', orderData.order_number);
+      setCurrentStep('confirmation');
+      setShowConfirmation(true);
+      onOrderComplete({ orderNumber: orderData.order_number });
+    } catch (error) {
+      console.error('Error creating order:', error);
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const renderLogisticsStep = () => (
@@ -182,8 +244,8 @@ export function SimplifiedCheckout({ items, onOrderComplete }: SimplifiedCheckou
           <Button variant="outline" onClick={() => setCurrentStep('logistics')}>
             Voltar
           </Button>
-          <Button onClick={handlePaymentComplete} disabled={!selectedPayment}>
-            Finalizar Pedido
+          <Button onClick={handlePaymentComplete} disabled={!selectedPayment || isProcessing}>
+            {isProcessing ? 'Processando...' : 'Finalizar Pedido'}
           </Button>
         </div>
       </CardContent>

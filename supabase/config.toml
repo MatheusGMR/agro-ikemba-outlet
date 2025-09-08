@@ -1,6 +1,9 @@
 
 project_id = "jhkxcplfempenoczcoep"
 
+[functions.send-order-confirmation]
+verify_jwt = false
+
 [functions.create-boleto]
 verify_jwt = false
 

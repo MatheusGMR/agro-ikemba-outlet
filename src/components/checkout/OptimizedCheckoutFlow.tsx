@@ -26,8 +26,8 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { useCheckoutAnalytics } from '@/hooks/useAnalytics';
 import { useAuth } from '@/hooks/useAuth';
-import { useCart } from '@/contexts/CartContext';
 import { supabase } from '@/integrations/supabase/client';
+import { useCart } from '@/contexts/CartContext';
 import { ProgressiveForm, ProgressiveFormStep } from '@/components/ui/progressive-form';
 import { BANK_DETAILS } from '@/constants/bankDetails';
 
@@ -250,75 +250,84 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
   // Removed fake document generation - now handled by Edge Functions
 
   const handlePaymentComplete = async () => {
-    // Enhanced user authentication validation
-    if (!user?.id || typeof user.id !== 'string') {
-      console.error('Authentication error: Invalid user', { user });
-      toast({
-        title: "Erro de autenticação",
-        description: "Você precisa estar logado para finalizar o pedido. Redirecionando...",
-        variant: "destructive"
-      });
-      navigate('/login');
-      return;
-    }
-
-    // Enhanced payment method validation
-    if (!selectedPayment) {
-      toast({
-        title: "Forma de pagamento necessária",
-        description: "Por favor, selecione uma forma de pagamento.",
-        variant: "destructive"
-      });
-      return;
-    }
-
+    console.log('Processing order with payment method:', selectedPayment);
     setIsProcessing(true);
     
     try {
-      const finalOrderData = {
-        items: cartItems.map(item => {
-          const volumeData = selectedVolumes[item.id] || { volume: item.quantity, price: item.price };
-          return {
-            id: item.id,
-            name: item.name,
-            sku: item.sku,
-            volume: volumeData.volume,
-            price: volumeData.price,
-            total: volumeData.volume * volumeData.price
-          };
-        }),
-        logistics: 'pickup',
-        deliveryQuoteRequested,
-        deliveryInfo,
-        paymentMethod: selectedPayment,
-        total,
-        createdAt: new Date().toISOString()
-      };
+      if (!user?.id) {
+        throw new Error('User not authenticated');
+      }
 
-      // Generate order number for display
-      const orderNumber = `ORD${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}-${new Date().getFullYear()}`;
-      
-      setOrderData({ ...finalOrderData, orderNumber });
-      setShowConfirmation(true);
-      
-      // Clear cart
-      clearCart();
-      
-      // Track conversion
-      trackConversion('purchase', total);
-      onOrderComplete?.(finalOrderData);
+      // Create order in database
+      const { data: orderData, error: orderError } = await supabase
+        .from('orders')
+        .insert({
+          user_id: user.id,
+          items: cartItems.map(item => {
+            const volumeData = selectedVolumes[item.id] || { volume: item.quantity, price: item.price };
+            return {
+              id: item.id,
+              name: item.name,
+              sku: item.sku,
+              quantity: volumeData.volume,
+              price: volumeData.price,
+              total: volumeData.volume * volumeData.price
+            };
+          }),
+          total_amount: total,
+          payment_method: PAYMENT_METHODS.find(p => p.id === selectedPayment)?.name || 'Não especificado',
+          logistics_option: selectedLogistics || 'pickup',
+          status: 'pending'
+        })
+        .select()
+        .single();
 
-      toast({
-        title: "Pedido realizado!",
-        description: "Entraremos em contato via WhatsApp em alguns minutos.",
+      if (orderError) throw orderError;
+
+      // Get user data for email
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('name, email, phone, company')
+        .eq('id', user.id)
+        .single();
+
+      if (userError) throw userError;
+
+      // Send order confirmation
+      const { error: emailError } = await supabase.functions.invoke('send-order-confirmation', {
+        body: {
+          orderData: {
+            order_number: orderData.order_number,
+            total_amount: orderData.total_amount,
+            payment_method: orderData.payment_method,
+            logistics_option: orderData.logistics_option,
+            items: orderData.items
+          },
+          userData: {
+            name: userData.name,
+            email: userData.email,
+            phone: userData.phone,
+            company: userData.company
+          }
+        }
       });
 
+      if (emailError) {
+        console.error('Error sending confirmation emails:', emailError);
+        // Continue with success even if email fails
+      }
+
+      console.log('Order created successfully:', orderData.order_number);
+      setOrderData({ ...orderData, items: orderData.items });
+      setShowConfirmation(true);
+      clearCart();
+      trackConversion('purchase', total);
+      onOrderComplete?.({ orderNumber: orderData.order_number });
     } catch (error) {
-      console.error('❌ Error processing order:', error);
-      
+      console.error('Error creating order:', error);
       toast({
         title: "Erro ao processar pedido",
-        description: "Tente novamente.",
+        description: "Tente novamente ou entre em contato conosco.",
         variant: "destructive"
       });
     } finally {
