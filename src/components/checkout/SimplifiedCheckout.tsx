@@ -121,14 +121,23 @@ export function SimplifiedCheckout({ items, onOrderComplete }: SimplifiedCheckou
 
       if (orderError) throw orderError;
 
-      // Get user data for email
+      // Get user data for email (tolerant to missing profile)
       const { data: userData, error: userError } = await supabase
         .from('users')
         .select('name, email, phone, company')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
 
-      if (userError) throw userError;
+      if (userError) {
+        console.warn('User profile lookup warning (proceeding with auth data):', userError);
+      }
+
+      const safeUser = {
+        name: userData?.name || user.email?.split('@')[0] || 'Cliente',
+        email: userData?.email || user.email || '',
+        phone: userData?.phone || '',
+        company: userData?.company || ''
+      };
 
       // Send order confirmation
       const { error: emailError } = await supabase.functions.invoke('send-order-confirmation', {
@@ -140,12 +149,7 @@ export function SimplifiedCheckout({ items, onOrderComplete }: SimplifiedCheckou
             logistics_option: orderData.logistics_option,
             items: orderData.items
           },
-          userData: {
-            name: userData.name,
-            email: userData.email,
-            phone: userData.phone,
-            company: userData.company
-          }
+          userData: safeUser
         }
       });
 
