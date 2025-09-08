@@ -9,7 +9,6 @@ import HowItWorks from '@/components/home/HowItWorks';
 import LogisticsPartners from '@/components/home/LogisticsPartners';
 import CallToAction from '@/components/home/CallToAction';
 import PreRegistration from '@/components/home/PreRegistration';
-import WhatsAppButton from '@/components/ui/WhatsAppButton';
 import { LoadingFallback } from '@/components/ui/LoadingFallback';
 import { logger } from '@/utils/logger';
 
@@ -84,7 +83,6 @@ const Index = () => {
             <PreRegistration />
           </main>
           <Footer />
-          <WhatsAppButton phoneNumber="+55 43 98406-4141" />
         </Suspense>
       </div>
     </>

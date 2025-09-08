@@ -30,6 +30,7 @@ import { AuthProvider } from '@/hooks/useAuth';
 import ScrollToTop from '@/components/layout/ScrollToTop';
 import ApprovedProtectedRoute from '@/components/auth/ApprovedProtectedRoute';
 import PendingApproval from '@/pages/PendingApproval';
+import GlobalWhatsAppButton from '@/components/ui/GlobalWhatsAppButton';
 
 const queryClient = new QueryClient();
 
@@ -81,6 +82,7 @@ function App() {
                   <Route path="*" element={<NotFound />} />
                 </Routes>  
               </AuthProvider>
+              <GlobalWhatsAppButton />
             </BrowserRouter>
           </TooltipProvider>
         </HelmetProvider>
