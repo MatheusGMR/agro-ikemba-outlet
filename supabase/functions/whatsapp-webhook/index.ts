@@ -10,6 +10,14 @@ const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
+// Helper para mascarar tokens nos logs (não expor o valor completo)
+const mask = (t?: string) => {
+  if (!t) return 'undefined';
+  const trimmed = t.trim();
+  if (trimmed.length <= 8) return '***';
+  return `${trimmed.slice(0,4)}...${trimmed.slice(-4)}`;
+};
+
 const handler = async (req: Request): Promise<Response> => {
   console.log('=== WEBHOOK RECEBIDO ===');
   console.log('Método:', req.method);
@@ -20,24 +28,34 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Health check endpoint
+  const urlObj = new URL(req.url);
+  const pathname = urlObj.pathname || '';
+  if (req.method === 'GET' && pathname.endsWith('/health')) {
+    return new Response('ok', { status: 200, headers: { 'Content-Type': 'text/plain', ...corsHeaders } });
+  }
+
   try {
-    const VERIFY_TOKEN = Deno.env.get('WHATSAPP_VERIFY_TOKEN');
+    const RAW_VERIFY_TOKEN = Deno.env.get('WHATSAPP_VERIFY_TOKEN') ?? '';
+    const VERIFY_TOKEN = RAW_VERIFY_TOKEN.trim();
+    console.log('VERIFY_TOKEN (masked):', mask(VERIFY_TOKEN));
     
     // Webhook verification (GET request)
     if (req.method === 'GET') {
       const url = new URL(req.url);
       const mode = url.searchParams.get('hub.mode');
-      const token = url.searchParams.get('hub.verify_token');
-      const challenge = url.searchParams.get('hub.challenge');
+      const tokenRaw = url.searchParams.get('hub.verify_token') || '';
+      const token = tokenRaw.trim();
+      const challenge = url.searchParams.get('hub.challenge') || '';
 
-      console.log('Verificação webhook:', { mode, token, challenge });
+      console.log('Verificação webhook:', { mode, token_masked: mask(token), env_token_masked: mask(VERIFY_TOKEN), challenge });
 
       if (mode === 'subscribe' && token === VERIFY_TOKEN) {
         console.log('Webhook verificado com sucesso');
-        return new Response(challenge, { status: 200 });
+        return new Response(challenge, { status: 200, headers: { ...corsHeaders, 'Content-Type': 'text/plain' } });
       } else {
         console.log('Falha na verificação do webhook');
-        return new Response('Forbidden', { status: 403 });
+        return new Response('Forbidden', { status: 403, headers: { ...corsHeaders, 'Content-Type': 'text/plain' } });
       }
     }
 
