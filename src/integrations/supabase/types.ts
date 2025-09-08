@@ -700,11 +700,16 @@ export type Database = {
       }
       orders: {
         Row: {
+          boleto_barcode: string | null
+          boleto_line: string | null
+          boleto_url: string | null
           created_at: string
+          external_id: string | null
           id: string
           items: Json
           logistics_option: string
           order_number: string
+          payment_confirmed_at: string | null
           payment_method: string
           status: string
           total_amount: number
@@ -712,11 +717,16 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          boleto_barcode?: string | null
+          boleto_line?: string | null
+          boleto_url?: string | null
           created_at?: string
+          external_id?: string | null
           id?: string
           items: Json
           logistics_option: string
           order_number?: string
+          payment_confirmed_at?: string | null
           payment_method: string
           status?: string
           total_amount: number
@@ -724,11 +734,16 @@ export type Database = {
           user_id: string
         }
         Update: {
+          boleto_barcode?: string | null
+          boleto_line?: string | null
+          boleto_url?: string | null
           created_at?: string
+          external_id?: string | null
           id?: string
           items?: Json
           logistics_option?: string
           order_number?: string
+          payment_confirmed_at?: string | null
           payment_method?: string
           status?: string
           total_amount?: number

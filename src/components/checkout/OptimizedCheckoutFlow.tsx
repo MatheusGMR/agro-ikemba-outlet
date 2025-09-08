@@ -1,3 +1,4 @@
+// Removed PDFGenerator import - now using Edge Functions
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -19,7 +20,8 @@ import {
   AlertTriangle,
   Eye,
   TrendingUp,
-  Edit3
+  Edit3,
+  CreditCard
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useCheckoutAnalytics } from '@/hooks/useAnalytics';
@@ -27,7 +29,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/contexts/CartContext';
 import { supabase } from '@/integrations/supabase/client';
 import { ProgressiveForm, ProgressiveFormStep } from '@/components/ui/progressive-form';
-import jsPDF from 'jspdf';
 import { BANK_DETAILS } from '@/constants/bankDetails';
 
 interface OptimizedCheckoutFlowProps {
@@ -244,105 +245,7 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
     }
   };
 
-  const generateBoletoPDF = async (orderData: any): Promise<string> => {
-    const pdf = new jsPDF();
-    const pageWidth = pdf.internal.pageSize.width;
-    
-    // Header
-    pdf.setFontSize(20);
-    pdf.text('BOLETO BANCÁRIO', pageWidth / 2, 30, { align: 'center' });
-    
-    // Order info
-    pdf.setFontSize(12);
-    pdf.text(`Pedido: ${orderData.orderNumber}`, 20, 50);
-    pdf.text(`Data: ${new Date(orderData.createdAt).toLocaleDateString('pt-BR')}`, 20, 60);
-    pdf.text(`Total: R$ ${orderData.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, 20, 70);
-    
-    // Bank details
-    pdf.text('DADOS BANCÁRIOS:', 20, 90);
-    pdf.text(`Banco: ${BANK_DETAILS.bank}`, 20, 100);
-    pdf.text(`Agência: ${BANK_DETAILS.agency}`, 20, 110);
-    pdf.text(`Conta: ${BANK_DETAILS.account}`, 20, 120);
-    pdf.text(`Favorecido: ${BANK_DETAILS.beneficiary}`, 20, 130);
-    
-    // Payment instructions
-    pdf.text('INSTRUÇÕES DE PAGAMENTO:', 20, 150);
-    pdf.text('• Pagamento até 7 dias corridos após a emissão', 20, 160);
-    pdf.text('• Após o pagamento, envie o comprovante via WhatsApp', 20, 170);
-    pdf.text('• Produtos liberados após confirmação do pagamento', 20, 180);
-    
-    // Items
-    pdf.text('ITENS DO PEDIDO:', 20, 200);
-    let yPos = 210;
-    orderData.items.forEach((item: any) => {
-      pdf.text(`${item.name} - ${item.volume.toLocaleString('pt-BR')}L x R$ ${item.price.toFixed(2)} = R$ ${item.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, 20, yPos);
-      yPos += 10;
-    });
-    
-    const pdfBlob = pdf.output('blob');
-    return URL.createObjectURL(pdfBlob);
-  };
-
-  const generatePixInstructions = (orderData: any) => {
-    const pixContent = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-        <h2 style="color: #1976d2; text-align: center;">Instruções de Pagamento PIX</h2>
-        <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
-          <h3>Pedido: ${orderData.orderNumber}</h3>
-          <p><strong>Total:</strong> R$ ${orderData.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
-          <p><strong>Data:</strong> ${new Date(orderData.createdAt).toLocaleDateString('pt-BR')}</p>
-        </div>
-        <div style="background: #e3f2fd; padding: 20px; border-radius: 8px; margin: 20px 0;">
-          <h3>Dados para PIX:</h3>
-          <p><strong>Banco:</strong> ${BANK_DETAILS.bank}</p>
-          <p><strong>Favorecido:</strong> ${BANK_DETAILS.beneficiary}</p>
-          <p><strong>CNPJ:</strong> 12.345.678/0001-90</p>
-          <p><strong>Chave PIX:</strong> agro@ikemba.com.br</p>
-        </div>
-        <div style="background: #fff3e0; padding: 20px; border-radius: 8px; margin: 20px 0;">
-          <h3>Instruções:</h3>
-          <ul>
-            <li>Faça o PIX no valor exato de R$ ${orderData.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</li>
-            <li>Após o pagamento, envie o comprovante via WhatsApp</li>
-            <li>Produtos liberados após confirmação do pagamento</li>
-            <li>Prazo para pagamento: 24 horas</li>
-          </ul>
-        </div>
-      </div>
-    `;
-    return `data:text/html;charset=utf-8,${encodeURIComponent(pixContent)}`;
-  };
-
-  const generateTedInstructions = (orderData: any) => {
-    const tedContent = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-        <h2 style="color: #1976d2; text-align: center;">Instruções de Transferência TED</h2>
-        <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
-          <h3>Pedido: ${orderData.orderNumber}</h3>
-          <p><strong>Total:</strong> R$ ${orderData.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
-          <p><strong>Data:</strong> ${new Date(orderData.createdAt).toLocaleDateString('pt-BR')}</p>
-        </div>
-        <div style="background: #e3f2fd; padding: 20px; border-radius: 8px; margin: 20px 0;">
-          <h3>Dados Bancários:</h3>
-          <p><strong>Banco:</strong> ${BANK_DETAILS.bank}</p>
-          <p><strong>Agência:</strong> ${BANK_DETAILS.agency}</p>
-          <p><strong>Conta:</strong> ${BANK_DETAILS.account}</p>
-          <p><strong>Favorecido:</strong> ${BANK_DETAILS.beneficiary}</p>
-          <p><strong>CNPJ:</strong> 12.345.678/0001-90</p>
-        </div>
-        <div style="background: #fff3e0; padding: 20px; border-radius: 8px; margin: 20px 0;">
-          <h3>Instruções:</h3>
-          <ul>
-            <li>Faça a transferência no valor exato de R$ ${orderData.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</li>
-            <li>Após a transferência, envie o comprovante via WhatsApp</li>
-            <li>Produtos liberados após confirmação do pagamento</li>
-            <li>Prazo para pagamento: 2 dias úteis</li>
-          </ul>
-        </div>
-      </div>
-    `;
-    return `data:text/html;charset=utf-8,${encodeURIComponent(tedContent)}`;
-  };
+  // Removed fake document generation - now handled by Edge Functions
 
   const handlePaymentComplete = async () => {
     // Enhanced user authentication validation
@@ -398,68 +301,34 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
       
       console.log('✅ Order saved successfully:', orderResult);
 
-      // Generate payment-specific content
-      let docUrl = '';
-      let docType = '';
+      // Process payment using Edge Function (async)
+      console.log('Processing payment for order:', orderResult.id);
       
-      if (selectedPayment === 'boleto') {
-        try {
-          docType = 'Boleto Bancário';
-          const enrichedOrderData = { 
-            ...finalOrderData, 
-            orderNumber: orderResult.order_number, 
-            createdAt: orderResult.created_at 
-          };
-          docUrl = await generateBoletoPDF(enrichedOrderData);
-          
-          // Upload PDF to Supabase Storage
-          const pdfResponse = await fetch(docUrl);
-          const pdfBlob = await pdfResponse.blob();
-          const fileName = `boleto-${orderResult.order_number}-${Date.now()}.pdf`;
-          
-          const { data: uploadData, error: uploadError } = await supabase.storage
-            .from('media-assets')
-            .upload(`order-docs/${fileName}`, pdfBlob, {
-              contentType: 'application/pdf',
-              cacheControl: '3600'
-            });
-
-          if (uploadError) {
-            console.error('Error uploading PDF:', uploadError);
-          } else {
-            // Save document record
-            const { error: docError } = await supabase
-              .from('order_documents')
-              .insert({
-                user_id: user.id,
-                order_id: orderResult.order_number,
-                document_type: 'boleto',
-                document_url: `${supabase.storage.from('media-assets').getPublicUrl(`order-docs/${fileName}`).data.publicUrl}`
-              });
-
-            if (docError) {
-              console.error('Error saving document record:', docError);
-            }
-          }
-        } catch (pdfError) {
-          console.error('Error generating boleto PDF:', pdfError);
-          toast({
-            title: "Aviso",
-            description: "Pedido salvo, mas houve erro ao gerar o boleto. Entre em contato conosco.",
-            variant: "destructive"
-          });
+      const { data: paymentResult, error: paymentError } = await supabase.functions.invoke('process-order', {
+        body: {
+          orderId: orderResult.id,
+          paymentMethod: selectedPayment,
+          userInfo: {
+            name: user.user_metadata?.name || user.email || 'Cliente',
+            email: user.email || 'cliente@agroikemba.com',
+            phone: user.user_metadata?.phone || '(11) 99999-9999',
+            cpfCnpj: user.user_metadata?.cpf_cnpj,
+          },
+          orderValue: total,
+          items: finalOrderData.items
         }
-      } else if (selectedPayment === 'pix') {
-        docType = 'Instruções PIX';
-        docUrl = generatePixInstructions(finalOrderData);
-      } else if (selectedPayment === 'ted') {
-        docType = 'Instruções TED';
-        docUrl = generateTedInstructions(finalOrderData);
+      });
+
+      if (paymentError) {
+        console.error('Payment processing error:', paymentError);
+        throw new Error(`Erro no processamento: ${paymentError.message}`);
       }
-      
-      setGeneratedDocument(docType);
-      setDocumentUrl(docUrl);
-      setOrderData({ ...finalOrderData, orderNumber: orderResult.order_number });
+
+      console.log('✅ Payment processed successfully:', paymentResult);
+
+      setOrderData({ ...finalOrderData, orderNumber: orderResult.order_number, id: orderResult.id });
+      setGeneratedDocument(paymentResult.paymentInfo);
+      setDocumentUrl(paymentResult.paymentInfo.boletoUrl || paymentResult.paymentInfo.instructions);
       setShowConfirmation(true);
 
       // Track conversion
@@ -470,11 +339,11 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
       // Payment-specific success messages
       let successMessage = '';
       if (selectedPayment === 'boleto') {
-        successMessage = `Pedido ${orderResult.order_number} criado! Faça o download do boleto para pagamento.`;
+        successMessage = `Pedido ${orderResult.order_number} criado! Boleto bancário gerado com sucesso.`;
       } else if (selectedPayment === 'pix') {
-        successMessage = `Pedido ${orderResult.order_number} criado! Veja as instruções PIX para pagamento.`;
+        successMessage = `Pedido ${orderResult.order_number} criado! PIX em desenvolvimento.`;
       } else if (selectedPayment === 'ted') {
-        successMessage = `Pedido ${orderResult.order_number} criado! Veja as instruções de transferência para pagamento.`;
+        successMessage = `Pedido ${orderResult.order_number} criado! TED em desenvolvimento.`;
       }
 
       toast({
