@@ -40,7 +40,7 @@ export function ProgressiveForm({
   const isLastStep = currentStep === totalSteps;
   const currentStepData = steps[currentStep - 1];
 
-  const handleNext = () => {
+  const handleNext = React.useCallback(() => {
     if (currentStepData.validate) {
       const validation = currentStepData.validate();
       if (validation !== true) {
@@ -54,18 +54,11 @@ export function ProgressiveForm({
     } else {
       onStepChange(currentStep + 1);
     }
-  };
+  }, [currentStepData, isLastStep, onSubmit, onStepChange, currentStep]);
 
   const handleBack = () => {
     if (!isFirstStep && allowBack) {
       onStepChange(currentStep - 1);
-    }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleNext();
     }
   };
 
@@ -78,7 +71,6 @@ export function ProgressiveForm({
     <form 
       className={cn("w-full max-w-2xl mx-auto", className)} 
       onSubmit={handleFormSubmit}
-      onKeyDown={handleKeyDown}
       noValidate
     >
       {/* Progress Bar */}
