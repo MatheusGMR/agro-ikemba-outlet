@@ -29,7 +29,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useCart } from '@/contexts/CartContext';
 import { ProgressiveForm, ProgressiveFormStep } from '@/components/ui/progressive-form';
-import { BANK_DETAILS } from '@/constants/bankDetails';
+import { formatCurrency, formatPercentage, formatVolume } from '@/lib/utils';
 
 interface OptimizedCheckoutFlowProps {
   cartItems: Array<{
@@ -106,8 +106,6 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
   const [orderData, setOrderData] = useState<any>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingStep, setProcessingStep] = useState<string>('');
-  const [boletoStatus, setBoletoStatus] = useState<'idle' | 'generating' | 'ready' | 'failed'>('idle');
-  const [boletoData, setBoletoData] = useState<{url?: string, line?: string, barcode?: string} | null>(null);
 
   // Initialize with cart data
   useEffect(() => {
@@ -197,7 +195,8 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
   // Removed fake document generation - now handled by Edge Functions
 
   const handlePaymentComplete = async () => {
-    console.log('Processing order with payment method:', selectedPayment);
+    console.time('checkout-total');
+    console.log('🚀 Starting optimized checkout with payment:', selectedPayment);
     setIsProcessing(true);
     
     try {
@@ -205,70 +204,79 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
         throw new Error('User not authenticated');
       }
 
-      updateProcessingStep('Salvando pedido...');
+      updateProcessingStep('Processando pedido...');
 
-      // Create order in database
-      const { data: orderData, error: orderError } = await supabase
-        .from('orders')
-        .insert({
-          user_id: user.id,
-          items: cartItems.map(item => {
-            const volumeData = selectedVolumes[item.id] || { volume: item.quantity, price: item.price };
-            return {
-              id: item.id,
-              name: item.name,
-              sku: item.sku,
-              quantity: volumeData.volume,
-              price: volumeData.price,
-              total: volumeData.volume * volumeData.price
-            };
-          }),
-          total_amount: total,
-          payment_method: PAYMENT_METHODS.find(p => p.id === selectedPayment)?.name || 'Não especificado',
-          logistics_option: selectedLogistics || 'pickup',
-          status: 'pending'
-        })
-        .select()
-        .single();
+      // Generate idempotency key to prevent duplicates
+      const idempotencyKey = `${user.id}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
-      if (orderError) throw orderError;
-
-      updateProcessingStep('Processando confirmação...');
-
-      // Use auth data directly to avoid extra DB query
-      const safeUser = {
-        name: user.email?.split('@')[0] || 'Cliente',
-        email: user.email || '',
-        phone: '',
-        company: ''
-      };
-
-      // Send order confirmation (non-blocking - handled by Edge Function background tasks)
-      supabase.functions.invoke('send-order-confirmation', {
-        body: {
-          orderData: {
-            order_number: orderData.order_number,
-            total_amount: orderData.total_amount,
-            payment_method: orderData.payment_method,
-            logistics_option: orderData.logistics_option,
-            items: orderData.items
-          },
-          userData: safeUser
-        }
-      }).catch(error => {
-        console.error('Error sending confirmation emails (non-blocking):', error);
+      // Prepare order items with volume optimizations
+      const orderItems = cartItems.map(item => {
+        const volumeData = selectedVolumes[item.id] || { volume: item.quantity, price: item.price };
+        return {
+          id: item.id,
+          name: item.name,
+          sku: item.sku,
+          quantity: volumeData.volume,
+          price: volumeData.price,
+          total: volumeData.volume * volumeData.price,
+          manufacturer: item.manufacturer
+        };
       });
 
-      console.log('Order created successfully:', orderData.order_number);
-      setOrderData({ ...orderData, items: orderData.items });
+      // Call optimized edge function with retry
+      const createOrderWithRetry = async (attempt: number = 1): Promise<any> => {
+        try {
+          const response = await supabase.functions.invoke('create-order', {
+            body: {
+              items: orderItems,
+              total_amount: total,
+              payment_method: PAYMENT_METHODS.find(p => p.id === selectedPayment)?.name || 'Não especificado',
+              logistics_option: selectedLogistics || 'pickup',
+              delivery_info: deliveryInfo,
+              delivery_quote_requested: deliveryQuoteRequested,
+              idempotency_key: idempotencyKey
+            }
+          });
+
+          if (response.error) {
+            throw new Error(`Edge function error: ${response.error.message}`);
+          }
+
+          return response.data;
+        } catch (error: any) {
+          if (error.message?.includes('timeout') && attempt < 2) {
+            console.warn(`⚠️ Attempt ${attempt} failed, retrying...`);
+            updateProcessingStep('Reconectando...');
+            await new Promise(resolve => setTimeout(resolve, 1000)); // 1s delay
+            return createOrderWithRetry(attempt + 1);
+          }
+          throw error;
+        }
+      };
+
+      const result = await createOrderWithRetry();
+
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to create order');
+      }
+
+      console.timeEnd('checkout-total');
+      console.log('✅ Order created successfully:', result.order.order_number);
+      
+      setOrderData(result.order);
       setShowConfirmation(true);
       trackConversion('purchase', total);
-      onOrderComplete?.({ orderNumber: orderData.order_number });
-    } catch (error) {
-      console.error('Error creating order:', error);
+      onOrderComplete?.({ orderNumber: result.order.order_number });
+      
+    } catch (error: any) {
+      console.timeEnd('checkout-total');
+      console.error('💥 Checkout failed:', error);
+      
       toast({
         title: "Erro ao processar pedido",
-        description: "Tente novamente ou entre em contato conosco.",
+        description: error.message.includes('timeout') ? 
+          "A conexão demorou mais que o esperado. Tente novamente." :
+          "Tente novamente ou entre em contato conosco.",
         variant: "destructive"
       });
     } finally {
@@ -308,7 +316,7 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
             </div>
             <Badge variant={volumeData.savings && volumeData.savings > 0 ? "default" : "secondary"}>
               {volumeData.savings && volumeData.savings > 0 ? 
-                `Economia: R$ ${volumeData.savings.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` :
+                `Economia: ${formatCurrency(volumeData.savings)}` :
                 'Sem otimização'
               }
             </Badge>
@@ -316,7 +324,7 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
           
           <div className="space-y-4">
             <div>
-              <Label className="text-sm font-medium">Volume: {volumeData.volume.toLocaleString('pt-BR')}L</Label>
+              <Label className="text-sm font-medium">Volume: {formatVolume(volumeData.volume)}L</Label>
               <Slider
                 value={[volumeData.volume]}
                 onValueChange={handleVolumeChange}
@@ -326,8 +334,8 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
                 className="mt-2"
               />
               <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                <span>{minVolume.toLocaleString('pt-BR')}L</span>
-                <span>{maxVolume.toLocaleString('pt-BR')}L</span>
+                <span>{formatVolume(minVolume)}L</span>
+                <span>{formatVolume(maxVolume)}L</span>
               </div>
             </div>
             
@@ -335,10 +343,10 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
               <div>
                 <span className="text-sm text-muted-foreground">Preço por litro:</span>
                 <div className="font-semibold">
-                  R$ {volumeData.price.toFixed(2)}
+                  {formatCurrency(volumeData.price)}
                   {volumeData.savings && volumeData.savings > 0 && (
                     <span className="text-xs text-green-600 ml-2">
-                      (antes: R$ {basePrice.toFixed(2)})
+                      (antes: {formatCurrency(basePrice)})
                     </span>
                   )}
                 </div>
@@ -346,7 +354,7 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
               <div className="text-right">
                 <span className="text-sm text-muted-foreground">Total:</span>
                 <div className="font-semibold">
-                  R$ {(volumeData.volume * volumeData.price).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  {formatCurrency(volumeData.volume * volumeData.price)}
                 </div>
               </div>
             </div>
@@ -460,10 +468,10 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
                   <h3 className="font-semibold text-green-800">Parabéns! Você está economizando</h3>
                   <div className="flex items-center gap-4 mt-1">
                     <span className="text-2xl font-bold text-green-600">
-                      R$ {totalSavings.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      {formatCurrency(totalSavings)}
                     </span>
                     <Badge variant="secondary" className="bg-green-100 text-green-700">
-                      {savingsPercentage.toFixed(1)}% de desconto
+                      {formatPercentage(savingsPercentage)} de desconto
                     </Badge>
                   </div>
                 </div>
@@ -499,18 +507,18 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
                 <>
                   <div className="flex justify-between text-muted-foreground">
                     <span>Subtotal original:</span>
-                    <span className="line-through">R$ {originalTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                    <span className="line-through">{formatCurrency(originalTotal)}</span>
                   </div>
                   <div className="flex justify-between text-green-600">
                     <span>Economia conquistada:</span>
-                    <span>-R$ {totalSavings.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                    <span>-{formatCurrency(totalSavings)}</span>
                   </div>
                   <Separator />
                 </>
               )}
               <div className="flex justify-between items-center font-semibold text-lg">
                 <span>Total do Pedido:</span>
-                <span className="text-primary">R$ {total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                <span className="text-primary">{formatCurrency(total)}</span>
               </div>
             </div>
           </CardContent>
@@ -584,11 +592,11 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
           <div className="space-y-3">
             <div className="flex justify-between items-center font-semibold text-lg">
               <span>Total a Pagar:</span>
-              <span className="text-primary">R$ {total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+              <span className="text-primary">{formatCurrency(total)}</span>
             </div>
             {getTotalSavings() > 0 && (
               <div className="text-sm text-green-600">
-                Você economizou R$ {getTotalSavings().toLocaleString('pt-BR', { minimumFractionDigits: 2 })} neste pedido!
+                Você economizou {formatCurrency(getTotalSavings())} neste pedido!
               </div>
             )}
           </div>
@@ -663,7 +671,7 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
                 <div>
                   <span className="text-sm font-medium">Pedido: {orderData.orderNumber}</span>
                   <div className="text-lg font-bold text-primary">
-                    R$ {total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    {formatCurrency(total)}
                   </div>
                   <div className="text-sm text-muted-foreground">
                     Pagamento: {PAYMENT_METHODS.find(m => m.id === selectedPayment)?.name}
