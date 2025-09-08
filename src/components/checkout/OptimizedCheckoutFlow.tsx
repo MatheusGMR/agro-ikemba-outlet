@@ -28,6 +28,7 @@ import { useCart } from '@/contexts/CartContext';
 import { supabase } from '@/integrations/supabase/client';
 import { ProgressiveForm, ProgressiveFormStep } from '@/components/ui/progressive-form';
 import jsPDF from 'jspdf';
+import { BANK_DETAILS } from '@/constants/bankDetails';
 
 interface OptimizedCheckoutFlowProps {
   cartItems: Array<{
@@ -194,12 +195,12 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
     pdf.text(`Data: ${new Date(orderData.createdAt).toLocaleDateString('pt-BR')}`, 20, 60);
     pdf.text(`Total: R$ ${orderData.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, 20, 70);
     
-    // Bank details (mock data)
+    // Bank details
     pdf.text('DADOS BANCÁRIOS:', 20, 90);
-    pdf.text('Banco: 341 - Itaú Unibanco', 20, 100);
-    pdf.text('Agência: 1234', 20, 110);
-    pdf.text('Conta: 12345-6', 20, 120);
-    pdf.text('Favorecido: AgroIkemba Ltda', 20, 130);
+    pdf.text(`Banco: ${BANK_DETAILS.bank}`, 20, 100);
+    pdf.text(`Agência: ${BANK_DETAILS.agency}`, 20, 110);
+    pdf.text(`Conta: ${BANK_DETAILS.account}`, 20, 120);
+    pdf.text(`Favorecido: ${BANK_DETAILS.beneficiary}`, 20, 130);
     
     // Payment instructions
     pdf.text('INSTRUÇÕES DE PAGAMENTO:', 20, 150);
