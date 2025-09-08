@@ -12,6 +12,7 @@ const Checkout = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [isInitializing, setIsInitializing] = useState(true);
+  const [isOrderCompleted, setIsOrderCompleted] = useState(false);
   
   // Scroll to top on mount
   useEffect(() => {
@@ -22,7 +23,7 @@ const Checkout = () => {
   useEffect(() => {
     console.log('Checkout: Initializing with items:', items);
     
-    if (items.length === 0) {
+    if (items.length === 0 && !isOrderCompleted) {
       console.log('Checkout: Empty cart, redirecting to products');
       toast({
         title: "Carrinho vazio",  
@@ -34,7 +35,7 @@ const Checkout = () => {
       console.log('Checkout: Cart has items, proceeding with checkout');
       setIsInitializing(false);
     }
-  }, [items, navigate, toast]);
+  }, [items, navigate, toast, isOrderCompleted]);
 
   // Show loading while initializing
   if (isInitializing) {
@@ -62,6 +63,7 @@ const Checkout = () => {
   console.log('Checkout: Mapped items:', checkoutItems);
 
   const handleOrderComplete = (orderData: any) => {
+    setIsOrderCompleted(true);
     toast({
       title: "Pedido realizado com sucesso!",
       description: `Seu pedido foi confirmado.`,

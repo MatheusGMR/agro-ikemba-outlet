@@ -324,7 +324,7 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
       console.log('Order created successfully:', orderData.order_number);
       setOrderData({ ...orderData, items: orderData.items });
       setShowConfirmation(true);
-      clearCart();
+      // Don't clear cart here - let the confirmation dialog handle it
       trackConversion('purchase', total);
       onOrderComplete?.({ orderNumber: orderData.order_number });
     } catch (error) {
