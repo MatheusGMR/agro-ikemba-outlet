@@ -18,11 +18,13 @@ export function useCurrentRepresentative() {
     queryKey: ['representative', 'current', user?.id ?? 'anon'],
     queryFn: () => RepresentativeService.getCurrentRepresentative(),
     enabled: !!user?.id, // Only enabled when user exists - prevents race conditions
-    staleTime: 300000, // 5 minutes to avoid aggressive re-renders
+    staleTime: 600000, // 10 minutes - longer cache for profile data
+    gcTime: 1200000, // 20 minutes
     refetchOnMount: false,
     refetchOnWindowFocus: false,
     refetchOnReconnect: true,
-    retry: 2
+    retry: 3,
+    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 5000)
   });
 }
 
@@ -121,13 +123,22 @@ export function useCreateActivity() {
   });
 }
 
-// Dashboard hooks
+// Dashboard hooks with performance optimizations
 export function useDashboardStats(representativeId: string) {
   return useQuery({
     queryKey: ['dashboard-stats', representativeId],
     queryFn: () => RepresentativeService.getDashboardStats(representativeId),
     enabled: !!representativeId,
-    refetchInterval: 30000 // Refresh every 30 seconds
+    staleTime: 300000, // 5 minutes
+    gcTime: 600000, // 10 minutes
+    refetchOnWindowFocus: false,
+    refetchOnMount: 'always',
+    retry: (failureCount, error) => {
+      // Don't retry if it's a network timeout
+      if (error.message?.includes('Timeout')) return false;
+      return failureCount < 2;
+    },
+    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 3000)
   });
 }
 

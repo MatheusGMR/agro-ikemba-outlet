@@ -289,29 +289,42 @@ export class RepresentativeService {
     return data as RepActivity;
   }
 
-  // Dashboard statistics
+  // Dashboard statistics with performance optimizations
   static async getDashboardStats(representativeId: string): Promise<RepDashboardStats> {
     try {
-      console.info('📊 Iniciando busca de estatísticas do dashboard para:', representativeId);
+      console.info('📊 Iniciando busca otimizada de estatísticas do dashboard para:', representativeId);
 
-      // Buscar oportunidades ativas
-      const opportunitiesPromise = supabase
+      // Cache check (5 minutes)
+      const cacheKey = `dashboard_stats_${representativeId}`;
+      const cachedData = localStorage.getItem(cacheKey);
+      const cacheTime = localStorage.getItem(`${cacheKey}_time`);
+      
+      if (cachedData && cacheTime) {
+        const age = Date.now() - parseInt(cacheTime);
+        if (age < 300000) { // 5 minutes
+          console.info('📋 Usando dados em cache:', age / 1000, 'segundos');
+          return JSON.parse(cachedData);
+        }
+      }
+
+      // Buscar dados essenciais primeiro (mais rápido)
+      const essentialsPromise = supabase
         .from('opportunities')
-        .select('*')
+        .select('id, stage, estimated_value, estimated_commission')
         .eq('representative_id', representativeId)
         .eq('status', 'active');
 
-      // Buscar propostas pendentes
+      // Buscar propostas pendentes (simplificado)
       const proposalsPromise = supabase
         .from('proposals')
         .select(`
-          *,
-          opportunity:opportunities!inner(representative_id)
+          id, status,
+          opportunity:opportunities!inner(id, representative_id)
         `)
         .eq('opportunity.representative_id', representativeId)
         .in('status', ['draft', 'sent', 'viewed']);
 
-      // Buscar comissões do mês atual
+      // Buscar comissões do mês atual (otimizado)
       const currentMonth = new Date();
       const firstDayOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
       
@@ -322,41 +335,48 @@ export class RepresentativeService {
         .gte('created_at', firstDayOfMonth.toISOString())
         .eq('status', 'paid');
 
-      // Buscar atividades recentes
+      // Buscar atividades recentes (simplificado)
       const activitiesPromise = supabase
         .from('rep_activities')
         .select(`
-          *,
-          client:rep_clients(*),
-          opportunity:opportunities(*)
+          id, title, activity_type, created_at, completed,
+          client:rep_clients(id, company_name),
+          opportunity:opportunities(id, title)
         `)
         .eq('representative_id', representativeId)
         .order('created_at', { ascending: false })
-        .limit(5);
+        .limit(3);
 
-      // Buscar notificações pendentes
+      // Buscar notificações pendentes (reduzido)
       const notificationsPromise = supabase
         .from('rep_notifications')
-        .select('*')
+        .select('id, title, message, type, created_at')
         .eq('representative_id', representativeId)
         .eq('read', false)
         .order('created_at', { ascending: false })
-        .limit(10);
+        .limit(5);
 
-      // Executar todas as consultas
+      // Executar consultas principais com timeout
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Timeout')), 10000)
+      );
+
       const [
         opportunitiesResult,
         proposalsResult,
         commissionsResult,
         activitiesResult,
         notificationsResult
-      ] = await Promise.allSettled([
-        opportunitiesPromise,
-        proposalsPromise,
-        commissionsPromise,
-        activitiesPromise,
-        notificationsPromise
-      ]);
+      ] = await Promise.race([
+        Promise.allSettled([
+          essentialsPromise,
+          proposalsPromise,
+          commissionsPromise,
+          activitiesPromise,
+          notificationsPromise
+        ]),
+        timeoutPromise
+      ]) as PromiseSettledResult<any>[];
 
       // Processar oportunidades
       let opportunities: any[] = [];
@@ -415,34 +435,32 @@ export class RepresentativeService {
         };
       });
 
-      // Calcular comissão potencial
+      // Calcular comissão potencial (otimizado)
       let potentialCommission = 0;
       
-      // Primeiro tentar via edge function
-      try {
-        console.info('🔄 Tentando calcular comissão via edge function...');
-        const { data: commissionData, error: commissionError } = await supabase.functions.invoke(
-          'calculate-potential-commission',
-          { body: { representativeId } }
-        );
-
-        if (commissionError) {
-          console.warn('⚠️ Erro na edge function:', commissionError);
-          throw commissionError;
+      // Calcular localmente primeiro (mais rápido)
+      potentialCommission = opportunities.reduce((sum: number, opp: any) => {
+        return sum + (opp.estimated_commission || 0);
+      }, 0);
+      
+      // Edge function em background (não bloqueia a UI)
+      setTimeout(async () => {
+        try {
+          const { data: commissionData } = await supabase.functions.invoke(
+            'calculate-potential-commission',
+            { body: { representativeId } }
+          );
+          
+          if (commissionData?.potentialCommission) {
+            // Atualizar cache com valor mais preciso
+            const updatedStats = { ...stats, potential_commission: commissionData.potentialCommission };
+            localStorage.setItem(cacheKey, JSON.stringify(updatedStats));
+            localStorage.setItem(`${cacheKey}_time`, Date.now().toString());
+          }
+        } catch (error) {
+          console.warn('⚠️ Background commission calculation failed:', error);
         }
-
-        potentialCommission = commissionData?.potentialCommission || 0;
-        console.info('✅ Comissão calculada via edge function:', potentialCommission);
-      } catch (functionError) {
-        console.error('❌ Erro ao calcular comissão potencial via function:', functionError);
-        
-        // Fallback: calcular localmente
-        console.info('🔄 Calculando comissão localmente como fallback...');
-        potentialCommission = opportunities.reduce((sum: number, opp: any) => {
-          return sum + (opp.estimated_commission || 0);
-        }, 0);
-        console.info('✅ Comissão calculada localmente:', potentialCommission);
-      }
+      }, 100);
 
       // Preparar dados finais
       const stats: RepDashboardStats = {
@@ -453,16 +471,34 @@ export class RepresentativeService {
         pipeline_stages: pipelineStages,
         top_opportunities: opportunities
           .sort((a: any, b: any) => (b.estimated_value || 0) - (a.estimated_value || 0))
-          .slice(0, 5),
+          .slice(0, 3),
         recent_activities: activities,
         pending_notifications: notifications
       };
 
-      console.info('✅ Estatísticas do dashboard calculadas com sucesso');
+      // Cache the results
+      localStorage.setItem(cacheKey, JSON.stringify(stats));
+      localStorage.setItem(`${cacheKey}_time`, Date.now().toString());
+
+      console.info('✅ Estatísticas do dashboard calculadas com sucesso:', {
+        oportunidades: stats.active_opportunities,
+        propostas: stats.pending_proposals,
+        comissao_mes: stats.total_commission_this_month,
+        tempo_resposta: Date.now() - performance.now()
+      });
+      
       return stats;
 
     } catch (error) {
       console.error('❌ Erro grave ao buscar estatísticas do dashboard:', error);
+      
+      // Tentar cache antigo em caso de erro de rede
+      const cacheKey = `dashboard_stats_${representativeId}`;
+      const cachedData = localStorage.getItem(cacheKey);
+      if (cachedData) {
+        console.info('📋 Usando cache antigo devido a erro de rede');
+        return JSON.parse(cachedData);
+      }
       
       // Retornar stats padrão em caso de erro crítico
       const defaultStats: RepDashboardStats = {
@@ -481,8 +517,7 @@ export class RepresentativeService {
         recent_activities: [],
         pending_notifications: []
       };
-
-      console.info('📊 Retornando estatísticas padrão devido ao erro');
+      
       return defaultStats;
     }
   }
