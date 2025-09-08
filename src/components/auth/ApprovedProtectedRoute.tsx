@@ -58,10 +58,14 @@ export default function ApprovedProtectedRoute({ children }: ApprovedProtectedRo
     if (isApproved) {
       console.log('✅ ApprovedProtectedRoute: User is approved, allowing access');
       return <>{children}</>;
-    } else if (isPending || (!isApproved && !isPending)) {
-      console.log('🚫 ApprovedProtectedRoute: User not approved, redirecting to pending approval');
+    }
+    if (isPending) {
+      console.log('⏸️ ApprovedProtectedRoute: User pending approval, redirecting');
       return <Navigate to="/pending-approval" replace />;
     }
+    // If status is unknown or user not in users table, allow access (checkout requires auth only)
+    console.log('ℹ️ ApprovedProtectedRoute: Approval unknown/not required, allowing access');
+    return <>{children}</>;
   }
 
   // Fallback: if we reach here, something is unclear, show loading

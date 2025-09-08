@@ -76,30 +76,6 @@ const ProductDetail = () => {
     return acc;
   }, {} as Record<string, { items: any[], totalVolume: number }>);
   
-  // Authentication check and redirection
-  useEffect(() => {
-    if (approvalLoading) return; // Wait for approval check to complete
-    
-    if (!user) {
-      navigate('/');
-      return;
-    }
-    
-    if (!isApproved && !isPending) {
-      toast({
-        title: "Acesso negado",
-        description: "Você precisa completar seu cadastro para acessar os detalhes do produto.",
-        variant: "destructive"
-      });
-      navigate('/');
-      return;
-    }
-    
-    if (isPending) {
-      navigate('/pending-approval');
-      return;
-    }
-  }, [user, isApproved, isPending, approvalLoading, navigate, toast]);
 
   // Track page view after authentication check
   useEffect(() => {

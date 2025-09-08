@@ -17,72 +17,105 @@ export function useUserApproval(): UserApprovalStatus {
   const [userRecord, setUserRecord] = useState<any | null>(null);
 
   useEffect(() => {
-    const checkApprovalStatus = async () => {
-      console.log('🔍 UserApproval: Starting check for user:', user?.email, 'User ID:', user?.id);
-      
-      if (!user?.email || !user?.id) {
-        console.log('🚫 UserApproval: No user email or ID, setting as not approved');
-        setIsApproved(false);
-        setIsPending(false);
-        setUserRecord(null);
-        setIsLoading(false);
-        return;
-      }
+    let cancelled = false;
+    const email = user?.email?.trim() || '';
+    const uid = user?.id || '';
 
-      // Add timeout to prevent infinite loading
-      const timeoutId = setTimeout(() => {
-        console.warn('⏰ UserApproval: Check timed out for user:', user.email);
-        setIsApproved(false);
-        setIsPending(true);
-        setUserRecord(null);
-        setIsLoading(false);
-      }, 10000); // 10 second timeout
+    console.log('🔍 UserApproval: Starting check for user:', email, 'User ID:', uid);
 
+    if (!email || !uid) {
+      console.log('🚫 UserApproval: No user email or ID, setting as not approved');
+      setIsApproved(false);
+      setIsPending(false);
+      setUserRecord(null);
+      setIsLoading(false);
+      return;
+    }
+
+    const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+    const cacheKey = `approval:${uid}:${email.toLowerCase()}`;
+
+    const readCache = () => {
       try {
-        console.log('📡 UserApproval: Querying database for user:', user.email);
+        const raw = localStorage.getItem(cacheKey);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        if (!parsed?.ts || (Date.now() - parsed.ts) > CACHE_TTL_MS) return null;
+        return parsed;
+      } catch (e) {
+        console.warn('⚠️ UserApproval: Failed to read cache', e);
+        return null;
+      }
+    };
+
+    const writeCache = (payload: any) => {
+      try {
+        localStorage.setItem(cacheKey, JSON.stringify({ ...payload, ts: Date.now() }));
+      } catch (e) {
+        console.warn('⚠️ UserApproval: Failed to write cache', e);
+      }
+    };
+
+    const cached = readCache();
+    if (cached) {
+      console.log('💾 UserApproval: Using cached status', cached);
+      setIsApproved(!!cached.isApproved);
+      setIsPending(!!cached.isPending);
+      setUserRecord(cached.userRecord ?? null);
+      setIsLoading(false);
+    } else {
+      setIsLoading(true);
+    }
+
+    const checkApprovalStatus = async () => {
+      try {
+        console.log('📡 UserApproval: Querying database (case-insensitive) for user:', email);
         const { data: userData, error } = await supabase
           .from('users')
           .select('*')
-          .eq('email', user.email)
+          .ilike('email', email)
           .maybeSingle();
 
-        clearTimeout(timeoutId);
-        
+        if (cancelled) return;
+
         console.log('📊 UserApproval: Database query result:', { userData, error });
 
         if (error) {
           console.error('❌ UserApproval: Database error:', error);
-          setIsApproved(false);
-          setIsPending(false);
-          setUserRecord(null);
-        } else if (userData) {
+          // Do not force pending on error; keep current visible state and stop loading
+          setIsLoading(false);
+          return;
+        }
+
+        if (userData) {
           console.log('✅ UserApproval: User found with status:', userData.status);
           setUserRecord(userData);
           const approved = userData.status === 'approved';
           const pending = userData.status === 'pending';
           setIsApproved(approved);
           setIsPending(pending);
+          writeCache({ isApproved: approved, isPending: pending, userRecord: userData });
           console.log('🎯 UserApproval: Final state - Approved:', approved, 'Pending:', pending);
         } else {
-          // User exists in auth but not in users table - consider pending
+          // User exists in auth but not in users table - allow browsing (not pending by default)
           console.log('⚠️ UserApproval: User exists in auth but not in users table');
           setUserRecord(null);
           setIsApproved(false);
-          setIsPending(true);
+          setIsPending(false);
         }
       } catch (error) {
-        clearTimeout(timeoutId);
         console.error('💥 UserApproval: Exception in approval check:', error);
-        setIsApproved(false);
-        setIsPending(false);
-        setUserRecord(null);
+        // Do not set pending on exception
       } finally {
-        setIsLoading(false);
-        console.log('🏁 UserApproval: Check completed, loading set to false');
+        if (!cancelled) {
+          setIsLoading(false);
+          console.log('🏁 UserApproval: Check completed, loading set to false');
+        }
       }
     };
 
     checkApprovalStatus();
+    return () => { cancelled = true; };
   }, [user?.email, user?.id, session]);
 
   return {
