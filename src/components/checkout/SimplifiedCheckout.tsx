@@ -14,8 +14,6 @@ import {
   Calculator,
   CheckCircle
 } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/integrations/supabase/client';
 
 interface CheckoutItem {
   id: string;
@@ -70,7 +68,6 @@ const LOGISTICS_OPTIONS = [
 ];
 
 export function SimplifiedCheckout({ items, onOrderComplete }: SimplifiedCheckoutProps) {
-  const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState<'logistics' | 'payment' | 'confirmation'>('logistics');
   const [selectedLogistics, setSelectedLogistics] = useState<string>('pickup');
   const [selectedPayment, setSelectedPayment] = useState<string>('');
@@ -95,71 +92,24 @@ export function SimplifiedCheckout({ items, onOrderComplete }: SimplifiedCheckou
     setIsProcessing(true);
     
     try {
-      if (!user?.id) {
-        throw new Error('User not authenticated');
-      }
-
-      // Create order in database
-      const { data: orderData, error: orderError } = await supabase
-        .from('orders')
-        .insert({
-          user_id: user.id,
-          items: items.map(item => ({
-            id: item.id,
-            name: item.name,
-            volume: item.volume,
-            price: item.price,
-            total: item.total
-          })),
-          total_amount: total,
-          payment_method: PAYMENT_METHODS.find(p => p.id === selectedPayment)?.name || 'Não especificado',
-          logistics_option: LOGISTICS_OPTIONS.find(l => l.id === selectedLogistics)?.name || 'Retirada',
-          status: 'pending'
-        })
-        .select()
-        .single();
-
-      if (orderError) throw orderError;
-
-      // Get user data for email
-      const { data: userData, error: userError } = await supabase
-        .from('users')
-        .select('name, email, phone, company')
-        .eq('id', user.id)
-        .single();
-
-      if (userError) throw userError;
-
-      // Send order confirmation
-      const { error: emailError } = await supabase.functions.invoke('send-order-confirmation', {
-        body: {
-          orderData: {
-            order_number: orderData.order_number,
-            total_amount: orderData.total_amount,
-            payment_method: orderData.payment_method,
-            logistics_option: orderData.logistics_option,
-            items: orderData.items
-          },
-          userData: {
-            name: userData.name,
-            email: userData.email,
-            phone: userData.phone,
-            company: userData.company
-          }
-        }
-      });
-
-      if (emailError) {
-        console.error('Error sending confirmation emails:', emailError);
-        // Continue with success even if email fails
-      }
-
-      console.log('Order created successfully:', orderData.order_number);
+      // Generate mock order number for display
+      const mockOrderNumber = `ORD${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}-${new Date().getFullYear()}`;
+      
+      const orderData = {
+        items,
+        logistics: selectedLogistics,
+        paymentMethod: PAYMENT_METHODS.find(p => p.id === selectedPayment)?.name || 'Não especificado',
+        total,
+        orderNumber: mockOrderNumber,
+        createdAt: new Date().toISOString()
+      };
+      
+      console.log('Order data captured:', orderData);
       setCurrentStep('confirmation');
       setShowConfirmation(true);
-      onOrderComplete({ orderNumber: orderData.order_number });
+      onOrderComplete(orderData);
     } catch (error) {
-      console.error('Error creating order:', error);
+      console.error('Error processing order:', error);
     } finally {
       setIsProcessing(false);
     }
