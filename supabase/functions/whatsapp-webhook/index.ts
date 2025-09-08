@@ -35,6 +35,20 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response('ok', { status: 200, headers: { 'Content-Type': 'text/plain', ...corsHeaders } });
   }
 
+  // Debug endpoint to check env availability (masked)
+  if (req.method === 'GET' && pathname.endsWith('/debug-env')) {
+    const raw = Deno.env.get('WHATSAPP_VERIFY_TOKEN') ?? '';
+    const verify = raw.trim();
+    const payload = {
+      verifyTokenMasked: mask(verify),
+      isSet: verify.length > 0,
+    };
+    return new Response(JSON.stringify(payload), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json', ...corsHeaders },
+    });
+  }
+
   try {
     const RAW_VERIFY_TOKEN = Deno.env.get('WHATSAPP_VERIFY_TOKEN') ?? '';
     const VERIFY_TOKEN = RAW_VERIFY_TOKEN.trim();
