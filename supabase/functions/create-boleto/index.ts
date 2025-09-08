@@ -51,9 +51,19 @@ serve(async (req) => {
     const ASAAS_BASE_URL = Deno.env.get('ASAAS_API_BASE_URL') || 'https://sandbox.asaas.com/api/v3';
 
     console.log('Using Asaas environment:', ASAAS_BASE_URL);
+    console.log('API Key configured:', ASAAS_API_KEY ? 'Yes' : 'No');
 
     if (!ASAAS_API_KEY) {
       throw new Error('ASAAS_API_KEY not configured');
+    }
+
+    // Validate input data
+    if (!customerName || !customerCpfCnpj || !customerEmail) {
+      throw new Error('Missing required customer information');
+    }
+
+    if (!amount || amount <= 0) {
+      throw new Error('Invalid amount value');
     }
 
     // Create customer in Asaas if doesn't exist
@@ -74,6 +84,14 @@ serve(async (req) => {
       }),
     });
 
+    console.log('Customer API response status:', customerResponse.status);
+    
+    if (!customerResponse.ok) {
+      const errorText = await customerResponse.text();
+      console.error('Customer API error response:', errorText);
+      throw new Error(`Asaas customer API error: ${customerResponse.status} - ${errorText}`);
+    }
+
     const customerData = await customerResponse.json();
     console.log('Customer response:', customerData);
 
@@ -87,6 +105,13 @@ serve(async (req) => {
           'access_token': ASAAS_API_KEY!,
         },
       });
+      
+      if (!searchResponse.ok) {
+        const errorText = await searchResponse.text();
+        console.error('Customer search API error:', errorText);
+        throw new Error(`Asaas customer search error: ${searchResponse.status} - ${errorText}`);
+      }
+      
       const searchData = await searchResponse.json();
       customerId = searchData.data[0]?.id;
     }
@@ -115,6 +140,14 @@ serve(async (req) => {
         postalService: false,
       }),
     });
+
+    console.log('Payment API response status:', paymentResponse.status);
+    
+    if (!paymentResponse.ok) {
+      const errorText = await paymentResponse.text();
+      console.error('Payment API error response:', errorText);
+      throw new Error(`Asaas payment API error: ${paymentResponse.status} - ${errorText}`);
+    }
 
     const paymentData = await paymentResponse.json();
     console.log('Payment created:', paymentData);
