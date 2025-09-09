@@ -47,6 +47,8 @@ export default function Admin() {
     missingPhone: 0,
     missingEmail: 0
   });
+  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
   const { logout } = useAdminAuth();
   const navigate = useNavigate();
 
@@ -228,6 +230,43 @@ export default function Admin() {
     }
   };
 
+  const createAuthUsers = async (userIds?: string[]) => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase.functions.invoke('create-auth-users-batch', {
+        body: { 
+          userIds: userIds || selectedUsers,
+          createAll: !userIds && selectedUsers.length === 0
+        }
+      });
+
+      if (error) throw error;
+
+      toast.success("Contas criadas", {
+        description: `${data.summary.created} contas criadas, ${data.summary.already_exists} já existiam`,
+      });
+
+      // Refresh users list
+      loadUsers();
+      setSelectedUsers([]);
+    } catch (error: any) {
+      console.error('Error creating auth users:', error);
+      toast.error("Erro", {
+        description: error.message || "Erro ao criar contas de autenticação",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUserSelection = (userId: string, checked: boolean) => {
+    if (checked) {
+      setSelectedUsers(prev => [...prev, userId]);
+    } else {
+      setSelectedUsers(prev => prev.filter(id => id !== userId));
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
@@ -237,6 +276,13 @@ export default function Admin() {
             <p className="text-gray-600">Gerencie os acessos à plataforma Agro Ikemba</p>
           </div>
           <div className="flex gap-2">
+            <Button 
+              onClick={() => createAuthUsers()}
+              disabled={loading}
+              variant="default"
+            >
+              Criar Contas Auth (Todos)
+            </Button>
             <Button variant="outline" onClick={handleRefresh} disabled={isLoading}>
               <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
               Atualizar
@@ -382,6 +428,29 @@ export default function Admin() {
             </CardTitle>
           </CardHeader>
           <CardContent>
+            {selectedUsers.length > 0 && (
+              <div className="mb-4 p-4 bg-blue-50 rounded-lg">
+                <p className="text-sm text-blue-700 mb-2">
+                  {selectedUsers.length} usuário(s) selecionado(s)
+                </p>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => createAuthUsers(selectedUsers)}
+                    disabled={loading}
+                    size="sm"
+                  >
+                    Criar Contas Auth para Selecionados
+                  </Button>
+                  <Button
+                    onClick={() => setSelectedUsers([])}
+                    variant="outline"
+                    size="sm"
+                  >
+                    Limpar Seleção
+                  </Button>
+                </div>
+              </div>
+            )}
             {isLoading ? (
               <div className="text-center py-8">
                 <RefreshCw className="h-8 w-8 mx-auto mb-4 animate-spin text-gray-400" />
@@ -397,6 +466,20 @@ export default function Admin() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="w-12">
+                      <input
+                        type="checkbox"
+                        checked={selectedUsers.length === filteredUsers.length && filteredUsers.length > 0}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedUsers(filteredUsers.map(u => u.id));
+                          } else {
+                            setSelectedUsers([]);
+                          }
+                        }}
+                        className="rounded"
+                      />
+                    </TableHead>
                     <TableHead>Nome</TableHead>
                     <TableHead>Email</TableHead>
                     <TableHead>Telefone</TableHead>
@@ -409,6 +492,14 @@ export default function Admin() {
                 <TableBody>
                   {filteredUsers.map((user) => (
                     <TableRow key={user.id}>
+                      <TableCell>
+                        <input
+                          type="checkbox"
+                          checked={selectedUsers.includes(user.id)}
+                          onChange={(e) => handleUserSelection(user.id, e.target.checked)}
+                          className="rounded"
+                        />
+                      </TableCell>
                       <TableCell className="font-medium">{user.name}</TableCell>
                       <TableCell>{user.email}</TableCell>
                       <TableCell>

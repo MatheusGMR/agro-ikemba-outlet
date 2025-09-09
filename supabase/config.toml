@@ -48,3 +48,9 @@ verify_jwt = false
 
 [functions.whatsapp-chatbot]
 verify_jwt = false
+
+[functions.request-missing-contact]
+verify_jwt = false
+
+[functions.create-auth-users-batch]
+verify_jwt = false
