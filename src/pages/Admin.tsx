@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   Table, 
   TableBody, 
@@ -23,20 +25,27 @@ import {
 import { toast } from 'sonner';
 import { PendingUser, AdminStats } from '@/types/admin';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
-import { Check, X, Eye, Users, UserCheck, UserX, Clock, LogOut, RefreshCw } from 'lucide-react';
+import { Check, X, Eye, Users, UserCheck, UserX, Clock, LogOut, RefreshCw, Search, Phone, PhoneOff, Mail } from 'lucide-react';
 import { userService } from '@/services/userService';
 import { ImageUploader } from '@/components/admin/ImageUploader';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function Admin() {
   const [pendingUsers, setPendingUsers] = useState<PendingUser[]>([]);
+  const [filteredUsers, setFilteredUsers] = useState<PendingUser[]>([]);
   const [selectedUser, setSelectedUser] = useState<PendingUser | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [contactFilter, setContactFilter] = useState<string>('all');
   const [stats, setStats] = useState<AdminStats>({
     totalPending: 0,
     totalApproved: 0,
     totalRejected: 0,
-    totalUsers: 0
+    totalUsers: 0,
+    missingPhone: 0,
+    missingEmail: 0
   });
   const { logout } = useAdminAuth();
   const navigate = useNavigate();
@@ -76,17 +85,53 @@ export default function Admin() {
     const pending = pendingUsers.filter(u => u.status === 'pending').length;
     const approved = pendingUsers.filter(u => u.status === 'approved').length;
     const rejected = pendingUsers.filter(u => u.status === 'rejected').length;
+    const missingPhone = pendingUsers.filter(u => !u.phone || u.phone.trim() === '').length;
+    const missingEmail = pendingUsers.filter(u => !u.email || u.email.trim() === '').length;
     
     const newStats = {
       totalPending: pending,
       totalApproved: approved,
       totalRejected: rejected,
-      totalUsers: pendingUsers.length
+      totalUsers: pendingUsers.length,
+      missingPhone,
+      missingEmail
     };
     
     console.log('Estatísticas atualizadas:', newStats);
     setStats(newStats);
   }, [pendingUsers]);
+
+  // Filter users based on search and filters
+  useEffect(() => {
+    let filtered = pendingUsers;
+
+    // Search filter
+    if (searchTerm) {
+      filtered = filtered.filter(user =>
+        user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.company?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    // Status filter
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(user => user.status === statusFilter);
+    }
+
+    // Contact filter
+    if (contactFilter !== 'all') {
+      if (contactFilter === 'missing-phone') {
+        filtered = filtered.filter(user => !user.phone || user.phone.trim() === '');
+      } else if (contactFilter === 'missing-email') {
+        filtered = filtered.filter(user => !user.email || user.email.trim() === '');
+      } else if (contactFilter === 'complete') {
+        filtered = filtered.filter(user => user.phone && user.phone.trim() !== '' && user.email && user.email.trim() !== '');
+      }
+    }
+
+    setFilteredUsers(filtered);
+  }, [pendingUsers, searchTerm, statusFilter, contactFilter]);
 
   const handleApprove = async (userId: string) => {
     console.log('Aprovando usuário:', userId);
@@ -157,6 +202,32 @@ export default function Admin() {
     toast.success('Lista atualizada!');
   };
 
+  const handleRequestContact = async (user: PendingUser, missingField: 'phone' | 'email') => {
+    console.log('Solicitando contato para usuário:', user.id, 'campo:', missingField);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('request-missing-contact', {
+        body: {
+          userId: user.id,
+          userName: user.name,
+          userEmail: user.email,
+          missingField
+        }
+      });
+
+      if (error) {
+        console.error('Erro ao solicitar contato:', error);
+        toast.error('Erro ao enviar solicitação de contato');
+        return;
+      }
+
+      toast.success(`Solicitação de ${missingField === 'phone' ? 'telefone' : 'email'} enviada para ${user.name}!`);
+    } catch (error) {
+      console.error('Erro inesperado ao solicitar contato:', error);
+      toast.error('Erro inesperado ao enviar solicitação');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
@@ -183,7 +254,7 @@ export default function Admin() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-6 gap-6 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total de Usuários</CardTitle>
@@ -223,12 +294,92 @@ export default function Admin() {
               <div className="text-2xl font-bold text-red-600">{stats.totalRejected}</div>
             </CardContent>
           </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Sem Telefone</CardTitle>
+              <PhoneOff className="h-4 w-4 text-orange-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-orange-600">{stats.missingPhone}</div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Sem Email</CardTitle>
+              <Mail className="h-4 w-4 text-purple-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-purple-600">{stats.missingEmail}</div>
+            </CardContent>
+          </Card>
         </div>
+
+        {/* Filters */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Filtros</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Input
+                  placeholder="Buscar por nome, email ou empresa..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos os status</SelectItem>
+                  <SelectItem value="pending">Pendentes</SelectItem>
+                  <SelectItem value="approved">Aprovados</SelectItem>
+                  <SelectItem value="rejected">Rejeitados</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={contactFilter} onValueChange={setContactFilter}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Contato" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos</SelectItem>
+                  <SelectItem value="missing-phone">Sem Telefone</SelectItem>
+                  <SelectItem value="missing-email">Sem Email</SelectItem>
+                  <SelectItem value="complete">Contato Completo</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setSearchTerm('');
+                  setStatusFilter('all');
+                  setContactFilter('all');
+                }}
+              >
+                Limpar Filtros
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Users Table */}
         <Card>
           <CardHeader>
-            <CardTitle>Solicitações de Acesso ({pendingUsers.length} total)</CardTitle>
+            <CardTitle>
+              Solicitações de Acesso 
+              <span className="text-sm font-normal text-muted-foreground ml-2">
+                ({filteredUsers.length} de {pendingUsers.length} usuários)
+              </span>
+            </CardTitle>
           </CardHeader>
           <CardContent>
             {isLoading ? (
@@ -236,11 +387,11 @@ export default function Admin() {
                 <RefreshCw className="h-8 w-8 mx-auto mb-4 animate-spin text-gray-400" />
                 <p className="text-gray-500">Carregando usuários...</p>
               </div>
-            ) : pendingUsers.length === 0 ? (
+            ) : filteredUsers.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
                 <Users className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                <p>Nenhuma solicitação de cadastro encontrada.</p>
-                <p className="text-sm">Aguarde por novos usuários ou clique em "Atualizar".</p>
+                <p>Nenhum usuário encontrado com os filtros aplicados.</p>
+                <p className="text-sm">Tente ajustar os filtros ou clique em "Atualizar".</p>
               </div>
             ) : (
               <Table>
@@ -248,6 +399,7 @@ export default function Admin() {
                   <TableRow>
                     <TableHead>Nome</TableHead>
                     <TableHead>Email</TableHead>
+                    <TableHead>Telefone</TableHead>
                     <TableHead>Tipo</TableHead>
                     <TableHead>Data</TableHead>
                     <TableHead>Status</TableHead>
@@ -255,10 +407,33 @@ export default function Admin() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {pendingUsers.map((user) => (
+                  {filteredUsers.map((user) => (
                     <TableRow key={user.id}>
                       <TableCell className="font-medium">{user.name}</TableCell>
                       <TableCell>{user.email}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          {user.phone ? (
+                            <>
+                              <Phone className="h-4 w-4 text-green-600" />
+                              <span className="text-sm">{user.phone}</span>
+                            </>
+                          ) : (
+                            <>
+                              <PhoneOff className="h-4 w-4 text-orange-600" />
+                              <span className="text-sm text-orange-600">Não informado</span>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="ml-2 text-xs h-6 px-2"
+                                onClick={() => handleRequestContact(user, 'phone')}
+                              >
+                                Solicitar
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      </TableCell>
                       <TableCell>{user.tipo}</TableCell>
                       <TableCell>{new Date(user.createdAt).toLocaleDateString('pt-BR')}</TableCell>
                       <TableCell>{getStatusBadge(user.status)}</TableCell>
@@ -319,6 +494,25 @@ export default function Admin() {
                 <div>
                   <label className="text-sm font-medium text-gray-500">Email</label>
                   <p className="text-lg">{selectedUser.email}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Telefone</label>
+                  <div className="flex items-center gap-2 mt-1">
+                    {selectedUser.phone ? (
+                      <>
+                        <Phone className="h-4 w-4 text-green-600" />
+                        <p className="text-lg">{selectedUser.phone}</p>
+                      </>
+                    ) : (
+                      <>
+                        <PhoneOff className="h-4 w-4 text-orange-600" />
+                        <p className="text-lg text-orange-600">Não informado</p>
+                        <Badge variant="outline" className="text-orange-600 border-orange-600 ml-2">
+                          Contato necessário
+                        </Badge>
+                      </>
+                    )}
+                  </div>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-500">Tipo de Usuário</label>

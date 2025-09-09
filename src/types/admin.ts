@@ -17,4 +17,6 @@ export interface AdminStats {
   totalApproved: number;
   totalRejected: number;
   totalUsers: number;
+  missingPhone: number;
+  missingEmail: number;
 }

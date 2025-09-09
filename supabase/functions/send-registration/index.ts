@@ -65,6 +65,40 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
+    // Enhanced phone validation
+    const phoneDigits = data.phone.replace(/\D/g, '');
+    if (phoneDigits.length < 10 || phoneDigits.length > 11) {
+      console.error("ERRO: Telefone inválido:", data.phone, "Dígitos:", phoneDigits);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: "Telefone inválido",
+          message: "Telefone deve ter 10 ou 11 dígitos"
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json", ...corsHeaders }
+        }
+      );
+    }
+
+    // Enhanced email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(data.email)) {
+      console.error("ERRO: Email inválido:", data.email);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: "Email inválido",
+          message: "Formato de email inválido"
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json", ...corsHeaders }
+        }
+      );
+    }
+
     // Verificar se a chave da API do Resend está configurada
     const resendApiKey = Deno.env.get("RESEND_API_KEY");
     if (!resendApiKey) {
