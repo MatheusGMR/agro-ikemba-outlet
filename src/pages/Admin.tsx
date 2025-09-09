@@ -242,8 +242,14 @@ export default function Admin() {
 
       if (error) throw error;
 
-      toast.success("Contas criadas", {
-        description: `${data.summary.created} contas criadas, ${data.summary.already_exists} já existiam`,
+      const summary = data.summary;
+      const messages = [];
+      if (summary.created > 0) messages.push(`${summary.created} criadas`);
+      if (summary.already_exists > 0) messages.push(`${summary.already_exists} já existiam`);
+      if (summary.recovery_sent > 0) messages.push(`${summary.recovery_sent} receberam link de recuperação`);
+
+      toast.success("Contas processadas", {
+        description: messages.join(', '),
       });
 
       // Refresh users list
@@ -253,6 +259,32 @@ export default function Admin() {
       console.error('Error creating auth users:', error);
       toast.error("Erro", {
         description: error.message || "Erro ao criar contas de autenticação",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const sendTestEmail = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase.functions.invoke('send-auth-email', {
+        body: {
+          email: 'admin@agroikemba.com.br',
+          type: 'test',
+          name: 'Administrador'
+        }
+      });
+
+      if (error) throw error;
+
+      toast.success("Email de teste enviado", {
+        description: "Verifique sua caixa de entrada e spam.",
+      });
+    } catch (error: any) {
+      console.error('Error sending test email:', error);
+      toast.error("Erro ao enviar email", {
+        description: error.message || "Erro ao enviar email de teste",
       });
     } finally {
       setLoading(false);
@@ -282,6 +314,14 @@ export default function Admin() {
               variant="default"
             >
               Criar Contas Auth (Todos)
+            </Button>
+            <Button 
+              onClick={sendTestEmail}
+              disabled={loading}
+              variant="outline"
+            >
+              <Mail className="w-4 h-4 mr-2" />
+              Enviar Email de Teste
             </Button>
             <Button variant="outline" onClick={handleRefresh} disabled={isLoading}>
               <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />

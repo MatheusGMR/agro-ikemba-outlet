@@ -11,7 +11,7 @@ const corsHeaders = {
 
 interface AuthEmailRequest {
   email: string;
-  type: 'signup' | 'recovery' | 'auth_created';
+  type: 'signup' | 'recovery' | 'auth_created' | 'test';
   token?: string;
   name?: string;
   password?: string;
@@ -189,14 +189,37 @@ const handler = async (req: Request): Promise<Response> => {
         </body>
         </html>
       `;
+    } else if (type === 'test') {
+      subject = "✅ Email de Teste - AgroIkemba";
+      html = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <div style="background: linear-gradient(135deg, #22c55e, #16a34a); padding: 40px 20px; text-align: center;">
+            <h1 style="color: white; margin: 0; font-size: 28px;">AgroIkemba</h1>
+            <p style="color: #f0fdf4; margin: 10px 0 0 0;">Sistema de Email Funcionando</p>
+          </div>
+          
+          <div style="padding: 40px 20px; text-align: center;">
+            <h2 style="color: #1a202c;">✅ Email de Teste</h2>
+            <p style="color: #4a5568; font-size: 16px; margin-bottom: 30px;">
+              Este é um email de teste para verificar se o sistema está funcionando corretamente.
+            </p>
+            <p style="color: #22c55e; font-weight: bold;">
+              🎉 Sistema funcionando perfeitamente!
+            </p>
+            <p style="color: #666; font-size: 14px; margin-top: 20px;">
+              Enviado em: ${new Date().toLocaleString('pt-BR')}
+            </p>
+          </div>
+        </div>
+      `;
     } else {
       throw new Error('Tipo de email inválido');
     }
 
     console.log("Sending email to:", email);
     
-    // Use simpler fallback format without display name to avoid validation errors
-    const fromEmail = Deno.env.get("RESEND_FROM") || "noreply@resend.dev";
+    // Use safer fallback format - onboarding@resend.dev is verified by Resend
+    const fromEmail = Deno.env.get("RESEND_FROM") || "onboarding@resend.dev";
     console.log("Using sender email:", fromEmail);
     
     const emailResponse = await resend.emails.send({

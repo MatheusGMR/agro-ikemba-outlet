@@ -91,12 +91,40 @@ const handler = async (req: Request): Promise<Response> => {
           console.error(`Error creating auth user for ${user.email}:`, authError);
           
           if (authError.message?.includes('already been registered')) {
-            results.push({
-              user_id: user.id,
-              email: user.email,
-              status: 'already_exists',
-              message: 'Usuário já possui conta de autenticação'
-            });
+            // User already exists, send password recovery email instead
+            try {
+              const { data: resetData, error: resetError } = await supabaseAdmin.auth.admin.generateLink({
+                type: 'recovery',
+                email: user.email,
+              });
+
+              if (resetError) throw resetError;
+
+              // Send recovery email
+              await supabaseAdmin.functions.invoke('send-auth-email', {
+                body: {
+                  email: user.email,
+                  type: 'recovery',
+                  name: user.name,
+                  token: resetData.properties?.action_link
+                }
+              });
+
+              results.push({
+                user_id: user.id,
+                email: user.email,
+                status: 'recovery_sent',
+                message: 'Usuário já existia - link de recuperação enviado'
+              });
+            } catch (recoveryError) {
+              console.error(`Error sending recovery for ${user.email}:`, recoveryError);
+              results.push({
+                user_id: user.id,
+                email: user.email,
+                status: 'already_exists',
+                message: 'Usuário já possui conta de autenticação'
+              });
+            }
           } else {
             results.push({
               user_id: user.id,
@@ -153,6 +181,7 @@ const handler = async (req: Request): Promise<Response> => {
       total: results.length,
       created: results.filter(r => r.status === 'created').length,
       already_exists: results.filter(r => r.status === 'already_exists').length,
+      recovery_sent: results.filter(r => r.status === 'recovery_sent').length,
       errors: results.filter(r => r.status === 'error').length,
       created_no_email: results.filter(r => r.status === 'created_no_email').length
     };
