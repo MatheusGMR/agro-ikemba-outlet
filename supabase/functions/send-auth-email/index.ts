@@ -195,7 +195,9 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Sending email to:", email);
     
-    const fromEmail = Deno.env.get("RESEND_FROM") || "AgroIkemba <noreply@resend.dev>";
+    // Use simpler fallback format without display name to avoid validation errors
+    const fromEmail = Deno.env.get("RESEND_FROM") || "noreply@resend.dev";
+    console.log("Using sender email:", fromEmail);
     
     const emailResponse = await resend.emails.send({
       from: fromEmail,
