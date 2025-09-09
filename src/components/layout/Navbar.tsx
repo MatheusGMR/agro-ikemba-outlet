@@ -229,19 +229,12 @@ export default function Navbar() {
       </div>
       
       {/* Mobile menu */}
-      {isMenuOpen && <div className="fixed inset-0 z-50 bg-background md:hidden pt-16">
-          <nav className="container-custom py-4">
+      {isMenuOpen && <div className="fixed inset-0 z-50 bg-background/98 backdrop-blur-md md:hidden pt-16 border-r border-border/40">
+          <nav className="container-custom py-4 h-full bg-background/95">
             <ul className="space-y-4 text-lg">
               <NavItem href="/landing" className="text-primary font-semibold animate-pulse">🔥 OFERTA ESPECIAL</NavItem>
               <NavItem href="/products">Produtos</NavItem>
               <NavItem href="/sobre">Sobre Nós</NavItem>
-              <NavItem href="/simulador">Simulador</NavItem>
-              {isLoggedIn && <>
-                  <NavItem href="/for-manufacturers">Para Fabricantes</NavItem>
-                  <NavItem href="/for-distributors">Para Distribuidores</NavItem>
-                  <NavItem href="/financial-services">Serviços Financeiros</NavItem>
-                  <NavItem href="/logistics">Logística</NavItem>
-                </>}
               {isAdminAuthenticated && <NavItem href="/admin">Painel Admin</NavItem>}
               {isRepresentative && <NavItem href="/representative">Painel Representante</NavItem>}
             </ul>
@@ -255,18 +248,6 @@ export default function Navbar() {
                       {isRepresentative && <User className="w-4 h-4 text-blue-500" />}
                     </span>
                   </div>
-                  {isAdminAuthenticated && <Button variant="outline" className="w-full mb-2 bg-yellow-50 border-yellow-200 text-yellow-800" asChild>
-                      <Link to="/admin">
-                        <Shield className="w-4 h-4 mr-1" />
-                        Painel Admin
-                      </Link>
-                    </Button>}
-                  {isRepresentative && <Button variant="outline" className="w-full mb-2 bg-blue-50 border-blue-200 text-blue-800" asChild>
-                      <Link to="/representative">
-                        <User className="w-4 h-4 mr-1" />
-                        Painel Representante
-                      </Link>
-                    </Button>}
                   <Button variant="outline" className="w-full" onClick={handleLogout}>
                     Sair
                   </Button>
