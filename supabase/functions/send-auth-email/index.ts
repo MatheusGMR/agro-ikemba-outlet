@@ -195,14 +195,34 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Sending email to:", email);
     
+    const fromEmail = Deno.env.get("RESEND_FROM") || "AgroIkemba <noreply@resend.dev>";
+    
     const emailResponse = await resend.emails.send({
-      from: "AgroIkemba <noreply@resend.dev>", // Usando dominio resend padrão
+      from: fromEmail,
       to: [email],
       subject: subject,
       html: html,
     });
 
     console.log("Email sent successfully:", emailResponse);
+
+    // Check if Resend returned an error
+    if (emailResponse.error) {
+      console.error("Resend error:", emailResponse.error);
+      return new Response(
+        JSON.stringify({ 
+          error: "Erro ao enviar email", 
+          details: emailResponse.error 
+        }),
+        {
+          status: 500,
+          headers: {
+            "Content-Type": "application/json",
+            ...corsHeaders,
+          },
+        }
+      );
+    }
 
     return new Response(JSON.stringify({ success: true, data: emailResponse }), {
       status: 200,
