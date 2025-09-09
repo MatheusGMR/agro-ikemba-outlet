@@ -51,7 +51,7 @@ export default function RepDashboard() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Dashboard</h1>
+          <h1 className="text-3xl font-bold">Olá, vendedor</h1>
           <p className="text-muted-foreground">
             Olá, {representative?.name}! Aqui está seu resumo de vendas.
           </p>
