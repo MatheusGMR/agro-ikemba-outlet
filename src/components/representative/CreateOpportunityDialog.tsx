@@ -283,10 +283,13 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
         const { totalValue, totalCommission } = calculateTotals;
 
         // 1. Create opportunity
+        const autoTitle = formData.title.trim() || 
+          `Proposta ${selectedClient?.company_name} - ${new Date().toLocaleDateString('pt-BR')}`;
+          
         const opportunityData = {
           representative_id: representative.id,
           client_id: formData.client_id,
-          title: formData.title || 'Oportunidade sem título',
+          title: autoTitle,
           description: formData.description,
           estimated_value: totalValue,
           estimated_commission: totalCommission,
@@ -406,12 +409,12 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
   const renderBasicStep = () => (
     <div className="space-y-4">
       <div>
-        <Label htmlFor="title">Título da Oportunidade</Label>
+        <Label htmlFor="title">Título da Oportunidade (opcional)</Label>
         <Input
           id="title"
           value={formData.title}
           onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-          placeholder="Ex: Proposta para safra de soja 2024"
+          placeholder="Se não informado, será gerado automaticamente"
         />
       </div>
 

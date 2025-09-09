@@ -12,9 +12,9 @@ interface ApprovalData {
 }
 
 // Public access to proposals (no auth required)
-export function useProposalPublic(proposalId: string) {
+export function useProposalPublic(publicLink: string) {
   return useQuery({
-    queryKey: ['proposal', 'public', proposalId],
+    queryKey: ['proposal', 'public', publicLink],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('proposals')
@@ -43,7 +43,7 @@ export function useProposalPublic(proposalId: string) {
             )
           )
         `)
-        .eq('id', proposalId)
+        .eq('public_link', publicLink)
         .single();
 
       if (error) throw error;
@@ -72,7 +72,7 @@ export function useProposalPublic(proposalId: string) {
         };
       };
     },
-    enabled: !!proposalId,
+    enabled: !!publicLink,
     staleTime: 0, // Always fetch fresh data for public proposals
     refetchOnWindowFocus: false,
     retry: 1

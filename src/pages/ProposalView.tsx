@@ -102,7 +102,10 @@ export default function ProposalView() {
             <XCircle className="h-16 w-16 text-destructive mx-auto mb-4" />
             <h2 className="text-xl font-semibold mb-2">Proposta não encontrada</h2>
             <p className="text-muted-foreground">
-              Esta proposta não existe ou o link pode ter expirado.
+              {error?.message?.includes('No rows returned') 
+                ? 'Esta proposta não existe ou o link pode estar incorreto.'
+                : 'Erro ao carregar a proposta. Tente novamente mais tarde.'
+              }
             </p>
           </CardContent>
         </Card>
