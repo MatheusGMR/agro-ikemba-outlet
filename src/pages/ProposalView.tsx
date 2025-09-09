@@ -120,7 +120,6 @@ export default function ProposalView() {
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-2 mb-4">
             <FileText className="h-8 w-8 text-primary" />
-            <h1 className="text-3xl font-bold">Proposta Comercial</h1>
           </div>
           <Badge variant={
             proposal.status === 'approved' ? 'default' :

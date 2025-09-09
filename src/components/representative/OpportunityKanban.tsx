@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { useOpportunities, useCurrentRepresentative } from '@/hooks/useRepresentative';
+import { useOpportunities, useCurrentRepresentative, useUpdateOpportunity } from '@/hooks/useRepresentative';
 import { formatCurrency } from '@/lib/utils';
 import { Opportunity } from '@/types/representative';
 import { 
@@ -10,10 +10,14 @@ import {
   FileText, 
   List,
   Kanban,
-  ChevronRight
+  ChevronRight,
+  XCircle,
+  CheckCircle
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { toast } from '@/hooks/use-toast';
+import LossReasonDialog from './LossReasonDialog';
 
 const STAGE_LABELS = {
   com_oportunidade: 'Com Oportunidade',
@@ -35,9 +39,11 @@ interface OpportunityCardProps {
   opportunity: Opportunity;
   onAdvanceStage: (opportunityId: string, newStage: string) => void;
   onCreateProposal: (opportunity: Opportunity) => void;
+  onMarkAsLost: (opportunity: Opportunity) => void;
+  onMarkAsWon: (opportunityId: string) => void;
 }
 
-function OpportunityCard({ opportunity, onAdvanceStage, onCreateProposal }: OpportunityCardProps) {
+function OpportunityCard({ opportunity, onAdvanceStage, onCreateProposal, onMarkAsLost, onMarkAsWon }: OpportunityCardProps) {
   const stageKeys = Object.keys(STAGE_LABELS) as Array<keyof typeof STAGE_LABELS>;
   const currentStageIndex = stageKeys.indexOf(opportunity.stage);
   const nextStage = currentStageIndex < stageKeys.length - 1 ? stageKeys[currentStageIndex + 1] : null;
@@ -88,12 +94,12 @@ function OpportunityCard({ opportunity, onAdvanceStage, onCreateProposal }: Oppo
           </div>
         </div>
 
-        <div className="flex gap-2">
+        <div className="space-y-2">
           {opportunity.stage === 'com_oportunidade' && (
             <Button
               size="sm"
               variant="outline"
-              className="flex-1 text-xs"
+              className="w-full text-xs"
               onClick={() => onCreateProposal(opportunity)}
             >
               <FileText className="h-3 w-3 mr-1" />
@@ -101,17 +107,41 @@ function OpportunityCard({ opportunity, onAdvanceStage, onCreateProposal }: Oppo
             </Button>
           )}
           
-          {nextStage && (
+          <div className="flex gap-1">
+            {nextStage && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="flex-1 text-xs"
+                onClick={() => onAdvanceStage(opportunity.id, nextStage)}
+              >
+                Avançar
+                <ChevronRight className="h-3 w-3 ml-1" />
+              </Button>
+            )}
+            
+            {opportunity.stage === 'em_entrega' && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="flex-1 text-xs bg-green-50 hover:bg-green-100 text-green-700 border-green-200"
+                onClick={() => onMarkAsWon(opportunity.id)}
+              >
+                <CheckCircle className="h-3 w-3 mr-1" />
+                Ganhou
+              </Button>
+            )}
+            
             <Button
               size="sm"
               variant="outline"
-              className="flex-1 text-xs"
-              onClick={() => onAdvanceStage(opportunity.id, nextStage)}
+              className="flex-1 text-xs bg-red-50 hover:bg-red-100 text-red-700 border-red-200"
+              onClick={() => onMarkAsLost(opportunity)}
             >
-              Avançar
-              <ChevronRight className="h-3 w-3 ml-1" />
+              <XCircle className="h-3 w-3 mr-1" />
+              Perdeu
             </Button>
-          )}
+          </div>
         </div>
       </CardContent>
     </Card>
@@ -121,8 +151,11 @@ function OpportunityCard({ opportunity, onAdvanceStage, onCreateProposal }: Oppo
 export default function OpportunityKanban() {
   const { data: representative } = useCurrentRepresentative();
   const { data: opportunities = [], isLoading, error } = useOpportunities(representative?.id || '');
+  const updateOpportunity = useUpdateOpportunity();
   const isMobile = useIsMobile();
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
+  const [lossDialogOpen, setLossDialogOpen] = useState(false);
+  const [selectedOpportunityForLoss, setSelectedOpportunityForLoss] = useState<Opportunity | null>(null);
 
   console.info('🎯 OpportunityKanban - representative:', representative?.id, 'opportunities:', opportunities.length, 'loading:', isLoading, 'error:', error);
 
@@ -135,14 +168,81 @@ export default function OpportunityKanban() {
     }
   }, [isMobile]);
 
-  const handleAdvanceStage = (opportunityId: string, newStage: string) => {
-    console.log('Advancing stage:', opportunityId, newStage);
-    // TODO: Implementar mudança de estágio
+  const handleAdvanceStage = async (opportunityId: string, newStage: string) => {
+    try {
+      await updateOpportunity.mutateAsync({
+        id: opportunityId,
+        updates: { stage: newStage as any }
+      });
+      
+      toast({
+        title: "Estágio atualizado",
+        description: "Oportunidade avançou para o próximo estágio",
+      });
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Erro ao atualizar estágio da oportunidade",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleCreateProposal = (opportunity: Opportunity) => {
     console.log('Creating proposal for:', opportunity.id);
     // TODO: Implementar criação de proposta
+  };
+
+  const handleMarkAsLost = (opportunity: Opportunity) => {
+    setSelectedOpportunityForLoss(opportunity);
+    setLossDialogOpen(true);
+  };
+
+  const handleConfirmLoss = async (reason: string, comments?: string) => {
+    if (!selectedOpportunityForLoss) return;
+
+    try {
+      await updateOpportunity.mutateAsync({
+        id: selectedOpportunityForLoss.id,
+        updates: {
+          status: 'closed',
+          description: `${selectedOpportunityForLoss.description || ''}\n\nMotivo da perda: ${reason}${comments ? `\nComentários: ${comments}` : ''}`
+        }
+      });
+      
+      toast({
+        title: "Oportunidade marcada como perdida",
+        description: "A oportunidade foi atualizada com sucesso",
+      });
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Erro ao marcar oportunidade como perdida",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleMarkAsWon = async (opportunityId: string) => {
+    try {
+      await updateOpportunity.mutateAsync({
+        id: opportunityId,
+        updates: {
+          status: 'closed'
+        }
+      });
+      
+      toast({
+        title: "Oportunidade ganha! 🎉",
+        description: "Parabéns! A oportunidade foi marcada como ganha",
+      });
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Erro ao marcar oportunidade como ganha",
+        variant: "destructive",
+      });
+    }
   };
 
   if (isLoading) {
@@ -193,8 +293,9 @@ export default function OpportunityKanban() {
     );
   }
 
-  // Agrupar oportunidades por estágio
-  const opportunitiesByStage = opportunities.reduce((acc, opp) => {
+  // Agrupar oportunidades por estágio (apenas oportunidades ativas)
+  const activeOpportunities = opportunities.filter(opp => opp.status === 'active');
+  const opportunitiesByStage = activeOpportunities.reduce((acc, opp) => {
     if (!acc[opp.stage]) {
       acc[opp.stage] = [];
     }
@@ -226,7 +327,7 @@ export default function OpportunityKanban() {
       </div>
       <div>
           <div className="space-y-4">
-            {opportunities.map(opportunity => (
+            {activeOpportunities.map(opportunity => (
               <Card key={opportunity.id} className="p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
@@ -286,6 +387,8 @@ export default function OpportunityKanban() {
                     opportunity={opportunity}
                     onAdvanceStage={handleAdvanceStage}
                     onCreateProposal={handleCreateProposal}
+                    onMarkAsLost={handleMarkAsLost}
+                    onMarkAsWon={handleMarkAsWon}
                   />
                 ))}
                 
@@ -300,6 +403,12 @@ export default function OpportunityKanban() {
         </div>
       </div>
 
+      <LossReasonDialog
+        open={lossDialogOpen}
+        onOpenChange={setLossDialogOpen}
+        opportunityTitle={selectedOpportunityForLoss?.title || ''}
+        onConfirm={handleConfirmLoss}
+      />
     </div>
   );
 }

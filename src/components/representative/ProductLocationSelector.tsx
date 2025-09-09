@@ -114,7 +114,7 @@ export default function ProductLocationSelector({
   };
 
   const totalSelected = selections.reduce((sum, s) => sum + s.quantity, 0);
-  const hasMinimumVolume = selections.every(s => s.quantity >= 10000);
+  const hasMinimumVolume = selections.every(s => s.quantity >= 1000);
   const allWithinAvailable = selections.every(s => s.quantity <= s.available_volume);
 
   const handleConfirm = () => {
@@ -165,7 +165,7 @@ export default function ProductLocationSelector({
             <Alert variant="destructive">
               <AlertTriangle className="h-4 w-4" />
               <AlertDescription>
-                Volume mínimo por localidade: 10.000 {product.all_items[0]?.unit || 'L'}
+                Volume mínimo por localidade: 1.000 {product.all_items[0]?.unit || 'L'}
               </AlertDescription>
             </Alert>
           )}
@@ -201,7 +201,7 @@ export default function ProductLocationSelector({
                             type="number"
                             min="0"
                             max={locationGroup.totalVolume}
-                            step="1000"
+                            step="100"
                             value={selectedQuantity}
                             onChange={(e) => handleQuantityChange(locationGroup.location, parseInt(e.target.value) || 0)}
                             className="w-32"
@@ -209,9 +209,9 @@ export default function ProductLocationSelector({
                           />
                         </div>
 
-                        {selectedQuantity > 0 && selectedQuantity < 10000 && (
+                        {selectedQuantity > 0 && selectedQuantity < 1000 && (
                           <div className="text-sm text-red-600 mt-1">
-                            Mínimo: 10.000 {locationGroup.mainItem.unit}
+                            Mínimo: 1.000 {locationGroup.mainItem.unit}
                           </div>
                         )}
 

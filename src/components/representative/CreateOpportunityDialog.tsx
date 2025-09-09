@@ -355,6 +355,18 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
             public_link: result.public_link!
           });
           setShowSuccessModal(true);
+          // Reset form after successful creation
+          setCurrentStep('basic');
+          setFormData({
+            title: '',
+            description: '',
+            client_id: '',
+            probability: '50',
+            payment_method: '',
+            delivery_method: ''
+          });
+          setSelectedProducts([]);
+          setSelectedClient(null);
         } else {
           throw new Error('Erro ao enviar proposta: ' + result.error);
         }

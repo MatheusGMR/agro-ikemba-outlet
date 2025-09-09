@@ -63,8 +63,19 @@ export function useCreateOpportunity() {
   return useMutation({
     mutationFn: RepresentativeService.createOpportunity,
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['opportunities', data.representative_id] });
-      queryClient.invalidateQueries({ queryKey: ['dashboard-stats', data.representative_id] });
+      // More specific invalidation to prevent duplicate cards
+      queryClient.invalidateQueries({ 
+        queryKey: ['opportunities', data.representative_id],
+        exact: true
+      });
+      queryClient.invalidateQueries({ 
+        queryKey: ['dashboard-stats', data.representative_id],
+        exact: true 
+      });
+      // Refetch to ensure fresh data
+      queryClient.refetchQueries({ 
+        queryKey: ['opportunities', data.representative_id] 
+      });
     }
   });
 }
