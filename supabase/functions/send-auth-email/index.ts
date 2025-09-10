@@ -126,10 +126,25 @@ const handler = async (req: Request): Promise<Response> => {
                 <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #0ea5e9, #0284c7); border-radius: 50%; margin: 0 auto 15px auto; display: flex; align-items: center; justify-content: center;">
                   <span style="color: white; font-size: 24px;">📱</span>
                 </div>
-                <h3 style="color: #0c4a6e; font-size: 16px; font-weight: 600; margin: 0 0 8px 0;">Experiência Otimizada</h3>
-                <p style="color: #0369a1; font-size: 14px; margin: 0; line-height: 1.4;">
-                  Sua experiência com vídeo ficará melhor pelo <strong>celular</strong>
+                <h3 style="color: #0c4a6e; font-size: 16px; font-weight: 600; margin: 0 0 8px 0;">Experiência Mobile Otimizada</h3>
+                <p style="color: #0369a1; font-size: 14px; margin: 0 0 16px 0; line-height: 1.4;">
+                  Nossa plataforma funciona perfeitamente no seu celular com navegação rápida e intuitiva
                 </p>
+                
+                <!-- Embedded Video Section -->
+                <div style="text-align: center; margin-top: 16px;">
+                  <div style="position: relative; display: inline-block; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                    <a href="https://youtu.be/dQw4w9WgXcQ" target="_blank" style="text-decoration: none;">
+                      <img src="https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg" alt="Demonstração da Plataforma Mobile" style="width: 280px; height: 157px; object-fit: cover; border-radius: 8px;">
+                      <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.7); border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center;">
+                        <div style="width: 0; height: 0; border-left: 16px solid white; border-top: 10px solid transparent; border-bottom: 10px solid transparent; margin-left: 3px;"></div>
+                      </div>
+                    </a>
+                  </div>
+                  <p style="color: #0369a1; font-size: 11px; margin: 8px 0 0 0; font-style: italic;">
+                    🎬 Clique para ver como usar a plataforma no celular
+                  </p>
+                </div>
               </div>
               
               <!-- Botão de Acesso Principal -->

@@ -30,6 +30,7 @@ import { Check, X, Eye, Users, UserCheck, UserX, Clock, LogOut, RefreshCw, Searc
 import { userService } from '@/services/userService';
 import { ImageUploader } from '@/components/admin/ImageUploader';
 import EmailTestingPanel from '@/components/admin/EmailTestingPanel';
+import { AuthUsersBatchPanel } from '@/components/admin/AuthUsersBatchPanel';
 import { supabase } from '@/integrations/supabase/client';
 
 export default function Admin() {
@@ -338,8 +339,9 @@ export default function Admin() {
 
         {/* Administration Tabs */}
         <Tabs defaultValue="users" className="mb-8">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="users">User Management</TabsTrigger>
+            <TabsTrigger value="auth">Auth Creation</TabsTrigger>
             <TabsTrigger value="images">Image Upload</TabsTrigger>
             <TabsTrigger value="email">Email Testing</TabsTrigger>
           </TabsList>
@@ -708,14 +710,18 @@ export default function Admin() {
         </Dialog>
         
         </TabsContent>
-        
-        <TabsContent value="images" className="mt-6">
-          <ImageUploader />
-        </TabsContent>
-        
-        <TabsContent value="email" className="mt-6">
-          <EmailTestingPanel />
-        </TabsContent>
+          
+          <TabsContent value="auth" className="mt-6">
+            <AuthUsersBatchPanel />
+          </TabsContent>
+          
+          <TabsContent value="images" className="mt-6">
+            <ImageUploader />
+          </TabsContent>
+          
+          <TabsContent value="email" className="mt-6">
+            <EmailTestingPanel />
+          </TabsContent>
         
         </Tabs>
       </div>
