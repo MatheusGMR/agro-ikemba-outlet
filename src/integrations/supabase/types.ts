@@ -1587,6 +1587,10 @@ export type Database = {
       }
     }
     Functions: {
+      check_admin_access: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       generate_order_number: {
         Args: Record<PropertyKey, never>
         Returns: string
@@ -1615,10 +1619,6 @@ export type Database = {
           user_phone: string
           user_type: string
         }[]
-      }
-      is_admin: {
-        Args: { user_uuid?: string }
-        Returns: boolean
       }
     }
     Enums: {
