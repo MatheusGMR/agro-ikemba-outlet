@@ -133,7 +133,7 @@ const handler = async (req: Request): Promise<Response> => {
         // Fallback para domínio padrão do Resend
         const fallbackEmailData = {
           ...emailData,
-          from: emailData.from.replace("noreply@agroikemba.com.br", "onboarding@resend.dev")
+          from: emailData.from.replace(/noreply@agroikemba\.com\.br|AgroIkemba <[^>]+>/, "onboarding@resend.dev")
         };
         console.log("Tentando enviar com fallback:", fallbackEmailData.from);
         return await resend.emails.send(fallbackEmailData);
@@ -143,34 +143,52 @@ const handler = async (req: Request): Promise<Response> => {
     console.log("Enviando email para a empresa...");
     // Enviar email para a empresa
     const companyEmailResponse = await sendEmailWithFallback({
-      from: "Agro Ikemba <noreply@agroikemba.com.br>",
+      from: Deno.env.get("RESEND_FROM") || "AgroIkemba <noreply@agroikemba.com.br>",
       to: ["matheus@agroikemba.com.br"],
-      subject: "Nova Solicitação de Cadastro - Agro Ikemba",
+      subject: "Nova Solicitação de Cadastro - AgroIkemba",
+      headers: {
+        'X-Entity-Ref-ID': new Date().getTime().toString(),
+        'X-Priority': '1',
+      },
       html: `
-        <div style="font-family: Arial, sans-serif; line-height: 1.6; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #075e54;">Nova Solicitação de Cadastro Completo</h2>
-          
-          <div style="background-color: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <p><strong>Nome:</strong> ${data.name}</p>
-            <p><strong>Email:</strong> ${data.email}</p>
-            <p><strong>Tipo:</strong> ${data.tipo}</p>
-            ${data.conheceu ? `<p><strong>Como conheceu:</strong> ${data.conheceu}</p>` : ''}
-            ${data.cnpj ? `<p><strong>CNPJ:</strong> ${data.cnpj}</p>` : '<p><strong>CNPJ:</strong> Email corporativo - não necessário</p>'}
-            <p><strong>Data/Hora:</strong> ${new Date().toLocaleString('pt-BR')}</p>
+        <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; max-width: 600px; margin: 0 auto; color: #333;">
+          <div style="background: linear-gradient(135deg, #22c55e, #16a34a); padding: 30px 20px; text-align: center; border-radius: 8px 8px 0 0;">
+            <h1 style="color: white; margin: 0; font-size: 24px;">🌱 AgroIkemba</h1>
+            <p style="color: #f0fdf4; margin: 8px 0 0 0; font-size: 14px;">Sistema de Gestão</p>
           </div>
           
-          <p><strong>Próximos passos:</strong></p>
-          <ul>
-            <li>Analisar a solicitação de cadastro</li>
-            <li>Verificar dados da empresa (se aplicável)</li>
-            <li>Aprovar ou solicitar informações adicionais</li>
-            <li>Entrar em contato com o usuário</li>
-          </ul>
-          
-          <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">
-          <p style="font-size: 12px; color: #666;">
-            Este email foi gerado automaticamente pelo sistema Agro Ikemba.
-          </p>
+          <div style="background: white; padding: 30px 20px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px;">
+            <h2 style="color: #1f2937; margin: 0 0 20px 0; font-size: 20px;">Nova Solicitação de Cadastro</h2>
+            
+            <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0; border: 1px solid #e5e7eb;">
+              <h3 style="color: #374151; margin: 0 0 15px 0; font-size: 16px;">Dados do Solicitante:</h3>
+              <table style="width: 100%; border-collapse: collapse;">
+                <tr><td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb;"><strong>Nome:</strong></td><td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb;">${data.name}</td></tr>
+                <tr><td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb;"><strong>Email:</strong></td><td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb;">${data.email}</td></tr>
+                <tr><td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb;"><strong>Telefone:</strong></td><td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb;">${data.phone}</td></tr>
+                <tr><td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb;"><strong>Empresa:</strong></td><td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb;">${data.company}</td></tr>
+                <tr><td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb;"><strong>Tipo:</strong></td><td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb;">${data.tipo}</td></tr>
+                ${data.conheceu ? `<tr><td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb;"><strong>Como conheceu:</strong></td><td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb;">${data.conheceu}</td></tr>` : ''}
+                ${data.cnpj ? `<tr><td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb;"><strong>CNPJ:</strong></td><td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb;">${data.cnpj}</td></tr>` : '<tr><td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb;"><strong>CNPJ:</strong></td><td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb;">Não informado</td></tr>'}
+                <tr><td style="padding: 8px 0;"><strong>Data/Hora:</strong></td><td style="padding: 8px 0;">${new Date().toLocaleString('pt-BR')}</td></tr>
+              </table>
+            </div>
+            
+            <div style="background-color: #fef3c7; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #f59e0b;">
+              <h4 style="color: #92400e; margin: 0 0 10px 0; font-size: 14px;">📋 Próximos Passos:</h4>
+              <ul style="margin: 0; padding-left: 20px; color: #92400e;">
+                <li>Analisar e validar os dados fornecidos</li>
+                <li>Verificar informações da empresa</li>
+                <li>Aprovar cadastro ou solicitar documentação adicional</li>
+                <li>Entrar em contato via telefone ou email</li>
+              </ul>
+            </div>
+            
+            <p style="margin: 30px 0 0 0; font-size: 12px; color: #6b7280; text-align: center; border-top: 1px solid #e5e7eb; padding-top: 20px;">
+              📧 Notificação automática do sistema AgroIkemba<br>
+              Recebido em ${new Date().toLocaleString('pt-BR')}
+            </p>
+          </div>
         </div>
       `,
     });
@@ -185,51 +203,77 @@ const handler = async (req: Request): Promise<Response> => {
     console.log("Enviando email de confirmação para o usuário...");
     // Enviar email de confirmação para o usuário
     const userEmailResponse = await sendEmailWithFallback({
-      from: "Agro Ikemba <noreply@agroikemba.com.br>",
+      from: Deno.env.get("RESEND_FROM") || "AgroIkemba <noreply@agroikemba.com.br>",
       to: [data.email],
-      subject: "Solicitação de Cadastro Recebida - Agro Ikemba",
+      subject: "Solicitação de Cadastro Recebida - AgroIkemba",
+      headers: {
+        'X-Entity-Ref-ID': new Date().getTime().toString(),
+        'List-Unsubscribe': '<mailto:unsubscribe@agroikemba.com.br>',
+        'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+      },
       html: `
-        <div style="font-family: Arial, sans-serif; line-height: 1.6; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #075e54;">Solicitação Recebida com Sucesso, ${data.name}!</h2>
-          
-          <p>Recebemos sua solicitação de cadastro na <strong>Agro Ikemba</strong> e agora ela está em análise pela nossa equipe.</p>
-          
-          <div style="background-color: #f0f8f0; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #075e54;">
-            <h3 style="color: #075e54; margin-top: 0;">Dados da sua solicitação:</h3>
-            <p><strong>Nome:</strong> ${data.name}</p>
-            <p><strong>Email:</strong> ${data.email}</p>
-            <p><strong>Tipo:</strong> ${data.tipo}</p>
-            ${data.conheceu ? `<p><strong>Como conheceu:</strong> ${data.conheceu}</p>` : ''}
+        <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; max-width: 600px; margin: 0 auto; color: #333;">
+          <div style="background: linear-gradient(135deg, #22c55e, #16a34a); padding: 30px 20px; text-align: center; border-radius: 8px 8px 0 0;">
+            <h1 style="color: white; margin: 0; font-size: 24px;">🌱 AgroIkemba</h1>
+            <p style="color: #f0fdf4; margin: 8px 0 0 0; font-size: 14px;">O Outlet de Insumos Agrícolas do Brasil</p>
           </div>
           
-          <div style="background-color: #fff3cd; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #ffc107;">
-            <p style="margin: 0;"><strong>⏰ O que acontece agora?</strong></p>
-            <p style="margin: 5px 0 0 0;">Nossa equipe analisará sua solicitação e entrará em contato em até <strong>24 horas</strong> pelo email cadastrado.</p>
-          </div>
-          
-          <p><strong>Enquanto isso, você pode:</strong></p>
-          <ul>
-            <li>📱 Entrar em contato pelo WhatsApp: +55 43 98406-4141</li>
-            <li>🌐 Visitar nosso site para mais informações</li>
-            <li>📧 Responder este email caso tenha dúvidas</li>
-          </ul>
-          
-          <div style="background-color: #e8f4f8; padding: 15px; border-radius: 8px; margin: 30px 0;">
-            <p style="margin: 0; text-align: center;">
-              <strong>🚀 Agro Ikemba</strong><br>
-              Revolucionando o mercado de insumos agrícolas
+          <div style="background: white; padding: 30px 20px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px;">
+            <h2 style="color: #1f2937; margin: 0 0 15px 0; font-size: 22px;">✅ Solicitação Recebida com Sucesso!</h2>
+            
+            <p style="color: #4b5563; font-size: 16px; margin: 0 0 25px 0;">
+              Olá <strong>${data.name}</strong>, sua solicitação de cadastro foi recebida e está sendo analisada pela nossa equipe especializada.
+            </p>
+            
+            <div style="background: linear-gradient(135deg, #f0fdf4, #dcfce7); padding: 20px; border-radius: 8px; margin: 25px 0; border: 1px solid #bbf7d0;">
+              <h3 style="color: #15803d; margin: 0 0 15px 0; font-size: 16px;">📋 Resumo da Solicitação:</h3>
+              <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 6px; overflow: hidden;">
+                <tr style="background: #f9fafb;"><td style="padding: 12px; border-bottom: 1px solid #e5e7eb;"><strong>Empresa:</strong></td><td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">${data.company}</td></tr>
+                <tr><td style="padding: 12px; border-bottom: 1px solid #e5e7eb;"><strong>Tipo de Cliente:</strong></td><td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">${data.tipo}</td></tr>
+                <tr style="background: #f9fafb;"><td style="padding: 12px;"><strong>Email de Contato:</strong></td><td style="padding: 12px;">${data.email}</td></tr>
+              </table>
+            </div>
+            
+            <div style="background: linear-gradient(135deg, #fffbeb, #fef3c7); padding: 20px; border-radius: 8px; margin: 25px 0; border: 1px solid #fde68a;">
+              <h4 style="color: #92400e; margin: 0 0 10px 0; font-size: 16px; display: flex; align-items: center;">
+                ⏱️ Próximos Passos
+              </h4>
+              <p style="color: #92400e; margin: 0 0 15px 0;">
+                Nossa equipe comercial analisará sua solicitação e entrará em contato em até <strong>24 horas úteis</strong> através do email cadastrado.
+              </p>
+            </div>
+            
+            <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin: 25px 0; border: 1px solid #e2e8f0;">
+              <h4 style="color: #475569; margin: 0 0 15px 0; font-size: 16px;">🤝 Enquanto isso, você pode:</h4>
+              <ul style="margin: 0; padding-left: 20px; color: #475569;">
+                <li style="margin-bottom: 8px;">💬 <strong>WhatsApp:</strong> +55 43 98406-4141</li>
+                <li style="margin-bottom: 8px;">🌐 <strong>Site:</strong> www.agroikemba.com.br</li>
+                <li style="margin-bottom: 8px;">📧 <strong>Email:</strong> Responder diretamente este email</li>
+                <li>📱 <strong>Redes Sociais:</strong> Seguir para novidades e promoções</li>
+              </ul>
+            </div>
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <div style="background: linear-gradient(135deg, #22c55e, #16a34a); color: white; padding: 20px; border-radius: 12px; display: inline-block;">
+                <h3 style="margin: 0 0 8px 0; font-size: 18px;">🚀 AgroIkemba</h3>
+                <p style="margin: 0; font-size: 14px; opacity: 0.9;">Conectando o campo ao futuro</p>
+              </div>
+            </div>
+            
+            <div style="text-align: center; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+              <p style="color: #6b7280; margin: 0 0 8px 0; font-size: 16px;">
+                Atenciosamente,
+              </p>
+              <p style="color: #1f2937; margin: 0; font-size: 16px; font-weight: 600;">
+                Equipe Comercial AgroIkemba
+              </p>
+            </div>
+            
+            <p style="margin: 30px 0 0 0; font-size: 11px; color: #9ca3af; text-align: center; line-height: 1.4;">
+              📧 Esta é uma confirmação automática. Se você não solicitou este cadastro, pode ignorar esta mensagem.<br>
+              Para cancelar futuras comunicações, responda este email com "DESCADASTRAR".
             </p>
           </div>
-          
-          <p style="margin-top: 30px;">
-            Atenciosamente,<br>
-            <strong>Equipe Agro Ikemba</strong>
-          </p>
-          
-          <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">
-          <p style="font-size: 12px; color: #666;">
-            Este é um email automático. Se você não solicitou este cadastro, pode ignorar esta mensagem.
-          </p>
         </div>
       `,
     });

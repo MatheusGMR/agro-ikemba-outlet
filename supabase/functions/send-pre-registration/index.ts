@@ -79,7 +79,7 @@ const handler = async (req: Request): Promise<Response> => {
         // Fallback para domínio padrão do Resend
         const fallbackEmailData = {
           ...emailData,
-          from: emailData.from.replace("noreply@agroikemba.com.br", "onboarding@resend.dev")
+          from: emailData.from.replace(/noreply@agroikemba\.com\.br|AgroIkemba <[^>]+>/, "onboarding@resend.dev")
         };
         console.log("Tentando enviar com fallback:", fallbackEmailData.from);
         return await resend.emails.send(fallbackEmailData);
@@ -89,20 +89,46 @@ const handler = async (req: Request): Promise<Response> => {
     // Enviar email para a empresa
     console.log("Enviando email para a empresa...");
     const companyEmailResponse = await sendEmailWithFallback({
-      from: "Agro Ikemba <noreply@agroikemba.com.br>",
+      from: Deno.env.get("RESEND_FROM") || "AgroIkemba <noreply@agroikemba.com.br>",
       to: ["matheus@agroikemba.com.br"],
-      subject: "Novo Pré-cadastro - Agro Ikemba",
+      subject: "Novo Pré-cadastro - AgroIkemba",
+      headers: {
+        'X-Entity-Ref-ID': new Date().getTime().toString(),
+        'X-Priority': '1',
+      },
       html: `
-        <h2>Novo Pré-cadastro Recebido</h2>
-        <div style="font-family: Arial, sans-serif; line-height: 1.6;">
-          <p><strong>Nome:</strong> ${data.name}</p>
-          <p><strong>Email:</strong> ${data.email}</p>
-          <p><strong>Telefone:</strong> ${data.phone}</p>
-           <p><strong>Empresa:</strong> ${data.company}</p>
-           <p><strong>Tipo:</strong> ${data.tipo}</p>
-           ${data.cnpj ? `<p><strong>CNPJ:</strong> ${data.cnpj}</p>` : ''}
-           ${data.conheceu ? `<p><strong>Como conheceu:</strong> ${data.conheceu}</p>` : ''}
-           <p><strong>Data/Hora:</strong> ${new Date().toLocaleString('pt-BR')}</p>
+        <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; max-width: 600px; margin: 0 auto; color: #333;">
+          <div style="background: linear-gradient(135deg, #22c55e, #16a34a); padding: 25px 20px; text-align: center; border-radius: 8px 8px 0 0;">
+            <h1 style="color: white; margin: 0; font-size: 20px;">🌱 AgroIkemba</h1>
+            <p style="color: #f0fdf4; margin: 8px 0 0 0; font-size: 13px;">Sistema de Gestão</p>
+          </div>
+          
+          <div style="background: white; padding: 25px 20px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px;">
+            <h2 style="color: #1f2937; margin: 0 0 20px 0; font-size: 18px;">Novo Pré-cadastro Recebido</h2>
+            
+            <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0; border: 1px solid #e5e7eb;">
+              <table style="width: 100%; border-collapse: collapse;">
+                <tr><td style="padding: 6px 0; border-bottom: 1px solid #e5e7eb; width: 30%;"><strong>Nome:</strong></td><td style="padding: 6px 0; border-bottom: 1px solid #e5e7eb;">${data.name}</td></tr>
+                <tr><td style="padding: 6px 0; border-bottom: 1px solid #e5e7eb;"><strong>Email:</strong></td><td style="padding: 6px 0; border-bottom: 1px solid #e5e7eb;">${data.email}</td></tr>
+                <tr><td style="padding: 6px 0; border-bottom: 1px solid #e5e7eb;"><strong>Telefone:</strong></td><td style="padding: 6px 0; border-bottom: 1px solid #e5e7eb;">${data.phone}</td></tr>
+                <tr><td style="padding: 6px 0; border-bottom: 1px solid #e5e7eb;"><strong>Empresa:</strong></td><td style="padding: 6px 0; border-bottom: 1px solid #e5e7eb;">${data.company}</td></tr>
+                <tr><td style="padding: 6px 0; border-bottom: 1px solid #e5e7eb;"><strong>Tipo:</strong></td><td style="padding: 6px 0; border-bottom: 1px solid #e5e7eb;">${data.tipo}</td></tr>
+                ${data.cnpj ? `<tr><td style="padding: 6px 0; border-bottom: 1px solid #e5e7eb;"><strong>CNPJ:</strong></td><td style="padding: 6px 0; border-bottom: 1px solid #e5e7eb;">${data.cnpj}</td></tr>` : ''}
+                ${data.conheceu ? `<tr><td style="padding: 6px 0; border-bottom: 1px solid #e5e7eb;"><strong>Como conheceu:</strong></td><td style="padding: 6px 0; border-bottom: 1px solid #e5e7eb;">${data.conheceu}</td></tr>` : ''}
+                <tr><td style="padding: 6px 0;"><strong>Data/Hora:</strong></td><td style="padding: 6px 0;">${new Date().toLocaleString('pt-BR')}</td></tr>
+              </table>
+            </div>
+            
+            <div style="background-color: #dbeafe; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #3b82f6;">
+              <p style="color: #1e40af; margin: 0; font-size: 13px;">
+                📞 <strong>Ação recomendada:</strong> Entre em contato com o lead nas próximas 24 horas para maior taxa de conversão.
+              </p>
+            </div>
+            
+            <p style="margin: 20px 0 0 0; font-size: 11px; color: #6b7280; text-align: center; border-top: 1px solid #e5e7eb; padding-top: 15px;">
+              📧 Notificação automática - Pré-cadastro AgroIkemba
+            </p>
+          </div>
         </div>
       `,
     });
@@ -112,9 +138,14 @@ const handler = async (req: Request): Promise<Response> => {
     // Enviar email de confirmação para o usuário
     console.log("Enviando email de confirmação para o usuário...");
     const userEmailResponse = await sendEmailWithFallback({
-      from: "Agro Ikemba <noreply@agroikemba.com.br>",
+      from: Deno.env.get("RESEND_FROM") || "AgroIkemba <noreply@agroikemba.com.br>",
       to: [data.email],
-      subject: "Confirmação de Pré-cadastro - Agro Ikemba",
+      subject: "Confirmação de Pré-cadastro - AgroIkemba",
+      headers: {
+        'X-Entity-Ref-ID': new Date().getTime().toString(),
+        'List-Unsubscribe': '<mailto:unsubscribe@agroikemba.com.br>',
+        'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+      },
       html: `
         <div style="font-family: Arial, sans-serif; line-height: 1.6; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #075e54;">Obrigado pelo seu interesse, ${data.name}!</h2>

@@ -154,7 +154,7 @@ const handler = async (req: Request): Promise<Response> => {
               
               <!-- Botão de Acesso -->
               <div style="text-align: center; margin-bottom: 35px;">
-                <a href="https://jhkxcplfempenoczcoep.supabase.co" 
+                <a href="https://www.agroikemba.com.br/login" 
                    style="display: inline-block; background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); color: white; padding: 18px 40px; text-decoration: none; border-radius: 25px; font-weight: 700; font-size: 16px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3); transition: all 0.3s ease;">
                   🚀 Acessar Sistema Agora
                 </a>
@@ -219,6 +219,11 @@ const handler = async (req: Request): Promise<Response> => {
       to: [email],
       subject,
       html,
+      headers: {
+        'X-Entity-Ref-ID': new Date().getTime().toString(),
+        'List-Unsubscribe': '<mailto:unsubscribe@agroikemba.com.br>',
+        'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+      },
     });
 
     if (emailResponse.error) {
