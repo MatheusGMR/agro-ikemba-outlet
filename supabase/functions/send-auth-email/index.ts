@@ -1,12 +1,9 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "npm:resend@2.0.0";
 
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
-
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
 interface AuthEmailRequest {
@@ -15,36 +12,30 @@ interface AuthEmailRequest {
   token?: string;
   name?: string;
   password?: string;
+  subject?: string;
+  content?: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
-  console.log("=== SEND-AUTH-EMAIL FUNCTION START ===");
-  console.log("Request method:", req.method);
-  console.log("Request headers:", Object.fromEntries(req.headers.entries()));
-  console.log("Timestamp:", new Date().toISOString());
-  
   if (req.method === "OPTIONS") {
-    console.log("Handling CORS preflight request");
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const body = await req.text();
-    console.log("Raw request body length:", body.length);
-    console.log("Request body preview:", body.substring(0, 200));
-    
-    if (!body.trim()) {
-      throw new Error("Empty request body");
+    const { email, type, token, name, password, subject: customSubject, content: customContent }: AuthEmailRequest = await req.json();
+
+    if (!email || !type) {
+      throw new Error("Email and type are required");
     }
 
-    const { email, type, token, name, password }: AuthEmailRequest = JSON.parse(body);
-    console.log("=== PARSED REQUEST DATA ===");
-    console.log("Email:", email || "EMAIL_NOT_PROVIDED");
-    console.log("Type:", type || "TYPE_NOT_PROVIDED");
-    console.log("Name:", name || "NAME_NOT_PROVIDED");
-    console.log("Has token:", !!token);
-    console.log("Has password:", !!password);
+    const resendApiKey = Deno.env.get("RESEND_API_KEY");
+    if (!resendApiKey) {
+      throw new Error("RESEND_API_KEY not configured");
+    }
 
+    const resend = new Resend(resendApiKey);
+    const fromEmail = Deno.env.get("RESEND_FROM") || "onboarding@resend.dev";
+    
     let subject: string;
     let html: string;
 
@@ -204,24 +195,17 @@ const handler = async (req: Request): Promise<Response> => {
         </html>
       `;
     } else if (type === 'test') {
-      subject = "✅ Email de Teste - AgroIkemba";
-      html = `
+      subject = customSubject || "✅ Teste de Email - AgroIkemba";
+      html = customContent || `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <div style="background: linear-gradient(135deg, #22c55e, #16a34a); padding: 40px 20px; text-align: center;">
             <h1 style="color: white; margin: 0; font-size: 28px;">AgroIkemba</h1>
-            <p style="color: #f0fdf4; margin: 10px 0 0 0;">Sistema de Email Funcionando</p>
+            <p style="color: #f0fdf4; margin: 10px 0 0 0;">Sistema de Email em Produção</p>
           </div>
-          
           <div style="padding: 40px 20px; text-align: center;">
-            <h2 style="color: #1a202c;">✅ Email de Teste</h2>
-            <p style="color: #4a5568; font-size: 16px; margin-bottom: 30px;">
-              Este é um email de teste para verificar se o sistema está funcionando corretamente.
-            </p>
-            <p style="color: #22c55e; font-weight: bold;">
-              🎉 Sistema funcionando perfeitamente!
-            </p>
-            <p style="color: #666; font-size: 14px; margin-top: 20px;">
-              Enviado em: ${new Date().toLocaleString('pt-BR')}
+            <h2 style="color: #1a202c;">✅ Sistema Funcionando</h2>
+            <p style="color: #4a5568; font-size: 16px;">
+              Email enviado com sucesso em ${new Date().toLocaleString('pt-BR')}
             </p>
           </div>
         </div>
@@ -230,103 +214,34 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error('Tipo de email inválido');
     }
 
-    // Validate required data
-    if (!email) {
-      throw new Error("Email is required");
-    }
-    if (!type) {
-      throw new Error("Email type is required");
-    }
-
-    console.log("=== EMAIL CONFIGURATION CHECK ===");
-    const resendApiKey = Deno.env.get("RESEND_API_KEY");
-    if (!resendApiKey) {
-      console.error("CRITICAL: RESEND_API_KEY not found in environment");
-      throw new Error("Email service not configured");
-    }
-    console.log("✅ RESEND_API_KEY found");
-
-    console.log("Preparing to send email to:", email);
-    console.log("Email type:", type);
-    
-    // Use safer fallback format - onboarding@resend.dev is verified by Resend
-    let senderEmail = Deno.env.get("RESEND_FROM") || "onboarding@resend.dev";
-    
-    // Validate sender email format
-    if (senderEmail && senderEmail.startsWith('re_') && senderEmail.length > 20) {
-      console.warn('🚨 RESEND_FROM is set to an API key instead of email address');
-      console.warn('Using fallback email address for sending');
-      senderEmail = 'onboarding@resend.dev';
-    }
-    
-    console.log("Using sender email:", senderEmail);
-    
-    const emailData = {
-      from: senderEmail,
+    const emailResponse = await resend.emails.send({
+      from: fromEmail,
       to: [email],
-      subject: subject,
-      html: html,
-    };
+      subject,
+      html,
+    });
 
-    console.log("=== SENDING EMAIL ===");
-    console.log("Email data:", JSON.stringify({
-      from: emailData.from,
-      to: emailData.to,
-      subject: emailData.subject,
-      htmlLength: emailData.html.length
-    }, null, 2));
-    
-    const emailResponse = await resend.emails.send(emailData);
-
-    console.log("=== EMAIL RESPONSE ===");
-    console.log("Full response:", JSON.stringify(emailResponse, null, 2));
-
-    // Check if Resend returned an error
     if (emailResponse.error) {
-      console.error("Resend error:", emailResponse.error);
-      return new Response(
-        JSON.stringify({ 
-          error: "Erro ao enviar email", 
-          details: emailResponse.error 
-        }),
-        {
-          status: 500,
-          headers: {
-            "Content-Type": "application/json",
-            ...corsHeaders,
-          },
-        }
-      );
+      throw new Error(`Resend error: ${JSON.stringify(emailResponse.error)}`);
     }
 
-    return new Response(JSON.stringify({ success: true, data: emailResponse }), {
+    return new Response(JSON.stringify({ 
+      success: true, 
+      data: emailResponse 
+    }), {
       status: 200,
-      headers: {
-        "Content-Type": "application/json",
-        ...corsHeaders,
-      },
+      headers: { "Content-Type": "application/json", ...corsHeaders },
     });
+
   } catch (error: any) {
-    console.error("=== SEND-AUTH-EMAIL ERROR ===");
-    console.error("Error type:", error.constructor.name);
-    console.error("Error message:", error.message);
-    console.error("Error stack:", error.stack);
-    console.error("Timestamp:", new Date().toISOString());
-    
-    return new Response(
-      JSON.stringify({ 
-        success: false,
-        error: error.message,
-        timestamp: new Date().toISOString(),
-        function: "send-auth-email"
-      }),
-      {
-        status: 500,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-      }
-    );
-  } finally {
-    console.log("=== SEND-AUTH-EMAIL FUNCTION END ===");
+    console.error("Email send failed:", error.message);
+    return new Response(JSON.stringify({ 
+      success: false,
+      error: error.message 
+    }), {
+      status: 500,
+      headers: { "Content-Type": "application/json", ...corsHeaders },
+    });
   }
 };
 
