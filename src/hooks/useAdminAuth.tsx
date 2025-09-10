@@ -9,33 +9,64 @@ export function useAdminAuth() {
   const [user, setUser] = useState<User | null>(null);
 
   const checkAuthStatus = async () => {
+    console.log('🔍 checkAuthStatus: Iniciando verificação de autenticação admin...');
+    
     try {
       // Get current session
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      console.log('🔍 checkAuthStatus: Session obtida:', { 
+        hasSession: !!session, 
+        hasUser: !!session?.user, 
+        userId: session?.user?.id,
+        sessionError 
+      });
+      
+      if (sessionError) {
+        console.error('❌ checkAuthStatus: Erro ao obter sessão:', sessionError);
+        setIsAuthenticated(false);
+        setUser(null);
+        setIsLoading(false);
+        return;
+      }
       
       if (!session?.user) {
+        console.log('❌ checkAuthStatus: Nenhuma sessão/usuário encontrado');
         setIsAuthenticated(false);
         setUser(null);
         setIsLoading(false);
         return;
       }
 
+      console.log('🔍 checkAuthStatus: Verificando se usuário é admin na tabela admin_users...');
+      
       // Check if user is admin
-      const { data: adminData, error } = await supabase
+      const { data: adminData, error: adminError } = await supabase
         .from('admin_users')
         .select('*')
-        .eq('user_id', session.user.id)
-        .single();
+        .eq('user_id', session.user.id);
 
-      if (error || !adminData) {
+      console.log('🔍 checkAuthStatus: Resultado da consulta admin_users:', { 
+        adminData, 
+        adminError,
+        userId: session.user.id,
+        hasAdminData: !!adminData && adminData.length > 0 
+      });
+
+      if (adminError) {
+        console.error('❌ checkAuthStatus: Erro na consulta admin_users:', adminError);
+        setIsAuthenticated(false);
+        setUser(null);
+      } else if (!adminData || adminData.length === 0) {
+        console.log('❌ checkAuthStatus: Usuário não encontrado na tabela admin_users');
         setIsAuthenticated(false);
         setUser(null);
       } else {
+        console.log('✅ checkAuthStatus: Usuário é admin! Dados:', adminData[0]);
         setIsAuthenticated(true);
         setUser(session.user);
       }
     } catch (error) {
-      console.error('Erro ao verificar auth:', error);
+      console.error('❌ checkAuthStatus: Erro inesperado:', error);
       setIsAuthenticated(false);
       setUser(null);
     } finally {
