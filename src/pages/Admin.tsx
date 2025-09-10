@@ -22,12 +22,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { PendingUser, AdminStats } from '@/types/admin';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { Check, X, Eye, Users, UserCheck, UserX, Clock, LogOut, RefreshCw, Search, Phone, PhoneOff, Mail } from 'lucide-react';
 import { userService } from '@/services/userService';
 import { ImageUploader } from '@/components/admin/ImageUploader';
+import EmailTestingPanel from '@/components/admin/EmailTestingPanel';
 import { supabase } from '@/integrations/supabase/client';
 
 export default function Admin() {
@@ -334,22 +336,26 @@ export default function Admin() {
           </div>
         </div>
 
-        {/* Image Upload Section */}
-        <div className="mb-8">
-          <ImageUploader />
-        </div>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-6 gap-6 mb-8">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total de Usuários</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.totalUsers}</div>
-            </CardContent>
-          </Card>
+        {/* Administration Tabs */}
+        <Tabs defaultValue="users" className="mb-8">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="users">User Management</TabsTrigger>
+            <TabsTrigger value="images">Image Upload</TabsTrigger>
+            <TabsTrigger value="email">Email Testing</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="users" className="mt-6">
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-6 gap-6 mb-8">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total de Usuários</CardTitle>
+                  <Users className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stats.totalUsers}</div>
+                </CardContent>
+              </Card>
           
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -700,6 +706,18 @@ export default function Admin() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+        
+        </TabsContent>
+        
+        <TabsContent value="images" className="mt-6">
+          <ImageUploader />
+        </TabsContent>
+        
+        <TabsContent value="email" className="mt-6">
+          <EmailTestingPanel />
+        </TabsContent>
+        
+        </Tabs>
       </div>
     </div>
   );

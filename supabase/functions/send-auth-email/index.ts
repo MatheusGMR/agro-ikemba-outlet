@@ -18,18 +18,32 @@ interface AuthEmailRequest {
 }
 
 const handler = async (req: Request): Promise<Response> => {
-  console.log("Received request:", req.method);
+  console.log("=== SEND-AUTH-EMAIL FUNCTION START ===");
+  console.log("Request method:", req.method);
+  console.log("Request headers:", Object.fromEntries(req.headers.entries()));
+  console.log("Timestamp:", new Date().toISOString());
   
   if (req.method === "OPTIONS") {
+    console.log("Handling CORS preflight request");
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
     const body = await req.text();
-    console.log("Request body:", body);
+    console.log("Raw request body length:", body.length);
+    console.log("Request body preview:", body.substring(0, 200));
     
+    if (!body.trim()) {
+      throw new Error("Empty request body");
+    }
+
     const { email, type, token, name, password }: AuthEmailRequest = JSON.parse(body);
-    console.log("Parsed data:", { email, type, name });
+    console.log("=== PARSED REQUEST DATA ===");
+    console.log("Email:", email || "EMAIL_NOT_PROVIDED");
+    console.log("Type:", type || "TYPE_NOT_PROVIDED");
+    console.log("Name:", name || "NAME_NOT_PROVIDED");
+    console.log("Has token:", !!token);
+    console.log("Has password:", !!password);
 
     let subject: string;
     let html: string;
@@ -216,20 +230,48 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error('Tipo de email inválido');
     }
 
-    console.log("Sending email to:", email);
+    // Validate required data
+    if (!email) {
+      throw new Error("Email is required");
+    }
+    if (!type) {
+      throw new Error("Email type is required");
+    }
+
+    console.log("=== EMAIL CONFIGURATION CHECK ===");
+    const resendApiKey = Deno.env.get("RESEND_API_KEY");
+    if (!resendApiKey) {
+      console.error("CRITICAL: RESEND_API_KEY not found in environment");
+      throw new Error("Email service not configured");
+    }
+    console.log("✅ RESEND_API_KEY found");
+
+    console.log("Preparing to send email to:", email);
+    console.log("Email type:", type);
     
     // Use safer fallback format - onboarding@resend.dev is verified by Resend
     const fromEmail = Deno.env.get("RESEND_FROM") || "onboarding@resend.dev";
     console.log("Using sender email:", fromEmail);
     
-    const emailResponse = await resend.emails.send({
+    const emailData = {
       from: fromEmail,
       to: [email],
       subject: subject,
       html: html,
-    });
+    };
 
-    console.log("Email sent successfully:", emailResponse);
+    console.log("=== SENDING EMAIL ===");
+    console.log("Email data:", JSON.stringify({
+      from: emailData.from,
+      to: emailData.to,
+      subject: emailData.subject,
+      htmlLength: emailData.html.length
+    }, null, 2));
+    
+    const emailResponse = await resend.emails.send(emailData);
+
+    console.log("=== EMAIL RESPONSE ===");
+    console.log("Full response:", JSON.stringify(emailResponse, null, 2));
 
     // Check if Resend returned an error
     if (emailResponse.error) {
@@ -257,14 +299,26 @@ const handler = async (req: Request): Promise<Response> => {
       },
     });
   } catch (error: any) {
-    console.error("Error sending auth email:", error);
+    console.error("=== SEND-AUTH-EMAIL ERROR ===");
+    console.error("Error type:", error.constructor.name);
+    console.error("Error message:", error.message);
+    console.error("Error stack:", error.stack);
+    console.error("Timestamp:", new Date().toISOString());
+    
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        success: false,
+        error: error.message,
+        timestamp: new Date().toISOString(),
+        function: "send-auth-email"
+      }),
       {
         status: 500,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       }
     );
+  } finally {
+    console.log("=== SEND-AUTH-EMAIL FUNCTION END ===");
   }
 };
 
