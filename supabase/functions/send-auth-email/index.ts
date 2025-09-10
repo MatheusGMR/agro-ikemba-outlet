@@ -95,75 +95,116 @@ const handler = async (req: Request): Promise<Response> => {
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
           <title>Bem-vindo ao AgroIkemba</title>
         </head>
-        <body style="margin: 0; padding: 0; background-color: #f5f5f5; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+        <body style="margin: 0; padding: 0; background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
           
           <!-- Container Principal -->
-          <div style="max-width: 600px; margin: 20px auto; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+          <div style="max-width: 650px; margin: 40px auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.08); border: 1px solid #e5e7eb;">
             
-            <!-- Header com Logo -->
-            <div style="background: white; padding: 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e5e7eb;">
-              <div></div>
-              <div style="text-align: right;">
-                <div style="display: flex; align-items: center; justify-content: flex-end;">
-                  <div style="width: 12px; height: 12px; background: #22c55e; border-radius: 50%; margin-right: 8px;"></div>
-                  <h1 style="color: #22c55e; margin: 0; font-size: 24px; font-weight: 700;">AgroIkemba</h1>
-                </div>
-                <p style="color: #6b7280; margin: 5px 0 0 0; font-size: 12px;">O Outlet do Agro</p>
+            <!-- Header Profissional -->
+            <div style="background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); padding: 40px 40px 30px 40px; text-align: center; border-bottom: 2px solid #f1f5f9;">
+              <!-- Logo e Branding -->
+              <div style="display: inline-flex; align-items: center; margin-bottom: 15px;">
+                <div style="width: 16px; height: 16px; background: linear-gradient(135deg, #22c55e, #16a34a); border-radius: 50%; margin-right: 12px; box-shadow: 0 2px 8px rgba(34, 197, 94, 0.3);"></div>
+                <h1 style="color: #22c55e; margin: 0; font-size: 32px; font-weight: 800; letter-spacing: -0.5px;">AgroIkemba</h1>
               </div>
+              <p style="color: #64748b; margin: 0; font-size: 14px; font-weight: 500; letter-spacing: 0.5px;">O OUTLET DO AGRO</p>
             </div>
             
-            <!-- Conteúdo Principal -->
-            <div style="padding: 40px 30px; text-align: left;">
+            <!-- Seção de Boas-vindas -->
+            <div style="padding: 40px 40px 30px 40px;">
+              <div style="text-align: center; margin-bottom: 40px;">
+                <h2 style="color: #1e293b; font-size: 24px; font-weight: 700; margin: 0 0 15px 0; line-height: 1.3;">
+                  Olá, ${name || 'Usuário'}! 👋
+                </h2>
+                <p style="color: #475569; font-size: 18px; margin: 0 0 10px 0; line-height: 1.5;">
+                  Seja bem-vindo ao primeiro <strong style="color: #22c55e;">Outlet do Agronegócio Brasileiro</strong>
+                </p>
+              </div>
               
-              <!-- Saudação -->
-              <h2 style="color: #374151; font-size: 18px; font-weight: 600; margin: 0 0 20px 0;">Olá, ${name || 'Usuário'}</h2>
+              <!-- Card de Experiência Mobile -->
+              <div style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border: 1px solid #bae6fd; border-radius: 12px; padding: 24px; margin-bottom: 35px; text-align: center;">
+                <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #0ea5e9, #0284c7); border-radius: 50%; margin: 0 auto 15px auto; display: flex; align-items: center; justify-content: center;">
+                  <span style="color: white; font-size: 24px;">📱</span>
+                </div>
+                <h3 style="color: #0c4a6e; font-size: 16px; font-weight: 600; margin: 0 0 8px 0;">Experiência Otimizada</h3>
+                <p style="color: #0369a1; font-size: 14px; margin: 0; line-height: 1.4;">
+                  Sua experiência com vídeo ficará melhor pelo <strong>celular</strong>
+                </p>
+              </div>
               
-              <!-- Mensagem de Boas-vindas -->
-              <p style="color: #374151; font-size: 16px; margin: 0 0 15px 0; line-height: 1.6;">
-                Seja bem vindo ao primeiro <strong>Outlet do Agronegócio Brasileiro</strong>.
-              </p>
-              
-              <p style="color: #6b7280; font-size: 14px; margin: 0 0 35px 0;">
-                Sua experiência com vídeo ficará melhor pelo celular.
-              </p>
-              
-              <!-- Botão de Acesso -->
-              <div style="text-align: center; margin-bottom: 35px;">
+              <!-- Botão de Acesso Principal -->
+              <div style="text-align: center; margin-bottom: 40px;">
                 <a href="https://www.agroikemba.com.br/login" 
-                   style="display: inline-block; background: #22c55e; color: white; padding: 12px 30px; text-decoration: none; border-radius: 25px; font-weight: 600; font-size: 14px;">
-                  Acessar
+                   style="display: inline-block; background: linear-gradient(135deg, #22c55e, #16a34a); color: white; padding: 16px 40px; text-decoration: none; border-radius: 50px; font-weight: 700; font-size: 16px; letter-spacing: 0.5px; box-shadow: 0 4px 20px rgba(34, 197, 94, 0.3); transition: all 0.3s ease; text-transform: uppercase;">
+                  🚀 ACESSAR PLATAFORMA
                 </a>
               </div>
               
-              <!-- Credenciais -->
-              <div style="margin-bottom: 30px;">
-                <p style="color: #374151; font-size: 14px; margin: 0 0 15px 0;">
-                  Para simular e comprar você precisará inserir suas credenciais:
+              <!-- Seção de Credenciais -->
+              <div style="background: #f8fafc; border-radius: 12px; padding: 30px; margin-bottom: 30px; border: 1px solid #e2e8f0;">
+                <h3 style="color: #334155; font-size: 18px; font-weight: 600; margin: 0 0 20px 0; text-align: center;">
+                  🔐 Suas Credenciais de Acesso
+                </h3>
+                <p style="color: #64748b; font-size: 14px; margin: 0 0 20px 0; text-align: center; line-height: 1.5;">
+                  Para simular e comprar, utilize as credenciais abaixo:
                 </p>
                 
-                <div style="background: #f9fafb; border-radius: 6px; padding: 15px; margin-bottom: 10px;">
-                  <p style="color: #374151; font-size: 14px; margin: 0; font-family: monospace;">
-                    <strong>Usuário:</strong> ${email}
+                <!-- Card do Usuário -->
+                <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                  <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                    <span style="width: 24px; height: 24px; background: #3b82f6; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-right: 12px;">
+                      <span style="color: white; font-size: 12px; font-weight: bold;">@</span>
+                    </span>
+                    <span style="color: #374151; font-size: 14px; font-weight: 600;">USUÁRIO</span>
+                  </div>
+                  <p style="color: #1f2937; font-size: 16px; margin: 0; font-family: 'SF Mono', Monaco, monospace; background: #f1f5f9; padding: 12px; border-radius: 6px; word-break: break-all;">
+                    ${email}
                   </p>
                 </div>
                 
-                <div style="background: #f9fafb; border-radius: 6px; padding: 15px;">
-                  <p style="color: #374151; font-size: 14px; margin: 0; font-family: monospace;">
-                    <strong>Senha:</strong> ${password}
+                <!-- Card da Senha -->
+                <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                  <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                    <span style="width: 24px; height: 24px; background: #ef4444; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-right: 12px;">
+                      <span style="color: white; font-size: 12px; font-weight: bold;">🔑</span>
+                    </span>
+                    <span style="color: #374151; font-size: 14px; font-weight: 600;">SENHA</span>
+                  </div>
+                  <p style="color: #1f2937; font-size: 16px; margin: 0; font-family: 'SF Mono', Monaco, monospace; background: #f1f5f9; padding: 12px; border-radius: 6px;">
+                    ${password}
                   </p>
                 </div>
               </div>
               
-              <!-- Suporte -->
-              <p style="color: #6b7280; font-size: 14px; margin: 0 0 20px 0; line-height: 1.5;">
-                Caso tenha qualquer dificuldade, basta enviar uma mensagem para nosso time.
-              </p>
+              <!-- Seção de Suporte -->
+              <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 1px solid #f59e0b; border-radius: 12px; padding: 24px; margin-bottom: 30px; text-align: center;">
+                <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 50%; margin: 0 auto 15px auto; display: flex; align-items: center; justify-content: center;">
+                  <span style="color: white; font-size: 24px;">💬</span>
+                </div>
+                <h3 style="color: #92400e; font-size: 16px; font-weight: 600; margin: 0 0 8px 0;">Precisa de Ajuda?</h3>
+                <p style="color: #a16207; font-size: 14px; margin: 0; line-height: 1.4;">
+                  Caso tenha qualquer dificuldade, basta enviar uma mensagem para nosso time
+                </p>
+              </div>
               
               <!-- Despedida -->
-              <p style="color: #374151; font-size: 14px; margin: 0; font-weight: 500;">
-                Até logo!
-              </p>
+              <div style="text-align: center; padding-top: 20px; border-top: 1px solid #e2e8f0;">
+                <p style="color: #374151; font-size: 16px; margin: 0; font-weight: 600;">
+                  Até logo! 🌱
+                </p>
+                <p style="color: #9ca3af; font-size: 12px; margin: 8px 0 0 0;">
+                  Equipe AgroIkemba
+                </p>
+              </div>
               
+            </div>
+            
+            <!-- Footer -->
+            <div style="background: #f8fafc; padding: 20px 40px; text-align: center; border-top: 1px solid #e2e8f0;">
+              <p style="color: #6b7280; font-size: 12px; margin: 0; line-height: 1.4;">
+                © 2024 AgroIkemba - O Outlet do Agronegócio Brasileiro<br>
+                Este email foi enviado automaticamente. Não responda este email.
+              </p>
             </div>
             
           </div>
