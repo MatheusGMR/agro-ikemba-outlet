@@ -250,11 +250,19 @@ const handler = async (req: Request): Promise<Response> => {
     console.log("Email type:", type);
     
     // Use safer fallback format - onboarding@resend.dev is verified by Resend
-    const fromEmail = Deno.env.get("RESEND_FROM") || "onboarding@resend.dev";
-    console.log("Using sender email:", fromEmail);
+    let senderEmail = Deno.env.get("RESEND_FROM") || "onboarding@resend.dev";
+    
+    // Validate sender email format
+    if (senderEmail && senderEmail.startsWith('re_') && senderEmail.length > 20) {
+      console.warn('🚨 RESEND_FROM is set to an API key instead of email address');
+      console.warn('Using fallback email address for sending');
+      senderEmail = 'onboarding@resend.dev';
+    }
+    
+    console.log("Using sender email:", senderEmail);
     
     const emailData = {
-      from: fromEmail,
+      from: senderEmail,
       to: [email],
       subject: subject,
       html: html,

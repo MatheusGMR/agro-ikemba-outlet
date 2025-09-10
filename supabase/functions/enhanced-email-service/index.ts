@@ -123,6 +123,19 @@ async function checkEmailConfiguration(): Promise<EmailConfig> {
     console.log("API Key preview:", `${apiKey.substring(0, 8)}...${apiKey.substring(apiKey.length - 4)}`);
   }
   
+  // Validate email format for RESEND_FROM
+  if (fromDomain && fromDomain.startsWith('re_') && fromDomain.length > 20) {
+    errors.push('RESEND_FROM appears to be an API key - should be an email address like noreply@agroikemba.com.br');
+    console.warn('🚨 RESEND_FROM is set to an API key instead of email address');
+  } else if (fromDomain && !fromDomain.includes('@')) {
+    errors.push('RESEND_FROM must be a valid email address format');
+  }
+
+  // Check if using testing domain
+  if (fromDomain === 'onboarding@resend.dev') {
+    errors.push('Using Resend testing domain - verify your domain at resend.com/domains for production');
+  }
+  
   console.log("From domain:", fromDomain);
   console.log("Fallback from:", fallbackFrom);
   
@@ -171,8 +184,17 @@ async function handleTestEmail(
     );
   }
 
+  // Determine the from address based on configuration validation
+  let fromAddress = config.fromDomain;
+  
+  // If fromDomain is invalid (API key), use fallback
+  if (config.fromDomain && config.fromDomain.startsWith('re_') && config.fromDomain.length > 20) {
+    console.warn('🚨 RESEND_FROM is an API key, using fallback address');
+    fromAddress = config.fallbackFrom;
+  }
+
   const emailData = {
-    from: config.fromDomain,
+    from: fromAddress,
     to: [testData.recipient],
     subject: testData.subject || "🧪 Test Email - AgroIkemba Enhanced Service",
     html: testData.content || generateTestEmailContent()
@@ -181,11 +203,11 @@ async function handleTestEmail(
   console.log("Test email data:", JSON.stringify(emailData, null, 2));
 
   try {
-    // Try with primary domain first
-    console.log("Attempting to send with primary domain...");
+    // Try with determined domain first
+    console.log("Attempting to send with domain:", fromAddress);
     let result = await resend.emails.send(emailData);
     
-    if (result.error) {
+    if (result.error && fromAddress !== config.fallbackFrom) {
       console.warn("Primary domain failed:", result.error);
       console.log("Trying fallback domain...");
       
@@ -195,13 +217,49 @@ async function handleTestEmail(
         from: config.fallbackFrom
       };
       
-      result = await resend.emails.send(fallbackEmailData);
+      const fallbackResult = await resend.emails.send(fallbackEmailData);
+      
+      if (fallbackResult.error) {
+        console.error('Test email failed with fallback:', fallbackResult.error);
+        return new Response(
+          JSON.stringify({
+            success: false,
+            message: 'Test email failed on both primary and fallback domains',
+            error: fallbackResult.error,
+            primaryError: result.error,
+            suggestion: 'Please verify your domain at resend.com/domains and update RESEND_FROM to a valid email address'
+          }),
+          { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        );
+      }
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          message: 'Test email sent successfully using fallback domain',
+          data: fallbackResult.data,
+          warning: 'Primary domain failed, used fallback domain (onboarding@resend.dev)',
+          primaryError: result.error,
+          recommendation: 'Verify your domain and update RESEND_FROM for production use',
+          usedDomain: config.fallbackFrom,
+          isProduction: false
+        }),
+        { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
     }
 
     console.log("Email send result:", result);
 
     if (result.error) {
-      throw new Error(`Email send failed: ${JSON.stringify(result.error)}`);
+      return new Response(
+        JSON.stringify({
+          success: false,
+          message: 'Test email failed',
+          error: result.error,
+          suggestion: 'Check your domain verification status at resend.com/domains'
+        }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
     }
 
     return new Response(
@@ -209,35 +267,23 @@ async function handleTestEmail(
         success: true,
         message: "Test email sent successfully",
         emailId: result.data?.id,
-        result: result.data,
-        config: {
-          usedFrom: result.error ? config.fallbackFrom : config.fromDomain,
-          fallbackUsed: !!result.error
-        },
+        data: result.data,
+        usedDomain: fromAddress,
+        isProduction: fromAddress !== config.fallbackFrom,
         timestamp: new Date().toISOString()
       }),
-      {
-        status: 200,
-        headers: { "Content-Type": "application/json", ...corsHeaders }
-      }
+      { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
   } catch (error: any) {
-    console.error("Test email failed:", error);
+    console.error("Test email exception:", error);
     return new Response(
       JSON.stringify({
         success: false,
-        error: "Failed to send test email",
-        details: error.message,
-        config: {
-          attempted: [config.fromDomain, config.fallbackFrom],
-          recipient: testData.recipient
-        },
-        timestamp: new Date().toISOString()
+        message: 'Test email failed with exception',
+        error: error.message,
+        suggestion: 'Check your RESEND_API_KEY and domain configuration'
       }),
-      {
-        status: 500,
-        headers: { "Content-Type": "application/json", ...corsHeaders }
-      }
+      { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
   }
 }
