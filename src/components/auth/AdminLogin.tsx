@@ -5,9 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Lock, Mail, AlertCircle } from 'lucide-react';
+import { Lock, Mail, AlertCircle, Shield } from 'lucide-react';
 import { toast } from 'sonner';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function AdminLogin() {
   const [email, setEmail] = useState('');
@@ -16,84 +17,60 @@ export default function AdminLogin() {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const clearStorageAndStart = () => {
-    // Limpar qualquer dados conflitantes
-    localStorage.removeItem('adminSession');
-    localStorage.removeItem('user');
-    console.log('Storage limpo antes do login');
-  };
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
     
-    console.log('Tentativa de login:', { email, password: password ? '***' : 'vazio' });
-
-    // Limpar storage antes de tentar
-    clearStorageAndStart();
-
     try {
-      // Lista de credenciais administrativas
-      const adminCredentials = [
-        { email: 'admin@agroikemba.com', password: 'AgroIkemba2024!' },
-        { email: 'matheusmotaroldan@hotmail.com', password: 'AgroIkemba2024!' }
-      ];
-      
-      const validCredentials = adminCredentials.find(
-        cred => cred.email === email && cred.password === password
-      );
-      
-      if (validCredentials) {
-        console.log('Credenciais válidas, criando sessão...');
-        
-        // Armazenar token de admin com timestamp
-        const adminSession = {
-          email: email,
-          isAdmin: true,
-          loginTime: Date.now(),
-          verified: true
-        };
-        
-        const userSession = {
-          email: email,
-          name: 'Administrador',
-          verified: true,
-          isAdmin: true
-        };
-        
-        localStorage.setItem('adminSession', JSON.stringify(adminSession));
-        localStorage.setItem('user', JSON.stringify(userSession));
-        
-        console.log('Sessão criada:', adminSession);
-        
-        toast.success('Login realizado com sucesso!');
-        
-        // Dar um tempo para o storage ser persistido e força recarga
-        setTimeout(() => {
-          console.log('Redirecionando para /admin');
-          window.location.href = '/admin'; // Força uma recarga completa
-        }, 200);
-      } else {
-        console.log('Credenciais inválidas');
-        setError('Credenciais inválidas. Verifique email e senha.');
-        toast.error('Credenciais inválidas. Acesso negado.');
+      // Authenticate with Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email: email,
+        password: password,
+      });
+
+      if (authError) {
+        throw new Error(authError.message);
       }
+
+      if (!authData.user) {
+        throw new Error('Falha na autenticação');
+      }
+
+      // Check if user is admin
+      const { data: adminData, error: adminError } = await supabase
+        .from('admin_users')
+        .select('*')
+        .eq('user_id', authData.user.id)
+        .single();
+
+      if (adminError || !adminData) {
+        // Sign out the user since they're not an admin
+        await supabase.auth.signOut();
+        throw new Error('Acesso negado. Você não tem privilégios de administrador.');
+      }
+        
+      toast.success('Login realizado com sucesso!');
+      navigate('/admin');
     } catch (error) {
-      console.error('Erro durante login:', error);
-      setError('Erro interno. Tente novamente.');
-      toast.error('Erro interno. Tente novamente.');
+      console.error('Erro no login:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Erro interno do servidor';
+      setError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setIsLoading(false);
     }
-    
-    setIsLoading(false);
   };
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+            <Shield className="h-6 w-6 text-primary" />
+          </div>
           <CardTitle className="text-2xl font-bold">Acesso Administrativo</CardTitle>
-          <p className="text-gray-600">Entre com suas credenciais de admin</p>
+          <p className="text-gray-600">Faça login com sua conta Supabase</p>
         </CardHeader>
         <CardContent>
           {error && (
@@ -114,7 +91,7 @@ export default function AdminLogin() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="pl-10"
-                  placeholder="admin@agroikemba.com"
+                  placeholder="seu-email@exemplo.com"
                   required
                   disabled={isLoading}
                 />
@@ -143,9 +120,13 @@ export default function AdminLogin() {
               className="w-full bg-primary hover:bg-primary/90"
               disabled={isLoading}
             >
-              {isLoading ? 'Entrando...' : 'Entrar'}
+              {isLoading ? 'Entrando...' : 'Entrar como Admin'}
             </Button>
           </form>
+          
+          <div className="mt-4 text-center text-sm text-muted-foreground">
+            <p>Apenas usuários autorizados podem acessar</p>
+          </div>
         </CardContent>
       </Card>
     </div>

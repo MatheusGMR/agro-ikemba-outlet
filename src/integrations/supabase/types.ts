@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_users: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: string
+          role: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id?: string
+          role?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: string
+          role?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       agricultural_inputs: {
         Row: {
           active_ingredient: string | null
@@ -1588,6 +1615,10 @@ export type Database = {
           user_phone: string
           user_type: string
         }[]
+      }
+      is_admin: {
+        Args: { user_uuid?: string }
+        Returns: boolean
       }
     }
     Enums: {
