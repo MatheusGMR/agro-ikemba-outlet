@@ -58,8 +58,8 @@ const VideoBoasVindas = () => {
                 onLoadedData={handleVideoLoad}
               >
                 <source 
-                  src="https://jhkxcplfempenoczcoep.supabase.co/storage/v1/object/public/media-assets/Seja%20bem%20vindo,%20Comprador!.mov" 
-                  type="video/quicktime" 
+                  src="https://jhkxcplfempenoczcoep.supabase.co/storage/v1/object/public/media-assets/Seja%20bem%20vindo!.mp4" 
+                  type="video/mp4" 
                 />
                 Seu navegador não suporta o elemento de vídeo.
               </video>
