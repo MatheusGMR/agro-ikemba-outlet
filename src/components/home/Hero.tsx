@@ -12,7 +12,7 @@ export default function Hero() {
 
   // Get the public URL for the video from Supabase Storage
   const getVideoUrl = () => {
-    const { data } = supabase.storage.from('media-assets').getPublicUrl('pitchdeck.mp4');
+    const { data } = supabase.storage.from('media-assets').getPublicUrl('Seja bem vindo, Comprador!.mov');
     return data.publicUrl;
   };
 
@@ -89,6 +89,7 @@ export default function Hero() {
                 muted 
                 loop 
                 playsInline
+                preload="metadata"
                 poster="https://images.unsplash.com/photo-1574943320219-553eb213f72d?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3"
                 className="rounded-xl shadow-lg bg-gray-50 transition-all duration-300 group-hover:shadow-xl" 
                 style={{
@@ -96,7 +97,8 @@ export default function Hero() {
                 }}
                 onLoadedData={handleVideoPlay}
               >
-                {/* Primary source: Supabase Storage */}
+                {/* Primary source: Supabase Storage MOV */}
+                <source src={getVideoUrl()} type="video/quicktime" />
                 <source src={getVideoUrl()} type="video/mp4" />
                 {/* Fallback sources */}
                 {fallbackVideoUrls.map((url, index) => (
@@ -139,6 +141,7 @@ export default function Hero() {
                       loop
                       className="w-full h-full"
                     >
+                      <source src={getVideoUrl()} type="video/quicktime" />
                       <source src={getVideoUrl()} type="video/mp4" />
                       {fallbackVideoUrls.map((url, index) => (
                         <source key={index} src={url} type="video/mp4" />
@@ -150,7 +153,7 @@ export default function Hero() {
 
               {/* Video info overlay */}
               <div className="absolute bottom-4 left-4 bg-black/50 text-white px-3 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 backdrop-blur-sm">
-                <p className="text-sm font-medium">Conheça a AgroIkemba</p>
+                <p className="text-sm font-medium">Seja bem-vindo, Comprador!</p>
                 <p className="text-xs opacity-90">Clique para assistir em tela cheia</p>
               </div>
             </div>
