@@ -107,7 +107,7 @@ const handler = async (req: Request): Promise<Response> => {
             <div style="background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); padding: 40px 40px 30px 40px; text-align: center; border-bottom: 2px solid #f1f5f9;">
               <!-- Logo e Branding -->
               <div style="display: inline-flex; align-items: center; margin-bottom: 15px;">
-                <img src="https://jhkxcplfempenoczcoep.supabase.co/storage/v1/object/public/lovable-uploads/34d4bbce-6ea4-4767-adc0-3e017766a398.png" alt="AgroIkemba Logo" style="width: 48px; height: 48px; margin-right: 12px;">
+                <img src="https://www.agroikemba.com.br/lovable-uploads/34d4bbce-6ea4-4767-adc0-3e017766a398.png?v=2" alt="AgroIkemba Logo" style="width: 48px; height: 48px; margin-right: 12px;">
                 <h1 style="color: #22c55e; margin: 0; font-size: 32px; font-weight: 800; letter-spacing: -0.5px; font-family: 'DM Sans', sans-serif;">AgroIkemba</h1>
               </div>
               <p style="color: #64748b; margin: 0; font-size: 14px; font-weight: 500; letter-spacing: 0.5px; font-family: 'DM Sans', sans-serif;">O OUTLET DO AGRO</p>
@@ -138,7 +138,7 @@ const handler = async (req: Request): Promise<Response> => {
                 <div style="text-align: center; margin-top: 16px;">
                   <div style="position: relative; display: inline-block; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
                     <a href="https://youtu.be/anuLkbDW96w" target="_blank" style="text-decoration: none;">
-                      <img src="https://img.youtube.com/vi/anuLkbDW96w/maxresdefault.jpg" alt="Demonstração da Plataforma Mobile" style="width: 280px; height: 157px; object-fit: cover; border-radius: 8px;">
+                      <img src="https://i.ytimg.com/vi/anuLkbDW96w/hqdefault.jpg" alt="Demonstração da Plataforma Mobile" style="width: 280px; height: 157px; object-fit: cover; border-radius: 8px;">
                       <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.7); border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center;">
                         <div style="width: 0; height: 0; border-left: 16px solid white; border-top: 10px solid transparent; border-bottom: 10px solid transparent; margin-left: 3px;"></div>
                       </div>
@@ -226,6 +226,9 @@ const handler = async (req: Request): Promise<Response> => {
                 © 2024 AgroIkemba - O Outlet do Agronegócio Brasileiro<br>
                 Este email foi enviado automaticamente. Não responda este email.
               </p>
+              <p style="color: #94a3b8; font-size: 11px; margin-top: 8px;">
+                Template: v2025-09-11-1
+              </p>
             </div>
             
           </div>
@@ -253,6 +256,7 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error('Tipo de email inválido');
     }
 
+    console.log("[send-auth-email] Sending email", { type, to: email, version: "v2025-09-11-1" });
     const emailResponse = await resend.emails.send({
       from: fromEmail,
       to: [email],
