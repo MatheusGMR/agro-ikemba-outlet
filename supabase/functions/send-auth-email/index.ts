@@ -125,7 +125,7 @@ const handler = async (req: Request): Promise<Response> => {
                <!-- Video Section -->
                <div style="text-align: center; margin-bottom: 35px;">
                   <div style="position: relative; display: inline-block; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
-                    <a href="https://www.agroikemba.com.br/video-boas-vindas.html" target="_blank" style="text-decoration: none;">
+                    <a href="https://youtube.com/shorts/VaVjD8OtFK0?feature=share" target="_blank" style="text-decoration: none;">
                       <img src="https://jhkxcplfempenoczcoep.supabase.co/storage/v1/object/public/media-assets/Logo%20Ikemba.png" alt="Seja bem-vindo, Comprador!" style="width: 280px; height: 157px; object-fit: cover; border-radius: 8px;">
                       <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.7); border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center;">
                         <div style="width: 0; height: 0; border-left: 16px solid white; border-top: 10px solid transparent; border-bottom: 10px solid transparent; margin-left: 3px;"></div>
@@ -133,7 +133,7 @@ const handler = async (req: Request): Promise<Response> => {
                     </a>
                   </div>
                   <p style="color: #6b7280; font-size: 12px; margin-top: 8px;">
-                    Ou assista direto: <a href="https://youtube.com/shorts/VaVjD8OtFK0?feature=share" target="_blank" style="color: #22c55e; text-decoration: none;">YouTube</a>
+                    Clique na imagem para assistir nosso vídeo de boas-vindas no YouTube
                   </p>
                </div>
               
