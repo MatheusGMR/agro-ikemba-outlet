@@ -1,10 +1,15 @@
 
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Play, Maximize } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+import { useState, useRef } from 'react';
 
 export default function Hero() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
   // Get the public URL for the video from Supabase Storage
   const getVideoUrl = () => {
     const { data } = supabase.storage.from('media-assets').getPublicUrl('pitchdeck.mp4');
@@ -21,6 +26,20 @@ export default function Hero() {
     const featuresSection = document.querySelector('section.py-20.bg-gray-50');
     if (featuresSection) {
       featuresSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  const handleVideoPlay = () => {
+    if (videoRef.current) {
+      videoRef.current.play();
+    }
+  };
+
+  const handleFullscreen = () => {
+    if (videoRef.current) {
+      if (videoRef.current.requestFullscreen) {
+        videoRef.current.requestFullscreen();
+      }
     }
   };
 
@@ -59,35 +78,82 @@ export default function Hero() {
             </div>
           </div>
           
-          {/* Video section with Supabase Storage */}
+          {/* Video section with enhanced fullscreen experience */}
           <div className="relative flex-1 min-w-[300px] max-w-[600px]">
-            <video 
-              width="100%" 
-              controls 
-              muted 
-              loop 
-              playsInline 
-              autoPlay
-              poster="https://images.unsplash.com/photo-1574943320219-553eb213f72d?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3"
-              className="rounded-xl shadow-lg bg-gray-50" 
-              style={{
-                boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
-              }}
-            >
-              {/* Primary source: Supabase Storage */}
-              <source src={getVideoUrl()} type="video/mp4" />
-              {/* Fallback sources */}
-              {fallbackVideoUrls.map((url, index) => (
-                <source key={index} src={url} type="video/mp4" />
-              ))}
-              <p className="text-center p-8 text-gray-600">
-                Seu navegador não suporta o elemento de vídeo.
-                <br />
-                <Link to="/register" className="text-primary hover:underline">
-                  Clique aqui para se cadastrar
-                </Link>
-              </p>
-            </video>
+            <div className="relative group">
+              {/* Video preview */}
+              <video 
+                ref={videoRef}
+                width="100%" 
+                controls 
+                muted 
+                loop 
+                playsInline
+                poster="https://images.unsplash.com/photo-1574943320219-553eb213f72d?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3"
+                className="rounded-xl shadow-lg bg-gray-50 transition-all duration-300 group-hover:shadow-xl" 
+                style={{
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+                }}
+                onLoadedData={handleVideoPlay}
+              >
+                {/* Primary source: Supabase Storage */}
+                <source src={getVideoUrl()} type="video/mp4" />
+                {/* Fallback sources */}
+                {fallbackVideoUrls.map((url, index) => (
+                  <source key={index} src={url} type="video/mp4" />
+                ))}
+                <p className="text-center p-8 text-gray-600">
+                  Seu navegador não suporta o elemento de vídeo.
+                  <br />
+                  <Link to="/register" className="text-primary hover:underline">
+                    Clique aqui para se cadastrar
+                  </Link>
+                </p>
+              </video>
+
+              {/* Fullscreen button overlay */}
+              <button
+                onClick={handleFullscreen}
+                className="absolute top-4 right-4 bg-black/50 hover:bg-black/70 text-white p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 backdrop-blur-sm"
+                title="Assistir em tela cheia"
+              >
+                <Maximize className="w-5 h-5" />
+              </button>
+
+              {/* Modal for enhanced video experience */}
+              <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+                <DialogTrigger asChild>
+                  <button className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 group-hover:opacity-100 transition-all duration-300 rounded-xl">
+                    <div className="bg-white/90 backdrop-blur-sm p-4 rounded-full shadow-lg hover:bg-white transition-colors">
+                      <Play className="w-8 h-8 text-primary ml-1" fill="currentColor" />
+                    </div>
+                  </button>
+                </DialogTrigger>
+                <DialogContent className="max-w-4xl w-full p-0 bg-black">
+                  <div className="aspect-video w-full">
+                    <video 
+                      width="100%" 
+                      height="100%"
+                      controls 
+                      autoPlay
+                      loop
+                      className="w-full h-full"
+                    >
+                      <source src={getVideoUrl()} type="video/mp4" />
+                      {fallbackVideoUrls.map((url, index) => (
+                        <source key={index} src={url} type="video/mp4" />
+                      ))}
+                    </video>
+                  </div>
+                </DialogContent>
+              </Dialog>
+
+              {/* Video info overlay */}
+              <div className="absolute bottom-4 left-4 bg-black/50 text-white px-3 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 backdrop-blur-sm">
+                <p className="text-sm font-medium">Conheça a AgroIkemba</p>
+                <p className="text-xs opacity-90">Clique para assistir em tela cheia</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
