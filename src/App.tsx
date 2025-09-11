@@ -30,6 +30,7 @@ import { AuthProvider } from '@/hooks/useAuth';
 import ScrollToTop from '@/components/layout/ScrollToTop';
 import ApprovedProtectedRoute from '@/components/auth/ApprovedProtectedRoute';
 import PendingApproval from '@/pages/PendingApproval';
+import VideoBoasVindas from '@/pages/VideoBoasVindas';
 import GlobalWhatsAppButton from '@/components/ui/GlobalWhatsAppButton';
 
 const queryClient = new QueryClient();
@@ -77,6 +78,7 @@ function App() {
                   } />
                   <Route path="/simulador" element={<Simulador />} />
                   <Route path="/landing" element={<LandingPage />} />
+                  <Route path="/video/boas-vindas" element={<VideoBoasVindas />} />
                   <Route path="/proposta/:publicLink" element={<ProposalView />} />
                   <Route path="/test-openai" element={<TestPage />} />
                   <Route path="*" element={<NotFound />} />
