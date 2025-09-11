@@ -72,47 +72,6 @@
             margin-bottom: 1.5rem;
         }
         
-        .video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        
-        .play-overlay {
-            position: absolute;
-            inset: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(0, 0, 0, 0.5);
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .play-overlay:hover {
-            background: rgba(0, 0, 0, 0.7);
-        }
-        
-        .play-button {
-            background: #22c55e;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 4rem;
-            height: 4rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 1.5rem;
-        }
-        
-        .play-button:hover {
-            background: #16a34a;
-            transform: scale(1.1);
-        }
-        
         .cta {
             text-align: center;
         }
@@ -164,23 +123,15 @@
         
         <div class="content">
             <div class="video-container">
-                <video id="video" 
-                       class="video"
-                       poster="https://jhkxcplfempenoczcoep.supabase.co/storage/v1/object/public/media-assets/Logo%20Ikemba.png"
-                       controls
-                       controlslist="nodownload"
-                       disablePictureInPicture
-                       oncontextmenu="return false;"
-                       playsInline>
-                    <source src="https://jhkxcplfempenoczcoep.supabase.co/storage/v1/object/public/media-assets/Seja%20bem%20vindo!.mp4" type="video/mp4">
-                    Seu navegador não suporta o elemento de vídeo.
-                </video>
-                
-                <div id="playOverlay" class="play-overlay">
-                    <button class="play-button" onclick="playVideo()">
-                        ▶️
-                    </button>
-                </div>
+                <iframe
+                    src="https://www.youtube.com/embed/VaVjD8OtFK0?rel=0&modestbranding=1&showinfo=0"
+                    title="Bem-vindo ao AgroIkemba - Vídeo de Apresentação"
+                    frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    referrerpolicy="strict-origin-when-cross-origin"
+                    allowfullscreen
+                    style="width: 100%; height: 100%; border: none;">
+                </iframe>
             </div>
             
             <div class="cta">
@@ -194,41 +145,8 @@
     </div>
     
     <script>
-        const video = document.getElementById('video');
-        const playOverlay = document.getElementById('playOverlay');
-        
-        function playVideo() {
-            video.muted = false;
-            video.play();
-            playOverlay.classList.add('hidden');
-        }
-        
-        // Try autoplay muted first
-        video.addEventListener('loadeddata', () => {
-            video.muted = true;
-            video.play().catch(() => {
-                // If autoplay fails, keep the play button visible
-                playOverlay.classList.remove('hidden');
-            });
-        });
-        
-        // Hide overlay when video starts playing
-        video.addEventListener('play', () => {
-            playOverlay.classList.add('hidden');
-        });
-        
-        // Show overlay when video is paused
-        video.addEventListener('pause', () => {
-            if (!video.ended) {
-                playOverlay.classList.remove('hidden');
-            }
-        });
-        
-        // Disable right-click context menu on video
-        video.addEventListener('contextmenu', (e) => {
-            e.preventDefault();
-            return false;
-        });
+        // Simple script for any additional functionality if needed
+        console.log('AgroIkemba Welcome Video Page Loaded');
     </script>
 </body>
 </html>

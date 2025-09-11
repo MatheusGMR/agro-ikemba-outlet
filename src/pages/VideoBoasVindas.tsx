@@ -1,30 +1,7 @@
-import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Play, Volume2 } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 
 const VideoBoasVindas = () => {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [showPlayButton, setShowPlayButton] = useState(true);
-
-  const handlePlay = () => {
-    if (videoRef.current) {
-      videoRef.current.muted = false;
-      videoRef.current.play();
-      setShowPlayButton(false);
-    }
-  };
-
-  const handleVideoLoad = () => {
-    // Try autoplay muted first
-    if (videoRef.current) {
-      videoRef.current.muted = true;
-      videoRef.current.play().catch(() => {
-        // If autoplay fails, show the play button
-        setShowPlayButton(true);
-      });
-    }
-  };
 
   return (
     <>
@@ -49,39 +26,14 @@ const VideoBoasVindas = () => {
           {/* Video Section */}
           <div className="p-8">
             <div className="relative aspect-video bg-black rounded-lg overflow-hidden mb-6">
-              <video
-                ref={videoRef}
-                className="w-full h-full object-cover"
-                poster="https://jhkxcplfempenoczcoep.supabase.co/storage/v1/object/public/media-assets/Logo%20Ikemba.png"
-                controls
-                controlsList="nodownload"
-                disablePictureInPicture
-                onContextMenu={(e) => e.preventDefault()}
-                playsInline
-                onLoadedData={handleVideoLoad}
-              >
-                <source 
-                  src="https://jhkxcplfempenoczcoep.supabase.co/storage/v1/object/public/media-assets/Seja%20bem%20vindo!.mp4" 
-                  type="video/mp4" 
-                />
-                Seu navegador não suporta o elemento de vídeo.
-              </video>
-              
-              {/* Play Button Overlay */}
-              {showPlayButton && (
-                <div 
-                  className="absolute inset-0 flex items-center justify-center bg-black/50 cursor-pointer"
-                  onClick={handlePlay}
-                >
-                  <Button 
-                    size="lg" 
-                    className="bg-green-500 hover:bg-green-600 text-white rounded-full p-4"
-                  >
-                    <Volume2 className="w-8 h-8 mr-2" />
-                    Assistir com Som
-                  </Button>
-                </div>
-              )}
+              <iframe
+                src="https://www.youtube.com/embed/VaVjD8OtFK0?rel=0&modestbranding=1&showinfo=0"
+                title="Bem-vindo ao AgroIkemba - Vídeo de Apresentação"
+                className="w-full h-full border-0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerPolicy="strict-origin-when-cross-origin"
+                allowFullScreen
+              />
             </div>
 
             {/* CTA Section */}
