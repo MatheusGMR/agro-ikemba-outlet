@@ -86,10 +86,10 @@ const VideoBoasVindas = () => {
               ref={videoRef}
               className="w-full h-auto"
               poster={posterUrl}
-              muted={isMuted}
+              muted={true}
               playsInline
               preload="metadata"
-              controls={isPlaying}
+              controls
             >
               <source src={videoUrl} type="video/quicktime" />
               <p className="p-8 text-center text-muted-foreground">
