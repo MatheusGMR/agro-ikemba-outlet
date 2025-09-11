@@ -124,29 +124,15 @@ const handler = async (req: Request): Promise<Response> => {
                 </p>
               </div>
               
-              <!-- Card de Experiência Mobile -->
-              <div style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border: 1px solid #bae6fd; border-radius: 12px; padding: 24px; margin-bottom: 35px; text-align: center;">
-                <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #0ea5e9, #0284c7); border-radius: 50%; margin: 0 auto 15px auto; display: flex; align-items: center; justify-content: center;">
-                  <span style="color: white; font-size: 24px;">📱</span>
-                </div>
-                <h3 style="color: #0c4a6e; font-size: 16px; font-weight: 600; margin: 0 0 8px 0;">Experiência Mobile Otimizada</h3>
-                <p style="color: #0369a1; font-size: 14px; margin: 0 0 16px 0; line-height: 1.4;">
-                  Seja bem-vindo! Veja como nossa plataforma funciona no seu celular
-                </p>
-                
-                <!-- Embedded Video Section -->
-                <div style="text-align: center; margin-top: 16px;">
-                  <div style="position: relative; display: inline-block; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
-                    <a href="https://youtu.be/anuLkbDW96w" target="_blank" style="text-decoration: none;">
-                      <img src="https://i.ytimg.com/vi/anuLkbDW96w/hqdefault.jpg" alt="Demonstração da Plataforma Mobile" style="width: 280px; height: 157px; object-fit: cover; border-radius: 8px;">
-                      <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.7); border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center;">
-                        <div style="width: 0; height: 0; border-left: 16px solid white; border-top: 10px solid transparent; border-bottom: 10px solid transparent; margin-left: 3px;"></div>
-                      </div>
-                    </a>
-                  </div>
-                  <p style="color: #0369a1; font-size: 11px; margin: 8px 0 0 0; font-style: italic;">
-                    🎬 Assista à demonstração da plataforma mobile
-                  </p>
+              <!-- Video Section -->
+              <div style="text-align: center; margin-bottom: 35px;">
+                <div style="position: relative; display: inline-block; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                  <a href="https://youtu.be/anuLkbDW96w" target="_blank" style="text-decoration: none;">
+                    <img src="https://i.ytimg.com/vi/anuLkbDW96w/hqdefault.jpg" alt="Demonstração da Plataforma Mobile" style="width: 280px; height: 157px; object-fit: cover; border-radius: 8px;">
+                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.7); border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center;">
+                      <div style="width: 0; height: 0; border-left: 16px solid white; border-top: 10px solid transparent; border-bottom: 10px solid transparent; margin-left: 3px;"></div>
+                    </div>
+                  </a>
                 </div>
               </div>
               
@@ -154,7 +140,7 @@ const handler = async (req: Request): Promise<Response> => {
               <div style="text-align: center; margin-bottom: 40px;">
                 <a href="https://www.agroikemba.com.br/login" 
                    style="display: inline-block; background: linear-gradient(135deg, #22c55e, #16a34a); color: white; padding: 16px 40px; text-decoration: none; border-radius: 50px; font-weight: 700; font-size: 16px; letter-spacing: 0.5px; box-shadow: 0 4px 20px rgba(34, 197, 94, 0.3); transition: all 0.3s ease; text-transform: uppercase;">
-                  🚀 ACESSAR PLATAFORMA
+                  ACESSAR PLATAFORMA
                 </a>
               </div>
               
@@ -227,7 +213,7 @@ const handler = async (req: Request): Promise<Response> => {
                 Este email foi enviado automaticamente. Não responda este email.
               </p>
               <p style="color: #94a3b8; font-size: 11px; margin-top: 8px;">
-                Template: v2025-09-11-1
+                Template: v2025-09-11-2
               </p>
             </div>
             
@@ -256,7 +242,7 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error('Tipo de email inválido');
     }
 
-    console.log("[send-auth-email] Sending email", { type, to: email, version: "v2025-09-11-1" });
+    console.log("[send-auth-email] Sending email", { type, to: email, version: "v2025-09-11-2" });
     const emailResponse = await resend.emails.send({
       from: fromEmail,
       to: [email],
