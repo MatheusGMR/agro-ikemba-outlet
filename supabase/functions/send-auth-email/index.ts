@@ -107,9 +107,8 @@ const handler = async (req: Request): Promise<Response> => {
             <div style="background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); padding: 40px 40px 30px 40px; text-align: center; border-bottom: 2px solid #f1f5f9;">
               <!-- Logo centralizado -->
               <div style="text-align: center; margin-bottom: 15px;">
-                <img src="https://jhkxcplfempenoczcoep.supabase.co/storage/v1/object/public/media-assets/Logo%20Ikemba.png" alt="Logo AgroIkemba" style="width: 64px; height: 64px;">
+                <img src="https://jhkxcplfempenoczcoep.supabase.co/storage/v1/object/public/media-assets/Logo%20Ikemba.png" alt="Logo AgroIkemba" style="width: 150px; height: 150px;">
               </div>
-              <p style="color: #64748b; margin: 0; font-size: 14px; font-weight: 500; letter-spacing: 0.5px; font-family: 'DM Sans', sans-serif;">O outlet do agro</p>
             </div>
             
             <!-- Seção de Boas-vindas -->
@@ -135,13 +134,6 @@ const handler = async (req: Request): Promise<Response> => {
                  </div>
               </div>
               
-              <!-- Botão de Acesso Principal -->
-              <div style="text-align: center; margin-bottom: 40px;">
-                 <a href="https://www.agroikemba.com.br/login" 
-                    style="display: inline-block; background: #22c55e; color: white; padding: 16px 40px; text-decoration: none; border-radius: 50px; font-weight: 700; font-size: 16px; letter-spacing: 0.5px; box-shadow: 0 4px 20px rgba(34, 197, 94, 0.3); transition: all 0.3s ease;">
-                   Acessar plataforma
-                 </a>
-              </div>
               
                <!-- Seção de Credenciais -->
                <div style="background: #f9fafb; border-radius: 12px; padding: 30px; margin-bottom: 30px; border: 1px solid #e5e7eb;">
@@ -176,8 +168,16 @@ const handler = async (req: Request): Promise<Response> => {
                    <p style="color: #1f2937; font-size: 16px; margin: 0; font-family: 'SF Mono', Monaco, monospace; background: #f1f5f9; padding: 12px; border-radius: 6px;">
                      ${password}
                    </p>
-                 </div>
-               </div>
+                  </div>
+                </div>
+                
+                <!-- Botão de Acesso Principal -->
+                <div style="text-align: center; margin-bottom: 40px;">
+                   <a href="https://www.agroikemba.com.br/login" 
+                      style="display: inline-block; background: #22c55e; color: white; padding: 16px 40px; text-decoration: none; border-radius: 50px; font-weight: 700; font-size: 16px; letter-spacing: 0.5px; box-shadow: 0 4px 20px rgba(34, 197, 94, 0.3); transition: all 0.3s ease;">
+                     Acessar plataforma
+                   </a>
+                </div>
               
                <!-- Seção de Suporte -->
                <div style="padding: 24px; margin-bottom: 30px; text-align: center;">
@@ -205,11 +205,11 @@ const handler = async (req: Request): Promise<Response> => {
             <!-- Footer -->
             <div style="background: #f8fafc; padding: 20px 40px; text-align: center; border-top: 1px solid #e2e8f0;">
               <p style="color: #6b7280; font-size: 12px; margin: 0; line-height: 1.4;">
-                © 2024 AgroIkemba - O Outlet do Agronegócio Brasileiro<br>
+                © 2025 AgroIkemba - O Outlet do Agronegócio Brasileiro<br>
                 Este email foi enviado automaticamente. Não responda este email.
               </p>
               <p style="color: #94a3b8; font-size: 11px; margin-top: 8px;">
-                Template: v2025-09-11-6
+                Template: v2025-09-11-7
               </p>
             </div>
             
@@ -238,7 +238,7 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error('Tipo de email inválido');
     }
 
-    console.log("[send-auth-email] Sending email", { type, to: email, version: "v2025-09-11-6" });
+    console.log("[send-auth-email] Sending email", { type, to: email, version: "v2025-09-11-7" });
     const emailResponse = await resend.emails.send({
       from: fromEmail,
       to: [email],
