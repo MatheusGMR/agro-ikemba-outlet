@@ -107,7 +107,7 @@ const handler = async (req: Request): Promise<Response> => {
             <div style="background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); padding: 40px 40px 30px 40px; text-align: center; border-bottom: 2px solid #f1f5f9;">
               <!-- Logo e Branding -->
               <div style="display: inline-flex; align-items: center; margin-bottom: 15px;">
-                <img src="https://jhkxcplfempenoczcoep.supabase.co/storage/v1/object/public/lovable-uploads/27f08a0b-b673-4b79-8ff1-45a86ea5a6fe.png" alt="AgroIkemba Logo" style="width: 48px; height: 48px; margin-right: 12px;">
+                <img src="https://jhkxcplfempenoczcoep.supabase.co/storage/v1/object/public/lovable-uploads/34d4bbce-6ea4-4767-adc0-3e017766a398.png" alt="AgroIkemba Logo" style="width: 48px; height: 48px; margin-right: 12px;">
                 <h1 style="color: #22c55e; margin: 0; font-size: 32px; font-weight: 800; letter-spacing: -0.5px; font-family: 'DM Sans', sans-serif;">AgroIkemba</h1>
               </div>
               <p style="color: #64748b; margin: 0; font-size: 14px; font-weight: 500; letter-spacing: 0.5px; font-family: 'DM Sans', sans-serif;">O OUTLET DO AGRO</p>
@@ -137,25 +137,12 @@ const handler = async (req: Request): Promise<Response> => {
                 <!-- Embedded Video Section -->
                 <div style="text-align: center; margin-top: 16px;">
                   <div style="position: relative; display: inline-block; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
-                    <!-- Iframe para clientes que suportam -->
-                    <iframe width="280" height="157" 
-                            src="https://www.youtube.com/embed/anuLkbDW96w?rel=0&modestbranding=1" 
-                            title="Demonstração da Plataforma Mobile AgroIkemba"
-                            frameborder="0" 
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                            allowfullscreen
-                            style="border-radius: 8px; display: block;">
-                    </iframe>
-                    
-                    <!-- Fallback para clientes que não suportam iframe (Gmail, Outlook) -->
-                    <div style="display: none;">
-                      <a href="https://youtu.be/anuLkbDW96w" target="_blank" style="text-decoration: none;">
-                        <img src="https://img.youtube.com/vi/anuLkbDW96w/maxresdefault.jpg" alt="Demonstração da Plataforma Mobile" style="width: 280px; height: 157px; object-fit: cover; border-radius: 8px;">
-                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.7); border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center;">
-                          <div style="width: 0; height: 0; border-left: 16px solid white; border-top: 10px solid transparent; border-bottom: 10px solid transparent; margin-left: 3px;"></div>
-                        </div>
-                      </a>
-                    </div>
+                    <a href="https://youtu.be/anuLkbDW96w" target="_blank" style="text-decoration: none;">
+                      <img src="https://img.youtube.com/vi/anuLkbDW96w/maxresdefault.jpg" alt="Demonstração da Plataforma Mobile" style="width: 280px; height: 157px; object-fit: cover; border-radius: 8px;">
+                      <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.7); border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center;">
+                        <div style="width: 0; height: 0; border-left: 16px solid white; border-top: 10px solid transparent; border-bottom: 10px solid transparent; margin-left: 3px;"></div>
+                      </div>
+                    </a>
                   </div>
                   <p style="color: #0369a1; font-size: 11px; margin: 8px 0 0 0; font-style: italic;">
                     🎬 Assista à demonstração da plataforma mobile
