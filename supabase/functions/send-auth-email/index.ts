@@ -107,7 +107,7 @@ const handler = async (req: Request): Promise<Response> => {
             <div style="background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); padding: 40px 40px 30px 40px; text-align: center; border-bottom: 2px solid #f1f5f9;">
               <!-- Logo e Branding -->
               <div style="display: inline-flex; align-items: center; margin-bottom: 15px;">
-                <img src="https://www.agroikemba.com.br/lovable-uploads/34d4bbce-6ea4-4767-adc0-3e017766a398.png?v=2" alt="AgroIkemba Logo" style="width: 48px; height: 48px; margin-right: 12px;">
+                <img src="https://jhkxcplfempenoczcoep.supabase.co/storage/v1/object/public/media-assets/Logo%20Ikemba.png" alt="AgroIkemba Logo" style="width: 48px; height: 48px; margin-right: 12px;">
                 <h1 style="color: #22c55e; margin: 0; font-size: 32px; font-weight: 800; letter-spacing: -0.5px; font-family: 'DM Sans', sans-serif;">AgroIkemba</h1>
               </div>
               <p style="color: #64748b; margin: 0; font-size: 14px; font-weight: 500; letter-spacing: 0.5px; font-family: 'DM Sans', sans-serif;">O OUTLET DO AGRO</p>
@@ -213,7 +213,7 @@ const handler = async (req: Request): Promise<Response> => {
                 Este email foi enviado automaticamente. Não responda este email.
               </p>
               <p style="color: #94a3b8; font-size: 11px; margin-top: 8px;">
-                Template: v2025-09-11-3
+                Template: v2025-09-11-5
               </p>
             </div>
             
@@ -242,7 +242,7 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error('Tipo de email inválido');
     }
 
-    console.log("[send-auth-email] Sending email", { type, to: email, version: "v2025-09-11-3" });
+    console.log("[send-auth-email] Sending email", { type, to: email, version: "v2025-09-11-5" });
     const emailResponse = await resend.emails.send({
       from: fromEmail,
       to: [email],
