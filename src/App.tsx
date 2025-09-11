@@ -29,7 +29,6 @@ import { TooltipProvider } from '@radix-ui/react-tooltip';
 import { CartProvider } from '@/contexts/CartContext';
 import { AuthProvider } from '@/hooks/useAuth';
 import ScrollToTop from '@/components/layout/ScrollToTop';
-import QueryParamRedirector from '@/components/layout/QueryParamRedirector';
 import ApprovedProtectedRoute from '@/components/auth/ApprovedProtectedRoute';
 import PendingApproval from '@/pages/PendingApproval';
 import GlobalWhatsAppButton from '@/components/ui/GlobalWhatsAppButton';
@@ -46,7 +45,6 @@ function App() {
             <Sonner />
             <BrowserRouter>
               <ScrollToTop />
-              <QueryParamRedirector />
             <AuthProvider>
                 <Routes>
                   <Route path="/" element={<Index />} />
@@ -81,10 +79,7 @@ function App() {
                   <Route path="/simulador" element={<Simulador />} />
                   <Route path="/landing" element={<LandingPage />} />
                   <Route path="/proposta/:publicLink" element={<ProposalView />} />
-                  {/* Video boas-vindas with aliases to prevent 404 from trailing slash or typos */}
                   <Route path="/video/boas-vindas" element={<VideoBoasVindas />} />
-                  <Route path="/video/boas-vindas/" element={<VideoBoasVindas />} />
-                  <Route path="/video-boas-vindas" element={<VideoBoasVindas />} />
                   <Route path="/test-openai" element={<TestPage />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>  
