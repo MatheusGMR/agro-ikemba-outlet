@@ -34,7 +34,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const resend = new Resend(resendApiKey);
-    const fromEmail = Deno.env.get("RESEND_FROM") || "onboarding@resend.dev";
+    const fromEmail = Deno.env.get("RESEND_FROM") || "Agro Ikemba <onboarding@resend.dev>";
     
     let subject: string;
     let html: string;
@@ -213,7 +213,7 @@ const handler = async (req: Request): Promise<Response> => {
                 Este email foi enviado automaticamente. Não responda este email.
               </p>
               <p style="color: #94a3b8; font-size: 11px; margin-top: 8px;">
-                Template: v2025-09-11-2
+                Template: v2025-09-11-3
               </p>
             </div>
             
@@ -242,7 +242,7 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error('Tipo de email inválido');
     }
 
-    console.log("[send-auth-email] Sending email", { type, to: email, version: "v2025-09-11-2" });
+    console.log("[send-auth-email] Sending email", { type, to: email, version: "v2025-09-11-3" });
     const emailResponse = await resend.emails.send({
       from: fromEmail,
       to: [email],
