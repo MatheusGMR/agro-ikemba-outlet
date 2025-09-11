@@ -113,6 +113,27 @@ export const userService = {
 
       console.log('Status atualizado com sucesso');
 
+      // Se aprovado, criar/garantir conta de autenticação automaticamente
+      if (status === 'approved') {
+        try {
+          console.log('Invocando criação de conta auth para usuário aprovado:', userId);
+          const { data: batchResult, error: batchError } = await supabase.functions.invoke('create-auth-users-batch', {
+            body: {
+              userIds: [userId],
+              createAll: false,
+            },
+          });
+
+          if (batchError) {
+            console.warn('Aviso: Erro ao criar conta auth em lote:', batchError);
+          } else {
+            console.log('Resultado da criação de conta auth:', batchResult?.summary || batchResult);
+          }
+        } catch (batchInvokeError) {
+          console.warn('Aviso: Erro inesperado ao invocar criação de conta auth:', batchInvokeError);
+        }
+      }
+
        // Tentar enviar WhatsApp (não crítico)
       try {
         // Usar telefone do campo phone ou extrair do campo CNPJ (dados migrados)
