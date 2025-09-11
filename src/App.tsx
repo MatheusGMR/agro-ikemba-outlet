@@ -24,7 +24,6 @@ import Simulador from './pages/Simulador';
 import LandingPage from './pages/LandingPage';
 import Representative from './pages/Representative';
 import ProposalView from './pages/ProposalView';
-import VideoBoasVindas from './pages/VideoBoasVindas';
 import { TooltipProvider } from '@radix-ui/react-tooltip';
 import { CartProvider } from '@/contexts/CartContext';
 import { AuthProvider } from '@/hooks/useAuth';
@@ -79,7 +78,6 @@ function App() {
                   <Route path="/simulador" element={<Simulador />} />
                   <Route path="/landing" element={<LandingPage />} />
                   <Route path="/proposta/:publicLink" element={<ProposalView />} />
-                  <Route path="/video/boas-vindas" element={<VideoBoasVindas />} />
                   <Route path="/test-openai" element={<TestPage />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>  
