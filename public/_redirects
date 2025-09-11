@@ -2,6 +2,9 @@
 # Domain redirect - force www
 https://agroikemba.com.br/*  https://www.agroikemba.com.br/:splat  301!
 
+# Video redirect - old route to static HTML
+/video/boas-vindas  /video-boas-vindas.html  301
+
 # SPA fallback
 /*    /index.html   200
 

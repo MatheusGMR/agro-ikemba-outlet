@@ -54,6 +54,9 @@ const VideoBoasVindas = () => {
                 className="w-full h-full object-cover"
                 poster="https://jhkxcplfempenoczcoep.supabase.co/storage/v1/object/public/media-assets/Logo%20Ikemba.png"
                 controls
+                controlsList="nodownload"
+                disablePictureInPicture
+                onContextMenu={(e) => e.preventDefault()}
                 playsInline
                 onLoadedData={handleVideoLoad}
               >

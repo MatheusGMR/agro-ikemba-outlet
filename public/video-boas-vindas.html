@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bem-vindo ao AgroIkemba - Vídeo de Apresentação</title>
+    <meta name="description" content="Conheça o primeiro Outlet do Agronegócio Brasileiro. Assista nosso vídeo de boas-vindas e descubra como economizar em insumos agrícolas.">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        
+        .container {
+            max-width: 56rem;
+            width: 100%;
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            padding: 2rem;
+            text-align: center;
+            color: white;
+        }
+        
+        .logo {
+            width: 6rem;
+            height: 6rem;
+            margin: 0 auto 1rem;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 0.5rem;
+            display: block;
+        }
+        
+        .header h1 {
+            font-size: 1.875rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        .header p {
+            font-size: 1.125rem;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 2rem;
+        }
+        
+        .video-container {
+            position: relative;
+            aspect-ratio: 16/9;
+            background: black;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+        
+        .video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .play-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.5);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .play-overlay:hover {
+            background: rgba(0, 0, 0, 0.7);
+        }
+        
+        .play-button {
+            background: #22c55e;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 4rem;
+            height: 4rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.5rem;
+        }
+        
+        .play-button:hover {
+            background: #16a34a;
+            transform: scale(1.1);
+        }
+        
+        .cta {
+            text-align: center;
+        }
+        
+        .cta h2 {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 1rem;
+        }
+        
+        .cta p {
+            color: #6b7280;
+            margin-bottom: 1.5rem;
+        }
+        
+        .cta-button {
+            background: #22c55e;
+            color: white;
+            border: none;
+            padding: 0.75rem 2rem;
+            font-size: 1.125rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .cta-button:hover {
+            background: #16a34a;
+            transform: translateY(-2px);
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="https://jhkxcplfempenoczcoep.supabase.co/storage/v1/object/public/media-assets/Logo%20Ikemba.png" 
+                 alt="Logo AgroIkemba" 
+                 class="logo">
+            <h1>Bem-vindo ao AgroIkemba! 🌱</h1>
+            <p>O primeiro Outlet do Agronegócio Brasileiro</p>
+        </div>
+        
+        <div class="content">
+            <div class="video-container">
+                <video id="video" 
+                       class="video"
+                       poster="https://jhkxcplfempenoczcoep.supabase.co/storage/v1/object/public/media-assets/Logo%20Ikemba.png"
+                       controls
+                       controlslist="nodownload"
+                       disablePictureInPicture
+                       oncontextmenu="return false;"
+                       playsInline>
+                    <source src="https://jhkxcplfempenoczcoep.supabase.co/storage/v1/object/public/media-assets/Seja%20bem%20vindo!.mp4" type="video/mp4">
+                    Seu navegador não suporta o elemento de vídeo.
+                </video>
+                
+                <div id="playOverlay" class="play-overlay">
+                    <button class="play-button" onclick="playVideo()">
+                        ▶️
+                    </button>
+                </div>
+            </div>
+            
+            <div class="cta">
+                <h2>Pronto para economizar em insumos agrícolas?</h2>
+                <p>Acesse nossa plataforma e descubra os melhores preços do mercado</p>
+                <a href="https://www.agroikemba.com.br/login" class="cta-button">
+                    Acessar Plataforma
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const video = document.getElementById('video');
+        const playOverlay = document.getElementById('playOverlay');
+        
+        function playVideo() {
+            video.muted = false;
+            video.play();
+            playOverlay.classList.add('hidden');
+        }
+        
+        // Try autoplay muted first
+        video.addEventListener('loadeddata', () => {
+            video.muted = true;
+            video.play().catch(() => {
+                // If autoplay fails, keep the play button visible
+                playOverlay.classList.remove('hidden');
+            });
+        });
+        
+        // Hide overlay when video starts playing
+        video.addEventListener('play', () => {
+            playOverlay.classList.add('hidden');
+        });
+        
+        // Show overlay when video is paused
+        video.addEventListener('pause', () => {
+            if (!video.ended) {
+                playOverlay.classList.remove('hidden');
+            }
+        });
+        
+        // Disable right-click context menu on video
+        video.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            return false;
+        });
+    </script>
+</body>
+</html>
