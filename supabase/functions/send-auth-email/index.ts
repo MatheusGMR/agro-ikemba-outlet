@@ -244,9 +244,7 @@ const handler = async (req: Request): Promise<Response> => {
         </body>
         </html>
       `;
-        <head>
-          <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-        </head>
+    } else if (type === 'test') {
         <body style="margin: 0; padding: 0; background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
           
           <!-- Container Principal -->
