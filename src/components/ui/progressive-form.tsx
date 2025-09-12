@@ -40,6 +40,10 @@ export function ProgressiveForm({
   const isLastStep = currentStep === totalSteps;
   const currentStepData = steps[currentStep - 1];
 
+  const scrollToTop = React.useCallback(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
   const handleNext = React.useCallback(() => {
     if (currentStepData.validate) {
       const validation = currentStepData.validate();
@@ -53,12 +57,16 @@ export function ProgressiveForm({
       onSubmit();
     } else {
       onStepChange(currentStep + 1);
+      // Scroll to top when advancing to next step
+      setTimeout(() => scrollToTop(), 100);
     }
-  }, [currentStepData, isLastStep, onSubmit, onStepChange, currentStep]);
+  }, [currentStepData, isLastStep, onSubmit, onStepChange, currentStep, scrollToTop]);
 
   const handleBack = () => {
     if (!isFirstStep && allowBack) {
       onStepChange(currentStep - 1);
+      // Scroll to top when going back
+      setTimeout(() => scrollToTop(), 100);
     }
   };
 

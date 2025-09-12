@@ -195,13 +195,32 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
   // Removed fake document generation - now handled by Edge Functions
 
   const handlePaymentComplete = async () => {
-    console.time('checkout-total');
-    console.log('🚀 Starting optimized checkout with payment:', selectedPayment);
     setIsProcessing(true);
+    setProcessingStep("Preparando pedido...");
+    
+    // Create a timeout for the entire checkout process
+    const timeoutId = setTimeout(() => {
+      if (isProcessing) {
+        setIsProcessing(false);
+        toast({
+          title: "Processamento demorado",
+          description: "O processamento está demorando mais que o esperado. Tente novamente.",
+          variant: "destructive"
+        });
+      }
+    }, 30000); // 30 second timeout
     
     try {
-      if (!user?.id) {
-        throw new Error('User not authenticated');
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        clearTimeout(timeoutId);
+        toast({
+          title: "Erro de autenticação",
+          description: "Faça login novamente",
+          variant: "destructive"
+        });
+        setIsProcessing(false);
+        return;
       }
 
       updateProcessingStep('Processando pedido...');
@@ -223,65 +242,82 @@ export function OptimizedCheckoutFlow({ cartItems, onOrderComplete }: OptimizedC
         };
       });
 
-      // Call optimized edge function with retry
-      const createOrderWithRetry = async (attempt: number = 1): Promise<any> => {
-        try {
-          const response = await supabase.functions.invoke('create-order', {
-            body: {
-              items: orderItems,
-              total_amount: total,
-              payment_method: PAYMENT_METHODS.find(p => p.id === selectedPayment)?.name || 'Não especificado',
-              logistics_option: selectedLogistics || 'pickup',
-              delivery_info: deliveryInfo,
-              delivery_quote_requested: deliveryQuoteRequested,
-              idempotency_key: idempotencyKey
-            }
-          });
-
-          if (response.error) {
-            throw new Error(`Edge function error: ${response.error.message}`);
-          }
-
-          return response.data;
-        } catch (error: any) {
-          if (error.message?.includes('timeout') && attempt < 2) {
-            console.warn(`⚠️ Attempt ${attempt} failed, retrying...`);
-            updateProcessingStep('Reconectando...');
-            await new Promise(resolve => setTimeout(resolve, 1000)); // 1s delay
-            return createOrderWithRetry(attempt + 1);
-          }
-          throw error;
-        }
+      updateProcessingStep("Criando pedido...");
+      
+      const orderData = {
+        items: orderItems,
+        total_amount: total,
+        payment_method: PAYMENT_METHODS.find(p => p.id === selectedPayment)?.name || 'Não especificado',
+        logistics_option: selectedLogistics || 'pickup',
+        delivery_info: deliveryInfo,
+        delivery_quote_requested: deliveryQuoteRequested,
+        idempotency_key: idempotencyKey
       };
 
-      const result = await createOrderWithRetry();
+      console.log("Creating order with data:", orderData);
 
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to create order');
+      let orderResult;
+      let retryCount = 0;
+      const maxRetries = 2; // Reduced retries for faster failure detection
+
+      while (retryCount < maxRetries) {
+        try {
+          // Add timeout to the function call itself
+          const functionCallPromise = supabase.functions.invoke('create-order', {
+            body: orderData
+          });
+          
+          const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Timeout na criação do pedido')), 25000)
+          );
+          
+          orderResult = await Promise.race([functionCallPromise, timeoutPromise]);
+
+          if (orderResult.error) {
+            throw new Error(orderResult.error.message || 'Erro ao criar pedido');
+          }
+
+          break;
+        } catch (error) {
+          retryCount++;
+          console.error(`Tentativa ${retryCount} falhou:`, error);
+          
+          if (retryCount === maxRetries) {
+            throw error;
+          }
+          
+          updateProcessingStep(`Tentando novamente... (${retryCount}/${maxRetries})`);
+          await wait(2000); // Fixed 2 second delay between retries
+        }
       }
 
-      console.timeEnd('checkout-total');
-      console.log('✅ Order created successfully:', result.order.order_number);
-      
-      setOrderData(result.order);
-      setShowConfirmation(true);
+      if (!orderResult.data.success) {
+        throw new Error(orderResult.data.error || 'Failed to create order');
+      }
+
+      console.log("Order created successfully:", orderResult.data);
+
+      // Track conversion
+      updateProcessingStep("Finalizando...");
       trackConversion('purchase', total);
-      onOrderComplete?.({ orderNumber: result.order.order_number });
+
+      clearTimeout(timeoutId);
+      setOrderData(orderResult.data.order);
+      setShowConfirmation(true);
+      onOrderComplete?.(orderResult.data);
       
     } catch (error: any) {
-      console.timeEnd('checkout-total');
-      console.error('💥 Checkout failed:', error);
-      
+      console.error("Erro durante checkout:", error);
+      clearTimeout(timeoutId);
       toast({
         title: "Erro ao processar pedido",
         description: error.message.includes('timeout') ? 
-          "A conexão demorou mais que o esperado. Tente novamente." :
+          "O processamento demorou mais que o esperado. Tente novamente." :
           "Tente novamente ou entre em contato conosco.",
         variant: "destructive"
       });
     } finally {
       setIsProcessing(false);
-      setProcessingStep('');
     }
   };
 

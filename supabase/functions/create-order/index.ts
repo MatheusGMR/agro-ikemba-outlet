@@ -78,7 +78,7 @@ serve(async (req) => {
 
     console.time('database-insert');
     
-    // Create new order
+    // Create new order with optimized query
     const { data: orderData, error: orderError } = await supabase
       .from('orders')
       .insert({
@@ -90,7 +90,7 @@ serve(async (req) => {
         logistics_option: requestData.logistics_option,
         status: 'pending'
       })
-      .select()
+      .select('id, order_number, total_amount, status, created_at')
       .single();
 
     console.timeEnd('database-insert');
@@ -102,74 +102,110 @@ serve(async (req) => {
 
     console.log('✅ Order created:', orderData.order_number);
 
-    // Background task: Send confirmation email (non-blocking)
-    EdgeRuntime.waitUntil(
-      (async () => {
-        try {
-          console.time('email-confirmation');
-          
-          // Get user profile data (fallback to auth email)
-          const { data: userData } = await supabase
-            .from('users')
-            .select('name, email, phone, company')
-            .eq('id', user.id)
-            .maybeSingle();
-
-          const safeUser = {
-            name: userData?.name || user.email?.split('@')[0] || 'Cliente',
-            email: userData?.email || user.email || '',
-            phone: userData?.phone || '',
-            company: userData?.company || ''
-          };
-
-          await supabase.functions.invoke('send-order-confirmation', {
-            body: {
-              orderData: {
-                order_number: orderData.order_number,
-                total_amount: orderData.total_amount,
-                payment_method: orderData.payment_method,
-                logistics_option: orderData.logistics_option,
-                items: orderData.items
-              },
-              userData: safeUser
-            }
-          });
-
-          console.timeEnd('email-confirmation');
-          console.log('📧 Email confirmation sent for:', orderData.order_number);
-        } catch (error) {
-          console.error('📧 Email confirmation failed (non-blocking):', error);
-        }
-      })()
-    );
-
-    // Background task: Track analytics (non-blocking)
-    EdgeRuntime.waitUntil(
-      (async () => {
-        try {
-          console.log('📊 Tracking conversion analytics for:', orderData.order_number);
-          // Additional analytics tracking could be added here
-        } catch (error) {
-          console.error('📊 Analytics tracking failed (non-blocking):', error);
-        }
-      })()
-    );
-
-    console.timeEnd('create-order-total');
-
-    return new Response(JSON.stringify({
+    // Immediately return success response
+    const response = new Response(JSON.stringify({
       success: true,
       order: {
         id: orderData.id,
         order_number: orderData.order_number,
         total_amount: orderData.total_amount,
         status: orderData.status,
-        items: orderData.items
+        created_at: orderData.created_at
       }
     }), {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
+
+    // Use EdgeRuntime.waitUntil for all background tasks
+    EdgeRuntime.waitUntil(
+      (async () => {
+        try {
+          // Parallel execution of background tasks
+          const backgroundTasks = [
+            // Send order confirmation email
+            (async () => {
+              try {
+                console.time('email-confirmation');
+                
+                // Get user profile data (fallback to auth email)
+                const { data: userData } = await supabase
+                  .from('users')
+                  .select('name, email, phone, company')
+                  .eq('id', user.id)
+                  .maybeSingle();
+
+                const safeUser = {
+                  name: userData?.name || user.email?.split('@')[0] || 'Cliente',
+                  email: userData?.email || user.email || '',
+                  phone: userData?.phone || '',
+                  company: userData?.company || ''
+                };
+
+                await supabase.functions.invoke('send-order-confirmation', {
+                  body: {
+                    orderData: {
+                      order_number: orderData.order_number,
+                      total_amount: orderData.total_amount,
+                      payment_method: orderData.payment_method,
+                      logistics_option: orderData.logistics_option,
+                      items: requestData.items
+                    },
+                    userData: safeUser
+                  }
+                });
+
+                console.timeEnd('email-confirmation');
+                console.log('📧 Email confirmation sent for:', orderData.order_number);
+              } catch (error) {
+                console.error('📧 Email confirmation failed (non-blocking):', error);
+              }
+            })(),
+
+            // Track analytics
+            (async () => {
+              try {
+                console.log('📊 Tracking conversion analytics for:', orderData.order_number);
+                
+                const { error: analyticsError } = await supabase
+                  .from('checkout_funnel_logs')
+                  .insert({
+                    session_id: `order-${orderData.id}`,
+                    user_id: user.id,
+                    checkout_step: 'order_completed',
+                    action_type: 'conversion',
+                    step_data: {
+                      order_id: orderData.id,
+                      order_number: orderData.order_number,
+                      total_amount: orderData.total_amount,
+                      payment_method: requestData.payment_method,
+                      items_count: requestData.items.length
+                    }
+                  });
+
+                if (analyticsError) {
+                  console.error('📊 Analytics tracking failed:', analyticsError);
+                } else {
+                  console.log('📊 Analytics tracked successfully');
+                }
+              } catch (error) {
+                console.error('📊 Analytics task failed:', error);
+              }
+            })()
+          ];
+
+          // Wait for all background tasks to complete
+          await Promise.allSettled(backgroundTasks);
+          console.log('✅ All background tasks completed');
+
+        } catch (backgroundError) {
+          console.error('❌ Error in background tasks:', backgroundError);
+        }
+      })()
+    );
+
+    console.timeEnd('create-order-total');
+    return response;
 
   } catch (error: any) {
     console.error('💥 Order creation failed:', error);
