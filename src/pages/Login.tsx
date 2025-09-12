@@ -22,29 +22,22 @@ export default function Login() {
   const location = useLocation();
   const { signIn, user } = useAuth();
 
-  // Get the intended destination from location state or default to products for approved users
-  const getRedirectPath = (userStatus: string) => {
-    // Get the path user was trying to access before login
-    const from = location.state?.from?.pathname || localStorage.getItem('redirectAfterLogin');
-    
-    // Clear stored redirect path
-    localStorage.removeItem('redirectAfterLogin');
-    
+  // Get redirect path based on user status and role
+  const getRedirectPath = (userStatus: string, isRepresentative: boolean) => {
     if (userStatus === 'approved') {
-      // For approved users, redirect to where they came from or to products catalog
+      if (isRepresentative) {
+        return '/representative';
+      }
+      // For regular users, get the path they were trying to access or default to products
+      const from = location.state?.from?.pathname || localStorage.getItem('redirectAfterLogin');
+      localStorage.removeItem('redirectAfterLogin');
       return from && from !== '/login' ? from : '/products';
     } else {
-      // For pending users, always go to pending approval
       return '/pending-approval';
     }
   };
 
-  // Redirect if already logged in
-  useEffect(() => {
-    if (user) {
-      navigate('/');
-    }
-  }, [user, navigate]);
+  // Remove conflicting redirect - let handleLogin manage redirection based on user type
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -82,10 +75,7 @@ export default function Login() {
           
           // Check if user is a representative first
           const representative = await RepresentativeService.getCurrentRepresentative();
-          if (representative) {
-            navigate('/representative');
-            return;
-          }
+          const isRepresentative = !!representative;
           
           // Check user approval status
           const { data: userData } = await supabase
@@ -95,7 +85,7 @@ export default function Login() {
             .maybeSingle();
           
           const userStatus = userData?.status || 'pending';
-          const redirectPath = getRedirectPath(userStatus);
+          const redirectPath = getRedirectPath(userStatus, isRepresentative);
           navigate(redirectPath);
         } catch (repError) {
           console.log('Error checking user status, redirecting to pending approval:', repError);

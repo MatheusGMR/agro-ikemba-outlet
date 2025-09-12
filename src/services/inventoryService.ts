@@ -46,52 +46,85 @@ export class InventoryService {
   }
 
   static async getProductsWithInventory(): Promise<ProductWithInventory[]> {
-    const inventory = await this.getAllInventory();
-    const productMap = new Map<string, ProductWithInventory>();
+    try {
+      // Single query to get all inventory
+      const inventory = await this.getAllInventory();
+      
+      if (!inventory || inventory.length === 0) {
+        return [];
+      }
 
-    for (const item of inventory) {
-      if (!productMap.has(item.product_sku)) {
-        const documents = await this.getProductDocuments(item.product_sku);
+      // Get all unique SKUs for documents query
+      const skus = [...new Set(inventory.map(item => item.product_sku))];
+      
+      // Single query to get all documents for all products
+      const { data: documents, error: documentsError } = await supabase
+        .from('product_documents')
+        .select('*')
+        .in('product_sku', skus);
+
+      if (documentsError) {
+        console.warn('Error fetching product documents:', documentsError);
+      }
+
+      // Group documents by SKU for easy lookup
+      const documentsBySku = new Map<string, ProductDocument[]>();
+      if (documents) {
+        documents.forEach(doc => {
+          if (!documentsBySku.has(doc.product_sku)) {
+            documentsBySku.set(doc.product_sku, []);
+          }
+          documentsBySku.get(doc.product_sku)!.push(doc as ProductDocument);
+        });
+      }
+
+      const productMap = new Map<string, ProductWithInventory>();
+
+      for (const item of inventory) {
+        if (!productMap.has(item.product_sku)) {
+          productMap.set(item.product_sku, {
+            sku: item.product_sku,
+            name: item.product_name,
+            manufacturer: item.manufacturer,
+            active_ingredient: item.active_ingredient,
+            total_volume: 0,
+            locations: [],
+            price_tiers: [
+              { tier: 'Preço Unitário', price: item.preco_unitario },
+              { tier: 'Preço Banda menor', price: item.preco_banda_menor },
+              { tier: 'Preço Banda maior', price: item.preco_banda_maior }
+            ],
+            documents: documentsBySku.get(item.product_sku) || [],
+            expiry_date: item.expiry_date
+          });
+        }
+
+        const product = productMap.get(item.product_sku)!;
         
-        productMap.set(item.product_sku, {
-          sku: item.product_sku,
-          name: item.product_name,
-          manufacturer: item.manufacturer,
-          active_ingredient: item.active_ingredient,
-          total_volume: 0,
-          locations: [],
-          price_tiers: [
-            { tier: 'Preço Unitário', price: item.preco_unitario },
-            { tier: 'Preço Banda menor', price: item.preco_banda_menor },
-            { tier: 'Preço Banda maior', price: item.preco_banda_maior }
-          ],
-          documents,
-          expiry_date: item.expiry_date
-        });
+        // Add to total volume
+        product.total_volume += item.volume_available;
+        
+        // Add location if not exists
+        const locationExists = product.locations.find(
+          loc => loc.state === item.state && loc.city === item.city
+        );
+        
+        if (!locationExists) {
+          product.locations.push({
+            state: item.state,
+            city: item.city,
+            volume: item.volume_available
+          });
+        } else {
+          locationExists.volume += item.volume_available;
+        }
       }
 
-      const product = productMap.get(item.product_sku)!;
-      
-      // Add to total volume
-      product.total_volume += item.volume_available;
-      
-      // Add location if not exists
-      const locationExists = product.locations.find(
-        loc => loc.state === item.state && loc.city === item.city
-      );
-      
-      if (!locationExists) {
-        product.locations.push({
-          state: item.state,
-          city: item.city,
-          volume: item.volume_available
-        });
-      } else {
-        locationExists.volume += item.volume_available;
-      }
+      return Array.from(productMap.values());
+    } catch (error) {
+      console.error('Error in getProductsWithInventory:', error);
+      throw error;
     }
-
-    return Array.from(productMap.values());
   }
 
   // Nova função para agrupar produtos mostrando apenas preço unitário

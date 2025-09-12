@@ -4,7 +4,7 @@ import ProductCatalogComponent from '@/components/ui/custom/ProductCatalogCompon
 
 export default function ProductCatalog() {
   return (
-    <>
+    <AuthGate>
       <Helmet>
         <title>Catálogo de Produtos - AgroIkemba | Defensivos Agrícolas</title>
         <meta 
@@ -46,6 +46,6 @@ export default function ProductCatalog() {
       </Helmet>
 
       <ProductCatalogComponent />
-    </>
+    </AuthGate>
   );
 }
