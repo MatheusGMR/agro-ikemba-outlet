@@ -32,7 +32,7 @@ export function useUserApproval(): UserApprovalStatus {
       return;
     }
 
-    const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+    const CACHE_TTL_MS = 2 * 60 * 1000; // Reduced to 2 minutes for faster updates
     const cacheKey = `approval:${uid}:${email.toLowerCase()}`;
 
     const readCache = () => {
@@ -56,14 +56,25 @@ export function useUserApproval(): UserApprovalStatus {
       }
     };
 
+    const clearCache = () => {
+      try {
+        localStorage.removeItem(cacheKey);
+        console.log('🧹 UserApproval: Cache cleared for', email);
+      } catch (e) {
+        console.warn('⚠️ UserApproval: Failed to clear cache', e);
+      }
+    };
+
     const cached = readCache();
-    if (cached) {
+    if (cached && !cached.isPending) {
+      // Only use cache for approved/not approved status, always refresh if pending
       console.log('💾 UserApproval: Using cached status', cached);
       setIsApproved(!!cached.isApproved);
       setIsPending(!!cached.isPending);
       setUserRecord(cached.userRecord ?? null);
       setIsLoading(false);
     } else {
+      // If pending or no cache, always check fresh
       setIsLoading(true);
     }
 
@@ -82,7 +93,11 @@ export function useUserApproval(): UserApprovalStatus {
 
         if (error) {
           console.error('❌ UserApproval: Database error:', error);
-          // Do not force pending on error; keep current visible state and stop loading
+          // Clear cache on error and reset to safe state
+          clearCache();
+          setIsApproved(false);
+          setIsPending(false);
+          setUserRecord(null);
           setIsLoading(false);
           return;
         }
@@ -102,6 +117,7 @@ export function useUserApproval(): UserApprovalStatus {
           setUserRecord(null);
           setIsApproved(false);
           setIsPending(false);
+          writeCache({ isApproved: false, isPending: false, userRecord: null });
         }
       } catch (error) {
         console.error('💥 UserApproval: Exception in approval check:', error);

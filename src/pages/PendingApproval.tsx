@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
+import { CONTACT_INFO } from '@/constants/contact';
 
 export default function PendingApproval() {
   const { user } = useAuth();
@@ -74,12 +75,14 @@ export default function PendingApproval() {
               </div>
               
               {/* Status Badge */}
-              <div className="flex justify-center">
-                <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 px-4 py-2">
-                  <Clock className="h-4 w-4 mr-2" />
-                  Aprovação Pendente
-                </Badge>
-              </div>
+              {isPending && (
+                <div className="flex justify-center">
+                  <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 px-4 py-2">
+                    <Clock className="h-4 w-4 mr-2" />
+                    Aprovação Pendente
+                  </Badge>
+                </div>
+              )}
               
               {/* Information Box */}
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 text-left space-y-4">
@@ -110,13 +113,13 @@ export default function PendingApproval() {
                 </h3>
                 <div className="flex justify-center">
                   <a 
-                    href="https://wa.me/5511999999999"
+                    href={CONTACT_INFO.WHATSAPP_URL}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center justify-center text-primary hover:text-primary/80 transition-colors"
                   >
                     <Phone className="h-4 w-4 mr-2" />
-                    WhatsApp
+                    WhatsApp {CONTACT_INFO.WHATSAPP_FORMATTED}
                   </a>
                 </div>
               </div>
