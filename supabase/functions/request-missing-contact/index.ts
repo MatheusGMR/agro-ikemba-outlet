@@ -122,7 +122,7 @@ const handler = async (req: Request): Promise<Response> => {
           <div style="background-color: #e8f4f8; padding: 20px; border-radius: 8px; margin: 20px 0;">
             <p style="margin: 0; text-align: center;">
               <strong>📞 Como atualizar suas informações:</strong><br>
-              Entre em contato conosco pelo WhatsApp: <strong>+55 43 98406-4141</strong><br>
+              Entre em contato conosco pelo WhatsApp: <strong>+55 43 984064141</strong><br>
               ou responda este email informando seu ${fieldName}
             </p>
           </div>

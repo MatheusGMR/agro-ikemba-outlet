@@ -246,7 +246,7 @@ const handler = async (req: Request): Promise<Response> => {
             <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin: 25px 0; border: 1px solid #e2e8f0;">
               <h4 style="color: #475569; margin: 0 0 15px 0; font-size: 16px;">🤝 Enquanto isso, você pode:</h4>
               <ul style="margin: 0; padding-left: 20px; color: #475569;">
-                <li style="margin-bottom: 8px;">💬 <strong>WhatsApp:</strong> +55 43 98406-4141</li>
+                <li style="margin-bottom: 8px;">💬 <strong>WhatsApp:</strong> +55 43 984064141</li>
                 <li style="margin-bottom: 8px;">🌐 <strong>Site:</strong> www.agroikemba.com.br</li>
                 <li style="margin-bottom: 8px;">📧 <strong>Email:</strong> Responder diretamente este email</li>
                 <li>📱 <strong>Redes Sociais:</strong> Seguir para novidades e promoções</li>

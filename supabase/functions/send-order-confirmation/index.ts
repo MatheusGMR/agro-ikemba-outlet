@@ -150,7 +150,7 @@ const handler = async (req: Request): Promise<Response> => {
                     <li>Finalizar forma de pagamento</li>
                     <li>Coordenar logística e entrega</li>
                   </ul>
-                  <p><strong>WhatsApp:</strong> (43) 98406-4141</p>
+                  <p><strong>WhatsApp:</strong> (43) 984064141</p>
                 </div>
 
                 <p>Obrigado por escolher a AgroIkemba!</p>

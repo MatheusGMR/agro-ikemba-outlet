@@ -163,7 +163,7 @@ const handler = async (req: Request): Promise<Response> => {
           <p>Enquanto isso, você pode:</p>
           <ul>
             <li>Seguir nossas redes sociais para novidades</li>
-            <li>Entrar em contato pelo WhatsApp: +55 43 98406-4141</li>
+            <li>Entrar em contato pelo WhatsApp: +55 43 984064141</li>
             <li>Visitar nosso site para mais informações</li>
           </ul>
           
