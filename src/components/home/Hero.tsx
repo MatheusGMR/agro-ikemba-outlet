@@ -16,22 +16,16 @@ export default function Hero() {
     return data.publicUrl;
   };
 
-  // Fallback URLs if Supabase video is not available
-  const fallbackVideoUrls = [
-    'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-    'https://filesamples.com/samples/video/mp4/sample_1280x720_surfing_with_audio.mp4'
-  ];
+  // Fallback URL for company welcome video if pitchdeck is not available
+  const getFallbackVideoUrl = () => {
+    const { data } = supabase.storage.from('media-assets').getPublicUrl('Seja bem vindo!.mp4');
+    return data.publicUrl;
+  };
 
   const handleSaibaMais = () => {
     const featuresSection = document.querySelector('section.py-20.bg-gray-50');
     if (featuresSection) {
       featuresSection.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
-
-  const handleVideoPlay = () => {
-    if (videoRef.current) {
-      videoRef.current.play();
     }
   };
 
@@ -95,14 +89,11 @@ export default function Hero() {
                 style={{
                   boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
                 }}
-                onLoadedData={handleVideoPlay}
               >
                 {/* Primary source: Supabase Storage MP4 */}
                 <source src={getVideoUrl()} type="video/mp4" />
-                {/* Fallback sources */}
-                {fallbackVideoUrls.map((url, index) => (
-                  <source key={index} src={url} type="video/mp4" />
-                ))}
+                {/* Fallback source: Company welcome video */}
+                <source src={getFallbackVideoUrl()} type="video/mp4" />
                 <p className="text-center p-8 text-gray-600">
                   Seu navegador não suporta o elemento de vídeo.
                   <br />
@@ -141,10 +132,7 @@ export default function Hero() {
                       className="w-full h-full"
                     >
                       <source src={getVideoUrl()} type="video/mp4" />
-                      <source src={getVideoUrl()} type="video/mp4" />
-                      {fallbackVideoUrls.map((url, index) => (
-                        <source key={index} src={url} type="video/mp4" />
-                      ))}
+                      <source src={getFallbackVideoUrl()} type="video/mp4" />
                     </video>
                   </div>
                 </DialogContent>
