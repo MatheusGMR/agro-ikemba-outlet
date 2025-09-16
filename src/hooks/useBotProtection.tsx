@@ -45,21 +45,23 @@ export const useBotProtection = () => {
     try {
       const token = await executeRecaptcha('registration');
       
-      // Verify token on our backend
-      const response = await fetch('/api/verify-recaptcha', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token })
+      // Verify token using Supabase Edge Function
+      const { createClient } = await import('@supabase/supabase-js');
+      const supabase = createClient(
+        import.meta.env.VITE_SUPABASE_URL!,
+        import.meta.env.VITE_SUPABASE_ANON_KEY!
+      );
+
+      const { data: result, error } = await supabase.functions.invoke('verify-recaptcha', {
+        body: { token }
       });
 
-      if (!response.ok) {
-        console.warn('⚠️ reCAPTCHA verification failed');
+      if (error) {
+        console.warn('⚠️ reCAPTCHA verification failed:', error);
         return { isBot: false, reason: 'recaptcha_error' };
       }
 
-      const result = await response.json();
-      const score = result.score || 0;
-
+      const score = result?.score || 0;
       console.log('🛡️ reCAPTCHA score:', score);
 
       // Score below 0.5 indicates likely bot

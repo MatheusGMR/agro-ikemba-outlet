@@ -48,7 +48,14 @@ export function ProgressiveForm({
     if (currentStepData.validate) {
       const validation = currentStepData.validate();
       if (validation !== true) {
-        // Validation failed
+        // Validation failed - show error message
+        console.log('❌ Validation failed for step', currentStep, ':', validation);
+        
+        // Import toast dynamically to show validation error
+        import('sonner').then(({ toast }) => {
+          const errorMessage = typeof validation === 'string' ? validation : 'Por favor, complete os campos obrigatórios.';
+          toast.error(errorMessage);
+        });
         return;
       }
     }

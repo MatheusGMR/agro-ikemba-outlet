@@ -120,24 +120,56 @@ function UnifiedRegistrationFormInner({
   };
 
   const validateStep = (step: number): boolean | string => {
+    console.log(`🔍 Validating step ${step} with data:`, formData);
+    
     switch (step) {
       case 1: // Nome
-        return formData.name.length >= 2 || "Nome deve ter pelo menos 2 caracteres";
+        const nameValid = formData.name.length >= 2;
+        if (!nameValid) {
+          console.log(`❌ Step ${step} validation failed: Nome muito curto (${formData.name.length} chars)`);
+        }
+        return nameValid || "Nome deve ter pelo menos 2 caracteres";
+        
       case 2: // Tipo
-        return !!formData.tipo || "Selecione uma opção";
+        const typeValid = !!formData.tipo;
+        if (!typeValid) {
+          console.log(`❌ Step ${step} validation failed: Tipo não selecionado`);
+        }
+        return typeValid || "Selecione uma opção";
+        
       case 3: // CNPJ (opcional)
+        console.log(`✅ Step ${step} validation passed: CNPJ is optional`);
         return true;
+        
       case 4: // Empresa
-        return !!formData.company || "Nome da empresa é obrigatório";
+        const companyValid = !!formData.company;
+        if (!companyValid) {
+          console.log(`❌ Step ${step} validation failed: Empresa não preenchida`);
+        }
+        return companyValid || "Nome da empresa é obrigatório";
+        
       case 5: // Contato
         const phoneValid = formData.phone.length >= 11;
         const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email);
-        if (!phoneValid) return "Telefone deve ter pelo menos 11 dígitos";
-        if (!emailValid) return "Email inválido";
+        
+        if (!phoneValid) {
+          console.log(`❌ Step ${step} validation failed: Telefone inválido (${formData.phone.length} chars)`);
+          return "Telefone deve ter pelo menos 11 dígitos";
+        }
+        if (!emailValid) {
+          console.log(`❌ Step ${step} validation failed: Email inválido (${formData.email})`);
+          return "Email inválido";
+        }
+        
+        console.log(`✅ Step ${step} validation passed: Contato válido`);
         return true;
+        
       case 6: // Como conheceu (opcional)
+        console.log(`✅ Step ${step} validation passed: Como conheceu is optional`);
         return true;
+        
       default:
+        console.log(`✅ Step ${step} validation passed: Default case`);
         return true;
     }
   };
@@ -319,11 +351,34 @@ function UnifiedRegistrationFormInner({
 
     } catch (error) {
       console.error(`[REG][${attemptId}] Registration error`, error);
+      
+      // Enhanced error handling with specific error messages
+      let errorMessage = 'Erro inesperado ao criar conta. Tente novamente.';
+      
+      if (error instanceof Error) {
+        const errorMsg = error.message.toLowerCase();
+        
+        if (errorMsg.includes('email') && errorMsg.includes('already')) {
+          errorMessage = 'Este email já possui uma conta. Tente fazer login.';
+          setCurrentStep(5); // Go back to email step
+        } else if (errorMsg.includes('recaptcha') || errorMsg.includes('bot')) {
+          errorMessage = 'Verificação de segurança falhada. Aguarde um momento e tente novamente.';
+        } else if (errorMsg.includes('network') || errorMsg.includes('timeout')) {
+          errorMessage = 'Problema de conexão. Verifique sua internet e tente novamente.';
+        } else if (errorMsg.includes('validation') || errorMsg.includes('invalid')) {
+          errorMessage = 'Dados inválidos. Verifique as informações e tente novamente.';
+          // Don't go to a specific step, let user check current data
+        }
+      }
+      
       trackFormEvent('registration_error', {
         ...common,
         message: error instanceof Error ? error.message : String(error),
+        error_type: error instanceof Error ? error.constructor.name : 'Unknown',
+        current_step: currentStep,
       });
-      toast.error('Erro ao criar conta. Tente novamente.');
+      
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
