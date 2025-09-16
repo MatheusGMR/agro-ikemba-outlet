@@ -12,7 +12,7 @@ export default function Hero() {
 
   // Get the public URL for the video from Supabase Storage
   const getVideoUrl = () => {
-    const { data } = supabase.storage.from('media-assets').getPublicUrl('Seja bem vindo, Comprador!.mov');
+    const { data } = supabase.storage.from('media-assets').getPublicUrl('pitchdeck.mp4');
     return data.publicUrl;
   };
 
@@ -97,8 +97,7 @@ export default function Hero() {
                 }}
                 onLoadedData={handleVideoPlay}
               >
-                {/* Primary source: Supabase Storage MOV */}
-                <source src={getVideoUrl()} type="video/quicktime" />
+                {/* Primary source: Supabase Storage MP4 */}
                 <source src={getVideoUrl()} type="video/mp4" />
                 {/* Fallback sources */}
                 {fallbackVideoUrls.map((url, index) => (
@@ -141,7 +140,7 @@ export default function Hero() {
                       loop
                       className="w-full h-full"
                     >
-                      <source src={getVideoUrl()} type="video/quicktime" />
+                      <source src={getVideoUrl()} type="video/mp4" />
                       <source src={getVideoUrl()} type="video/mp4" />
                       {fallbackVideoUrls.map((url, index) => (
                         <source key={index} src={url} type="video/mp4" />
