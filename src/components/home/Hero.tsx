@@ -81,11 +81,11 @@ export default function Hero() {
                 ref={videoRef}
                 width="100%" 
                 controls 
+                autoPlay
                 muted 
                 loop 
                 playsInline
                 preload="metadata"
-                poster="https://images.unsplash.com/photo-1574943320219-553eb213f72d?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3"
                 className="rounded-xl shadow-lg bg-gray-50 transition-all duration-300 group-hover:shadow-xl" 
                 style={{
                   boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
