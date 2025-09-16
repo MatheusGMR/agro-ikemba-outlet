@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { useState, useRef } from 'react';
 
 export default function Hero() {
+  // Video component updated to fix runtime errors
   const [isModalOpen, setIsModalOpen] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
