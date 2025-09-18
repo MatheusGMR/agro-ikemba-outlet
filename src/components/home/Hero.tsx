@@ -50,7 +50,7 @@ export default function Hero() {
             </h1>
             
             <p className="text-lg md:text-xl font-medium text-gray-800">
-              Somos o Outlet do Agronegócio, trabalhamos para entregar produtos convencionais e genéricos com melhores preços, no jeito simples e fácil que você procura.
+              Somos o Outlet do Agronegócio, trabalhamos para entregar produtos convencionais e genéricos com melhores preços, priorizando o jeito simples e fácil que você procura.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
