@@ -19,6 +19,7 @@ import AdminProtectedRoute from "./components/admin/AdminProtectedRoute";
 import RepresentativeProtectedRoute from "./components/representative/RepresentativeProtectedRoute";
 import RepresentativeRegistration from "./pages/RepresentativeRegistration";
 import RepresentativeLogin from "./pages/RepresentativeLogin";
+import RepresentativeAffiliate from "./pages/RepresentativeAffiliate";
 import TestPage from '@/pages/TestPage';
 import Simulador from './pages/Simulador';
 import LandingPage from './pages/LandingPage';
@@ -76,6 +77,7 @@ function App() {
                       <Representative />
                     </RepresentativeProtectedRoute>
                   } />
+                  <Route path="/representante-afiliado" element={<RepresentativeAffiliate />} />
                   <Route path="/simulador" element={<Simulador />} />
                   <Route path="/landing" element={<LandingPage />} />
                   <Route path="/video/boas-vindas" element={<VideoBoasVindas />} />

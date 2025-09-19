@@ -1286,6 +1286,105 @@ export type Database = {
           },
         ]
       }
+      representative_applications: {
+        Row: {
+          canais: string[]
+          cidade: string
+          cnpj: string | null
+          conflito_detalhe: string | null
+          conflito_interesse: boolean | null
+          created_at: string
+          data_envio: string
+          doc_urls: Json | null
+          docs_ok: boolean | null
+          email: string
+          experiencia_anos: string
+          forecast_data: Json | null
+          id: string
+          infra_celular: boolean | null
+          infra_internet: boolean | null
+          infra_veic_alugado: boolean | null
+          infra_veic_proprio: boolean | null
+          linkedin: string | null
+          motivo_status: string | null
+          nome: string
+          possui_pj: boolean
+          produtos_lista: string
+          razao_social: string | null
+          regioes: string[]
+          segmentos: string[]
+          status: string
+          termos_aceitos: boolean
+          uf: string
+          updated_at: string
+          whatsapp: string
+        }
+        Insert: {
+          canais: string[]
+          cidade: string
+          cnpj?: string | null
+          conflito_detalhe?: string | null
+          conflito_interesse?: boolean | null
+          created_at?: string
+          data_envio?: string
+          doc_urls?: Json | null
+          docs_ok?: boolean | null
+          email: string
+          experiencia_anos: string
+          forecast_data?: Json | null
+          id?: string
+          infra_celular?: boolean | null
+          infra_internet?: boolean | null
+          infra_veic_alugado?: boolean | null
+          infra_veic_proprio?: boolean | null
+          linkedin?: string | null
+          motivo_status?: string | null
+          nome: string
+          possui_pj: boolean
+          produtos_lista: string
+          razao_social?: string | null
+          regioes: string[]
+          segmentos: string[]
+          status?: string
+          termos_aceitos?: boolean
+          uf: string
+          updated_at?: string
+          whatsapp: string
+        }
+        Update: {
+          canais?: string[]
+          cidade?: string
+          cnpj?: string | null
+          conflito_detalhe?: string | null
+          conflito_interesse?: boolean | null
+          created_at?: string
+          data_envio?: string
+          doc_urls?: Json | null
+          docs_ok?: boolean | null
+          email?: string
+          experiencia_anos?: string
+          forecast_data?: Json | null
+          id?: string
+          infra_celular?: boolean | null
+          infra_internet?: boolean | null
+          infra_veic_alugado?: boolean | null
+          infra_veic_proprio?: boolean | null
+          linkedin?: string | null
+          motivo_status?: string | null
+          nome?: string
+          possui_pj?: boolean
+          produtos_lista?: string
+          razao_social?: string | null
+          regioes?: string[]
+          segmentos?: string[]
+          status?: string
+          termos_aceitos?: boolean
+          uf?: string
+          updated_at?: string
+          whatsapp?: string
+        }
+        Relationships: []
+      }
       representatives: {
         Row: {
           commission_percentage: number | null
