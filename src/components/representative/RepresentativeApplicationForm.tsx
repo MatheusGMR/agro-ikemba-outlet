@@ -78,7 +78,7 @@ const initialFormData: FormData = {
 };
 
 export function RepresentativeApplicationForm() {
-  const [currentStep, setCurrentStep] = useState(0);
+  const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [showPJPopup, setShowPJPopup] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -137,7 +137,7 @@ export function RepresentativeApplicationForm() {
       
       toast.success('Inscrição enviada com sucesso! Entraremos em contato em até 5 dias úteis.');
       setFormData(initialFormData);
-      setCurrentStep(0);
+      setCurrentStep(1);
     } catch (error) {
       toast.error('Erro ao enviar inscrição. Tente novamente.');
     } finally {
