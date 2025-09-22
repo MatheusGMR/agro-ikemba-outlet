@@ -27,7 +27,7 @@ export default function RepresentativeAffiliate() {
     },
     {
       icon: Users,
-      title: "Rede Consolidada", 
+      title: "Valorize sua trajetória e pioneirismo", 
       description: "Faça parte do Outlet do Agro, pioneira em tecnologia inteligente"
     },
     {
