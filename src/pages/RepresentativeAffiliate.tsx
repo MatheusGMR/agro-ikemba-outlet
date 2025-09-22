@@ -118,34 +118,48 @@ export default function RepresentativeAffiliate() {
               benefitsRef.isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
             }`}
           >
-            <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                Por que ser um Representante AgroIkemba?
-              </h2>
-              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Oferecemos as melhores condições do mercado para profissionais experientes
-              </p>
-            </div>
+            <div className="flex flex-col lg:flex-row items-center gap-12 mb-16">
+              {/* Image */}
+              <div className="flex-shrink-0 lg:w-1/2">
+                <img 
+                  src="/assets/representantes-agroikemba.png" 
+                  alt="Representantes AgroIkemba"
+                  className="w-full max-w-lg mx-auto rounded-2xl shadow-2xl object-cover"
+                />
+              </div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
-              {benefits.map((benefit, index) => {
-                const Icon = benefit.icon;
-                return (
-                  <Card 
-                    key={index} 
-                    className={`p-6 text-center hover-scale transition-all duration-700 ${
-                      benefitsRef.isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-                    }`}
-                    style={{ transitionDelay: `${400 + index * 100}ms` }}
-                  >
-                    <div className="w-16 h-16 mx-auto mb-4 bg-primary/10 rounded-full flex items-center justify-center">
-                      <Icon className="w-8 h-8 text-primary" />
-                    </div>
-                    <h3 className="text-xl font-semibold mb-3">{benefit.title}</h3>
-                    <p className="text-muted-foreground">{benefit.description}</p>
-                  </Card>
-                );
-              })}
+              {/* Content */}
+              <div className="flex-1 lg:w-1/2">
+                <div className="text-center lg:text-left mb-12">
+                  <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                    Por que ser um Representante AgroIkemba?
+                  </h2>
+                  <p className="text-lg text-muted-foreground">
+                    Oferecemos as melhores condições do mercado para profissionais experientes
+                  </p>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-6">
+                  {benefits.map((benefit, index) => {
+                    const Icon = benefit.icon;
+                    return (
+                      <Card 
+                        key={index} 
+                        className={`p-6 text-center hover-scale transition-all duration-700 ${
+                          benefitsRef.isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+                        }`}
+                        style={{ transitionDelay: `${400 + index * 100}ms` }}
+                      >
+                        <div className="w-16 h-16 mx-auto mb-4 bg-primary/10 rounded-full flex items-center justify-center">
+                          <Icon className="w-8 h-8 text-primary" />
+                        </div>
+                        <h3 className="text-xl font-semibold mb-3">{benefit.title}</h3>
+                        <p className="text-muted-foreground">{benefit.description}</p>
+                      </Card>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
           </div>
         </section>
