@@ -33,7 +33,16 @@ export function gtagReportConversion(conversionLabel: string, value?: number, ur
 }
 
 /**
- * Reports the Sign-up conversion event
+ * Reports the Interest conversion event (WhatsApp clicks, CTA interactions)
+ * @param value - Optional conversion value in BRL
+ * @param url - Optional URL to redirect to after conversion is tracked
+ */
+export function reportInterestConversion(value?: number, url?: string) {
+  return gtagReportConversion('INTEREST_LABEL', value, url);
+}
+
+/**
+ * Reports the Sign-up conversion event (actual completed registrations only)
  * @param value - Optional conversion value in BRL
  * @param url - Optional URL to redirect to after conversion is tracked
  */

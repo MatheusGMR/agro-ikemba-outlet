@@ -323,8 +323,9 @@ export default function LandingPage() {
               size="lg"
               variant="secondary"
               className="text-lg px-8 py-4 bg-yellow-400 text-yellow-900 hover:bg-yellow-300"
-              onClick={() => {
-                reportSignupConversion();
+              onClick={async () => {
+                const { reportInterestConversion } = await import('@/utils/googleAdsConversions');
+                reportInterestConversion();
                 window.location.href = '/register?intent=purchase';
               }}
             >
