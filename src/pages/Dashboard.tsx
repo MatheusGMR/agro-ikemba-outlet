@@ -1,6 +1,7 @@
 
 import { useState } from 'react';
 import Navbar from '@/components/layout/Navbar';
+import Footer from '@/components/layout/Footer';
 import { DashboardActions } from '@/components/dashboard/DashboardActions';
 import { RecentOrders } from '@/components/dashboard/RecentOrders';
 import { QuickStats } from '@/components/dashboard/QuickStats';
@@ -61,10 +62,11 @@ export default function Dashboard() {
   ];
   
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="flex flex-col min-h-screen bg-gray-50">
       <Navbar />
       
-      <div className="container-custom py-8">
+      <main className="flex-1">
+        <div className="container-custom py-8">
         <DashboardActions userType={userType} />
         <QuickStats />
         
@@ -75,7 +77,10 @@ export default function Dashboard() {
           
           <DashboardSidebar products={productSamples} />
         </div>
-      </div>
+        </div>
+      </main>
+      
+      <Footer />
     </div>
   );
 }

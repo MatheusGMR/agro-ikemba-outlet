@@ -88,6 +88,15 @@
     @apply container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
   }
 
+  /* Global layout utilities */
+  .page-layout {
+    @apply flex flex-col min-h-screen;
+  }
+
+  .page-content {
+    @apply flex-1;
+  }
+
   .btn-primary {
     @apply bg-primary text-primary-foreground hover:bg-primary/90 transition-colors duration-300;
   }

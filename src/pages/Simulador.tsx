@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
+import Navbar from '@/components/layout/Navbar';
+import Footer from '@/components/layout/Footer';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -172,13 +174,16 @@ const Simulador = () => {
   const selectedRegion = regions.find(region => region.region_code === formData.region);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="flex flex-col min-h-screen bg-background">
       <Helmet>
         <title>Simulador de Preços - AgroIkemba</title>
         <meta name="description" content="Simulador estratégico de preços de insumos agrícolas com análise de mercado e benchmarking" />
       </Helmet>
 
-      <div className="container mx-auto px-4 py-8">
+      <Navbar />
+      
+      <main className="flex-1">
+        <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <div className="flex justify-between items-start">
             <div>
@@ -555,7 +560,10 @@ const Simulador = () => {
             )}
           </div>
         </div>
-      </div>
+        </div>
+      </main>
+      
+      <Footer />
     </div>
   );
 };
