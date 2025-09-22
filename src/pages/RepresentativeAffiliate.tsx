@@ -33,7 +33,7 @@ export default function RepresentativeAffiliate() {
     {
       icon: FileCheck,
       title: "Venda e deixe a burocracia para nós",
-      description: "Foque apenas nas vendas enquanto cuidamos de toda documentação, logística e processos administrativos"
+      description: "Foque na venda a logística, e processos administrativos é com a gente."
     }
   ];
 
