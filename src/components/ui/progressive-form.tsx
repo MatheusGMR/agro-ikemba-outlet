@@ -40,8 +40,14 @@ export function ProgressiveForm({
   const isLastStep = currentStep === totalSteps;
   const currentStepData = steps[currentStep - 1];
 
-  const scrollToTop = React.useCallback(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+  const progressBarRef = React.useRef<HTMLDivElement>(null);
+  
+  const scrollToProgressBar = React.useCallback(() => {
+    if (progressBarRef.current) {
+      const rect = progressBarRef.current.getBoundingClientRect();
+      const offsetTop = window.pageYOffset + rect.top - 20; // 20px offset from top
+      window.scrollTo({ top: offsetTop, behavior: 'smooth' });
+    }
   }, []);
 
   const handleNext = React.useCallback(() => {
@@ -64,12 +70,14 @@ export function ProgressiveForm({
       onSubmit();
     } else {
       onStepChange(currentStep + 1);
+      scrollToProgressBar();
     }
   }, [currentStepData, isLastStep, onSubmit, onStepChange, currentStep]);
 
   const handleBack = () => {
     if (!isFirstStep && allowBack) {
       onStepChange(currentStep - 1);
+      scrollToProgressBar();
     }
   };
 
@@ -85,7 +93,7 @@ export function ProgressiveForm({
       noValidate
     >
       {/* Progress Bar */}
-      <div className="mb-8">
+      <div ref={progressBarRef} className="mb-8">
         <ProgressBar currentStep={currentStep} totalSteps={totalSteps} />
       </div>
 

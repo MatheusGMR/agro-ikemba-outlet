@@ -48,9 +48,9 @@ export function DocumentUpload({ documentUrls, onDocumentsChange }: DocumentUplo
         return;
       }
 
-      // Validar tamanho (5MB máximo)
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error('Arquivo deve ter no máximo 5MB');
+      // Validar tamanho (10MB máximo)
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error('Arquivo deve ter no máximo 10MB');
         return;
       }
 
@@ -124,7 +124,21 @@ export function DocumentUpload({ documentUrls, onDocumentsChange }: DocumentUplo
 
     } catch (error) {
       console.error('Erro no upload:', error);
-      toast.error('Erro ao enviar documento. Tente novamente.');
+      
+      let errorMessage = 'Erro ao enviar documento. Tente novamente.';
+      
+      if (error && typeof error === 'object' && 'message' in error) {
+        const message = (error as any).message;
+        if (message?.includes('mime')) {
+          errorMessage = 'Formato de arquivo não permitido. Use PDF, JPG ou PNG.';
+        } else if (message?.includes('size')) {
+          errorMessage = 'Arquivo muito grande. Máximo permitido: 10MB.';
+        } else if (message?.includes('policy')) {
+          errorMessage = 'Erro de permissão. Tente fazer login novamente.';
+        }
+      }
+      
+      toast.error(errorMessage);
       
       setUploadingDocs(prev => {
         const newState = { ...prev };
@@ -150,7 +164,7 @@ export function DocumentUpload({ documentUrls, onDocumentsChange }: DocumentUplo
     <div className="space-y-6">
       <div className="text-center mb-6">
         <p className="text-muted-foreground">
-          Faça upload dos 3 documentos obrigatórios. Formatos aceitos: PDF, JPG, PNG (máximo 5MB cada)
+          Faça upload dos 3 documentos obrigatórios. Formatos aceitos: PDF, JPG, PNG (máximo 10MB cada)
         </p>
       </div>
 
@@ -163,7 +177,7 @@ export function DocumentUpload({ documentUrls, onDocumentsChange }: DocumentUplo
             </div>
 
             {/* Área de Upload */}
-            <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center">
+            <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center hover:border-primary/50 transition-colors">
               <input
                 type="file"
                 accept=".pdf,.jpg,.jpeg,.png"
@@ -179,15 +193,17 @@ export function DocumentUpload({ documentUrls, onDocumentsChange }: DocumentUplo
               
               <label
                 htmlFor={`upload-${docType.id}`}
-                className="cursor-pointer inline-flex flex-col items-center gap-2"
+                className="cursor-pointer block w-full h-full"
               >
-                <Upload className="w-8 h-8 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">
-                  Clique para enviar ou arraste o arquivo aqui
-                </span>
-                <Button variant="outline" size="sm" type="button">
-                  Selecionar Arquivo
-                </Button>
+                <div className="flex flex-col items-center gap-2">
+                  <Upload className="w-8 h-8 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground cursor-pointer">
+                    Clique para enviar ou arraste o arquivo aqui
+                  </span>
+                  <Button variant="outline" size="sm" type="button" className="pointer-events-none">
+                    Selecionar Arquivo
+                  </Button>
+                </div>
               </label>
             </div>
 
