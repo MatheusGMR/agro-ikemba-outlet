@@ -9,8 +9,7 @@ import { Card } from '@/components/ui/card';
 import { PersonJuridicaPopup } from './PersonJuridicaPopup';
 import { ForecastTable } from './ForecastTable';
 import { DocumentUpload } from './DocumentUpload';
-import { ProductInputStep } from './ProductInputStep';
-import { ProductVolumeStep } from './ProductVolumeStep';
+import { ProductAndVolumeStep } from './ProductAndVolumeStep';
 import { useRepresentativeApplication } from '@/hooks/useRepresentativeApplication';
 import { toast } from 'sonner';
 import { validateCNPJ, validatePhone, validateUF, validateEmail, formatCNPJ, formatPhone, validateVolume } from '@/utils/validators';
@@ -85,17 +84,7 @@ export function RepresentativeApplicationForm() {
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [showPJPopup, setShowPJPopup] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [productSubStep, setProductSubStep] = useState<'input' | 'volume'>('input');
-  
   const { submitApplication } = useRepresentativeApplication();
-
-  // Reset product sub-step when leaving step 4
-  const handleStepChange = (newStep: number) => {
-    if (currentStep === 4 && newStep !== 4) {
-      setProductSubStep('input');
-    }
-    setCurrentStep(newStep);
-  };
 
   const updateFormData = (field: keyof FormData, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -599,7 +588,7 @@ export function RepresentativeApplicationForm() {
       <ProgressiveForm
         steps={steps}
         currentStep={currentStep}
-        onStepChange={handleStepChange}
+        onStepChange={setCurrentStep}
         onSubmit={handleSubmit}
         isSubmitting={isSubmitting}
         submitText="Enviar Inscrição"
