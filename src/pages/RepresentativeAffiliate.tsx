@@ -28,7 +28,7 @@ export default function RepresentativeAffiliate() {
     {
       icon: Users,
       title: "Rede Consolidada", 
-      description: "Faça parte da maior rede de distribuição de genéricos do agronegócio"
+      description: "Faça parte do Outlet do Agro, pioneira em tecnologia inteligente"
     },
     {
       icon: FileCheck,
