@@ -7,7 +7,6 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Card } from '@/components/ui/card';
 import { PersonJuridicaPopup } from './PersonJuridicaPopup';
-import { DocumentUpload } from './DocumentUpload';
 import { useRepresentativeApplication } from '@/hooks/useRepresentativeApplication';
 import { toast } from 'sonner';
 import { validateCNPJ, validatePhone, validateUF, validateEmail, formatCNPJ, formatPhone } from '@/utils/validators';
@@ -40,9 +39,6 @@ interface FormData {
   infra_veic_proprio: boolean;
   infra_veic_alugado: boolean;
   
-  // Documentos
-  doc_urls: Record<string, string>;
-  
   // Termos
   termos_aceitos: boolean;
 }
@@ -67,7 +63,6 @@ const initialFormData: FormData = {
   infra_internet: true,
   infra_veic_proprio: false,
   infra_veic_alugado: false,
-  doc_urls: {},
   termos_aceitos: false
 };
 
@@ -147,12 +142,7 @@ export function RepresentativeApplicationForm() {
         }
         return true;
         
-      case 5: // Documentos
-        const docCount = Object.keys(formData.doc_urls).length;
-        if (docCount < 3) return `Envie todos os 3 documentos obrigatórios (${docCount}/3 enviados)`;
-        return true;
-        
-      case 6: // Termos
+      case 5: // Termos
         if (!formData.termos_aceitos) return 'Você deve aceitar os termos e condições';
         return true;
         
@@ -472,19 +462,6 @@ export function RepresentativeApplicationForm() {
           </Card>
         </div>
       ),
-      validate: () => validateStep(4)
-    },
-    {
-      id: 'documentos',
-      title: 'Documentos',
-      description: 'Upload dos documentos obrigatórios',
-      component: (
-        <DocumentUpload
-          documentUrls={formData.doc_urls}
-          onDocumentsChange={(urls) => updateFormData('doc_urls', urls)}
-        />
-      ),
-      validate: () => validateStep(5)
     },
     {
       id: 'termos',
@@ -501,6 +478,17 @@ export function RepresentativeApplicationForm() {
               <p>• Pagamento após a confirmação do recebimento pelo fornecedor</p>
               <p>• Obrigações: seguir preços e regras da listagem oficial; não alterar condições; cumprir boas práticas e confidencialidade</p>
               <p>• LGPD: seus dados serão usados exclusivamente para análise de cadastro, auditoria e contato</p>
+            </div>
+          </Card>
+
+          <Card className="p-4 bg-blue-50 border-blue-200">
+            <div className="flex items-start space-x-3">
+              <div className="w-4 h-4 text-blue-500 mt-0.5">
+                ℹ️
+              </div>
+              <p className="text-sm text-blue-700">
+                <strong>Documentos:</strong> Após análise inicial positiva, nossa equipe solicitará os documentos necessários (RG, CPF, Comprovante de Residência) via e-mail ou WhatsApp.
+              </p>
             </div>
           </Card>
 
@@ -521,7 +509,7 @@ export function RepresentativeApplicationForm() {
           </div>
         </div>
       ),
-      validate: () => validateStep(6)
+      validate: () => validateStep(5)
     }
   ];
 
