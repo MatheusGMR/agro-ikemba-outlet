@@ -95,8 +95,7 @@ export default function RepresentativeAffiliate() {
             </div>
             
             <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
-              Faça parte da maior rede de distribuição de produtos genéricos do agronegócio. 
-              Oportunidades exclusivas, comissões atrativas e suporte técnico especializado.
+              Aproveite sua experiência e relacionamentos para ganhar como afiliado do Outlet do Agro!
             </p>
 
             <div className="flex justify-center">
