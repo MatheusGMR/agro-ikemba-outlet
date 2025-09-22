@@ -193,6 +193,12 @@ class AnalyticsService {
 
   // Page tracking helpers
   trackPageView(path: string, title?: string, referrer?: string) {
+    // Only track page views for authenticated users
+    if (!this.currentUser?.id) {
+      console.log('[Analytics] Skipping page view tracking - user not authenticated');
+      return;
+    }
+    
     this.logNavigation({
       page_path: path,
       page_title: title || document.title,
@@ -202,6 +208,12 @@ class AnalyticsService {
 
   // Product interaction helpers
   trackProductView(productSku: string) {
+    // Only track product views for authenticated users
+    if (!this.currentUser?.id) {
+      console.log('[Analytics] Skipping product view tracking - user not authenticated');
+      return;
+    }
+    
     this.logProductInteraction({
       product_sku: productSku,
       interaction_type: 'view'
@@ -209,6 +221,12 @@ class AnalyticsService {
   }
 
   trackVolumeChange(productSku: string, volume: number, price: number) {
+    // Only track volume changes for authenticated users
+    if (!this.currentUser?.id) {
+      console.log('[Analytics] Skipping volume change tracking - user not authenticated');
+      return;
+    }
+    
     this.logProductInteraction({
       product_sku: productSku,
       interaction_type: 'volume_change',
@@ -217,6 +235,12 @@ class AnalyticsService {
   }
 
   trackTierSelect(productSku: string, tier: string, price: number) {
+    // Only track tier selection for authenticated users
+    if (!this.currentUser?.id) {
+      console.log('[Analytics] Skipping tier selection tracking - user not authenticated');
+      return;
+    }
+    
     this.logProductInteraction({
       product_sku: productSku,
       interaction_type: 'tier_select',
@@ -225,6 +249,12 @@ class AnalyticsService {
   }
 
   trackAddToCart(productSku: string, volume: number, price: number, total: number) {
+    // Only track add to cart for authenticated users
+    if (!this.currentUser?.id) {
+      console.log('[Analytics] Skipping add to cart tracking - user not authenticated');
+      return;
+    }
+    
     this.logProductInteraction({
       product_sku: productSku,
       interaction_type: 'add_to_cart',
@@ -234,6 +264,12 @@ class AnalyticsService {
 
   // Checkout funnel helpers
   trackCheckoutStep(step: CheckoutFunnelLog['checkout_step'], action: CheckoutFunnelLog['action_type'], data?: any) {
+    // Only track checkout steps for authenticated users
+    if (!this.currentUser?.id) {
+      console.log('[Analytics] Skipping checkout step tracking - user not authenticated');
+      return;
+    }
+    
     this.logCheckoutFunnel({
       checkout_step: step,
       action_type: action,
@@ -243,11 +279,23 @@ class AnalyticsService {
 
   // Volume analysis tracking
   trackVolumeOptimization(data: VolumeAnalysisLog) {
+    // Only track volume optimization for authenticated users
+    if (!this.currentUser?.id) {
+      console.log('[Analytics] Skipping volume optimization tracking - user not authenticated');
+      return;
+    }
+    
     this.logVolumeAnalysis(data);
   }
 
   // Utility method to track user journey completion
   async trackConversion(conversionType: 'purchase' | 'quote_request' | 'lead', value?: number) {
+    // Only track conversions for authenticated users
+    if (!this.currentUser?.id) {
+      console.log('[Analytics] Skipping conversion tracking - user not authenticated');
+      return;
+    }
+    
     try {
       const user = await this.getCurrentUser();
       

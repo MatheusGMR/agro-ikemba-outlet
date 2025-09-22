@@ -288,8 +288,10 @@ const ProductDetail = () => {
                           currentPrice: price
                         });
                       }
-                      // Track volume changes for analytics
-                      analyticsService.trackVolumeChange(productInfo.product_sku, volume, price);
+                      // Track volume changes for analytics - only for authenticated and approved users
+                      if (user && isApproved) {
+                        analyticsService.trackVolumeChange(productInfo.product_sku, volume, price);
+                      }
                     }}
                     minVolume={1000}
                     initialVolumePercentage={100}
