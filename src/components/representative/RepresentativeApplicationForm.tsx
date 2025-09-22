@@ -475,7 +475,6 @@ export function RepresentativeApplicationForm() {
               <p>• A comissão é calculada sobre a taxa da plataforma nas vendas efetivamente liquidadas</p>
               <p>• Pode haver indicativos de indicação (sobre vendas de profissionais indicados), conforme regras do documento anexo</p>
               <p>• Existe teto de pagamento por venda para garantir sustentabilidade do programa</p>
-              <p>• Pagamento após a confirmação do recebimento pelo fornecedor</p>
               <p>• Obrigações: seguir preços e regras da listagem oficial; não alterar condições; cumprir boas práticas e confidencialidade</p>
               <p>• LGPD: seus dados serão usados exclusivamente para análise de cadastro, auditoria e contato</p>
             </div>
