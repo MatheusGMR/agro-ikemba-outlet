@@ -24,7 +24,7 @@ interface ApplicationData {
   infra_internet: boolean;
   infra_veic_proprio: boolean;
   infra_veic_alugado: boolean;
-  doc_urls: string[];
+  doc_urls: Record<string, string>;
   termos_aceitos: boolean;
   status?: 'aguardando' | 'reprovado' | 'aprovado';
   motivo_status?: string;
@@ -60,8 +60,9 @@ export function useRepresentativeApplication() {
         infra_internet: data.infra_internet,
         infra_veic_proprio: data.infra_veic_proprio,
         infra_veic_alugado: data.infra_veic_alugado,
-        docs_ok: data.doc_urls.length >= 3,
-        doc_urls: data.doc_urls,
+        docs_ok: Object.keys(data.doc_urls).length >= 3,
+        // Converter doc_urls para array para compatibilidade
+        doc_urls: Object.values(data.doc_urls),
         termos_aceitos: data.termos_aceitos,
         status: data.status || 'aguardando',
         motivo_status: data.motivo_status || 'Aguardando análise'

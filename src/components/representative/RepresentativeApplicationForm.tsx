@@ -11,6 +11,7 @@ import { ForecastTable } from './ForecastTable';
 import { DocumentUpload } from './DocumentUpload';
 import { useRepresentativeApplication } from '@/hooks/useRepresentativeApplication';
 import { toast } from 'sonner';
+import { validateCNPJ, validatePhone, validateUF, validateEmail, formatCNPJ, formatPhone } from '@/utils/validators';
 
 interface FormData {
   // Identificação
@@ -45,7 +46,7 @@ interface FormData {
   infra_veic_alugado: boolean;
   
   // Documentos
-  doc_urls: string[];
+  doc_urls: Record<string, string>;
   
   // Termos
   termos_aceitos: boolean;
@@ -73,7 +74,7 @@ const initialFormData: FormData = {
   infra_internet: true,
   infra_veic_proprio: false,
   infra_veic_alugado: false,
-  doc_urls: [],
+  doc_urls: {},
   termos_aceitos: false
 };
 
@@ -89,38 +90,85 @@ export function RepresentativeApplicationForm() {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handlePJResponse = (response: boolean, hasActivePJ?: boolean) => {
-    if (!response && !hasActivePJ) {
-      // Encerrar formulário - "Ainda não"
-      submitApplication({
-        ...formData,
-        possui_pj: false,
-        status: 'reprovado',
-        motivo_status: 'Sem PJ ativa'
-      });
-      return;
+  const handlePJResponse = (hasActivePJ: boolean, confirmed?: boolean) => {
+    if (hasActivePJ && confirmed) {
+      updateFormData('possui_pj', true);
+      setShowPJPopup(false);
+    } else if (!hasActivePJ) {
+      // Será tratado pelo handleSubmitBlocked
+      updateFormData('possui_pj', false);
     }
-    
-    updateFormData('possui_pj', response);
-    setShowPJPopup(false);
   };
 
-  const validateStep = (stepIndex: number): boolean => {
-    switch (stepIndex) {
-      case 0: // Identificação
-        return !!(formData.nome && formData.email && formData.whatsapp && formData.cidade && formData.uf);
-      case 1: // Pessoa Jurídica
-        return formData.possui_pj !== null && (formData.possui_pj === false || !!(formData.cnpj && formData.razao_social));
-      case 2: // Atuação Comercial
-        return !!(formData.experiencia_anos && formData.segmentos.length && formData.canais.length && formData.regioes.length);
-      case 3: // Produtos e Forecast
-        return !!(formData.produtos_lista && Object.keys(formData.forecast_data).length);
-      case 4: // Infraestrutura
-        return true; // Todos têm valores padrão
-      case 5: // Documentos
-        return formData.doc_urls.length >= 3; // 3 documentos obrigatórios
-      case 6: // Termos
-        return formData.termos_aceitos;
+  const handleSubmitBlocked = async () => {
+    try {
+      // Criar dados para submissão com status "reprovado"
+      const blockedData = {
+        ...formData,
+        possui_pj: false,
+        status: 'reprovado' as const,
+        motivo_status: 'Não possui CNPJ ativo (MEI ou empresa)'
+      };
+
+      // Submeter automaticamente
+      await submitApplication(blockedData);
+      
+      // Não mostrar toast aqui pois será mostrado no hook
+    } catch (error) {
+      console.error('Erro ao submeter aplicação bloqueada:', error);
+      toast.error('Erro ao processar solicitação. Tente novamente.');
+      throw error;
+    }
+  };
+
+  const validateStep = (step: number): boolean | string => {
+    switch (step) {
+      case 1: // Identificação
+        if (!formData.nome.trim()) return 'Nome é obrigatório';
+        if (!formData.email.trim()) return 'Email é obrigatório';
+        if (!validateEmail(formData.email)) return 'Email inválido';
+        if (!formData.whatsapp.trim()) return 'WhatsApp é obrigatório';
+        if (!validatePhone(formData.whatsapp)) return 'WhatsApp deve ter formato brasileiro válido';
+        if (!formData.cidade.trim()) return 'Cidade é obrigatória';
+        if (!formData.uf.trim()) return 'UF é obrigatória';
+        if (!validateUF(formData.uf)) return 'UF deve ser válida (ex: SP, RJ, MG)';
+        return true;
+        
+      case 2: // Pessoa Jurídica
+        if (!formData.possui_pj) return 'É necessário ter CNPJ para prosseguir';
+        if (formData.possui_pj && !formData.cnpj.trim()) return 'CNPJ é obrigatório';
+        if (formData.possui_pj && !validateCNPJ(formData.cnpj)) return 'CNPJ inválido';
+        if (formData.possui_pj && !formData.razao_social.trim()) return 'Razão social é obrigatória';
+        return true;
+        
+      case 3: // Atuação Comercial
+        if (!formData.experiencia_anos) return 'Anos de experiência é obrigatório';
+        if (formData.segmentos.length === 0) return 'Selecione pelo menos um segmento';
+        if (formData.canais.length === 0) return 'Selecione pelo menos um canal';
+        if (formData.regioes.length === 0) return 'Selecione pelo menos uma região';
+        return true;
+        
+      case 4: // Produtos e Forecast
+        if (!formData.produtos_lista.trim()) return 'Lista de produtos é obrigatória';
+        const produtos = formData.produtos_lista.split('\n').filter(p => p.trim());
+        if (produtos.length === 0) return 'Liste pelo menos um produto';
+        return true;
+        
+      case 5: // Infraestrutura
+        if (!formData.infra_celular && !formData.infra_internet) {
+          return 'É necessário ter pelo menos celular ou internet';
+        }
+        return true;
+        
+      case 6: // Documentos
+        const docCount = Object.keys(formData.doc_urls).length;
+        if (docCount < 3) return `Envie todos os 3 documentos obrigatórios (${docCount}/3 enviados)`;
+        return true;
+        
+      case 7: // Termos
+        if (!formData.termos_aceitos) return 'Você deve aceitar os termos e condições';
+        return true;
+        
       default:
         return true;
     }
@@ -221,7 +269,7 @@ export function RepresentativeApplicationForm() {
           </div>
         </div>
       ),
-      validate: () => validateStep(0)
+      validate: () => validateStep(1)
     },
     {
       id: 'pessoa-juridica',
@@ -280,7 +328,7 @@ export function RepresentativeApplicationForm() {
           )}
         </div>
       ),
-      validate: () => validateStep(1)
+      validate: () => validateStep(2)
     },
     {
       id: 'atuacao-comercial',
@@ -387,7 +435,7 @@ export function RepresentativeApplicationForm() {
           </div>
         </div>
       ),
-      validate: () => validateStep(2)
+      validate: () => validateStep(3)
     },
     {
       id: 'produtos-forecast',
@@ -425,7 +473,7 @@ export function RepresentativeApplicationForm() {
           )}
         </div>
       ),
-      validate: () => validateStep(3)
+      validate: () => validateStep(4)
     },
     {
       id: 'infraestrutura',
@@ -474,7 +522,7 @@ export function RepresentativeApplicationForm() {
           </Card>
         </div>
       ),
-      validate: () => validateStep(4)
+      validate: () => validateStep(5)
     },
     {
       id: 'documentos',
@@ -486,7 +534,7 @@ export function RepresentativeApplicationForm() {
           onDocumentsChange={(urls) => updateFormData('doc_urls', urls)}
         />
       ),
-      validate: () => validateStep(5)
+      validate: () => validateStep(6)
     },
     {
       id: 'termos',
@@ -523,7 +571,7 @@ export function RepresentativeApplicationForm() {
           </div>
         </div>
       ),
-      validate: () => validateStep(6)
+      validate: () => validateStep(7)
     }
   ];
 
@@ -539,11 +587,12 @@ export function RepresentativeApplicationForm() {
         className="bg-card shadow-lg border rounded-lg p-8"
       />
 
-      <PersonJuridicaPopup
-        isOpen={showPJPopup}
-        onClose={() => setShowPJPopup(false)}
-        onResponse={handlePJResponse}
-      />
+        <PersonJuridicaPopup
+          isOpen={showPJPopup}
+          onClose={() => setShowPJPopup(false)}
+          onResponse={handlePJResponse}
+          onSubmitBlocked={handleSubmitBlocked}
+        />
     </>
   );
 }

@@ -8,8 +8,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 interface DocumentUploadProps {
-  documentUrls: string[];
-  onDocumentsChange: (urls: string[]) => void;
+  documentUrls: Record<string, string>;
+  onDocumentsChange: (docs: Record<string, string>) => void;
 }
 
 interface UploadingDocument {
@@ -104,9 +104,12 @@ export function DocumentUpload({ documentUrls, onDocumentsChange }: DocumentUplo
         }
       }));
 
-      // Adicionar URL à lista
-      const newUrls = [...documentUrls, publicUrl];
-      onDocumentsChange(newUrls);
+      // Adicionar URL ao documento específico
+      const newDocs = {
+        ...documentUrls,
+        [documentType]: publicUrl
+      };
+      onDocumentsChange(newDocs);
 
       // Remover da lista de upload após 2 segundos
       setTimeout(() => {
@@ -131,9 +134,10 @@ export function DocumentUpload({ documentUrls, onDocumentsChange }: DocumentUplo
     }
   };
 
-  const removeDocument = (urlToRemove: string) => {
-    const newUrls = documentUrls.filter(url => url !== urlToRemove);
-    onDocumentsChange(newUrls);
+  const removeDocument = (documentType: string) => {
+    const newDocs = { ...documentUrls };
+    delete newDocs[documentType];
+    onDocumentsChange(newDocs);
     toast.success('Documento removido');
   };
 
@@ -187,23 +191,25 @@ export function DocumentUpload({ documentUrls, onDocumentsChange }: DocumentUplo
               </label>
             </div>
 
-            {/* Documentos Enviados */}
-            {documentUrls.map((url, urlIndex) => (
-              <div key={urlIndex} className="flex items-center justify-between p-3 bg-muted rounded-lg">
+            {/* Documento Enviado para este tipo */}
+            {documentUrls[docType.id] && (
+              <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
                 <div className="flex items-center gap-2">
-                  <FileText className="w-4 h-4" />
-                  <span className="text-sm">{getDocumentName(url)}</span>
+                  <FileText className="w-4 h-4 text-green-600" />
+                  <span className="text-sm text-green-800">
+                    {getDocumentName(documentUrls[docType.id])}
+                  </span>
                   <CheckCircle className="w-4 h-4 text-green-500" />
                 </div>
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => removeDocument(url)}
+                  onClick={() => removeDocument(docType.id)}
                 >
                   <X className="w-4 h-4" />
                 </Button>
               </div>
-            ))}
+            )}
 
             {/* Documentos sendo enviados */}
             {Object.values(uploadingDocs)
@@ -227,15 +233,27 @@ export function DocumentUpload({ documentUrls, onDocumentsChange }: DocumentUplo
       <div className="bg-muted p-4 rounded-lg">
         <div className="flex items-center justify-between">
           <span className="font-medium">Status dos documentos:</span>
-          <span className={`text-sm ${documentUrls.length >= 3 ? 'text-green-600' : 'text-amber-600'}`}>
-            {documentUrls.length}/3 enviados
+          <span className={`text-sm ${Object.keys(documentUrls).length >= 3 ? 'text-green-600' : 'text-amber-600'}`}>
+            {Object.keys(documentUrls).length}/3 enviados
           </span>
         </div>
         
-        {documentUrls.length >= 3 && (
-          <div className="flex items-center gap-2 mt-2 text-green-600">
+        {/* Lista de documentos por tipo */}
+        <div className="mt-3 space-y-2">
+          {REQUIRED_DOCUMENTS.map((docType) => (
+            <div key={docType.id} className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">{docType.name}:</span>
+              <span className={documentUrls[docType.id] ? 'text-green-600' : 'text-amber-600'}>
+                {documentUrls[docType.id] ? '✓ Enviado' : '⏳ Pendente'}
+              </span>
+            </div>
+          ))}
+        </div>
+        
+        {Object.keys(documentUrls).length >= 3 && (
+          <div className="flex items-center gap-2 mt-3 pt-3 border-t text-green-600">
             <CheckCircle className="w-4 h-4" />
-            <span className="text-sm">Todos os documentos foram enviados!</span>
+            <span className="text-sm font-medium">Todos os documentos foram enviados!</span>
           </div>
         )}
       </div>
