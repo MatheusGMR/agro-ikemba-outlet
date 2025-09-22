@@ -76,6 +76,9 @@ export default function LandingPage() {
         });
       }
     }
+    
+    // Navigate to products page like the button
+    window.location.href = '/products';
   };
 
   const handleBuyNow = () => {
