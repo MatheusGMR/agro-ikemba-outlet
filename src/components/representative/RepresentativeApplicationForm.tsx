@@ -7,12 +7,10 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Card } from '@/components/ui/card';
 import { PersonJuridicaPopup } from './PersonJuridicaPopup';
-import { ForecastTable } from './ForecastTable';
 import { DocumentUpload } from './DocumentUpload';
-import { ProductAndVolumeStep } from './ProductAndVolumeStep';
 import { useRepresentativeApplication } from '@/hooks/useRepresentativeApplication';
 import { toast } from 'sonner';
-import { validateCNPJ, validatePhone, validateUF, validateEmail, formatCNPJ, formatPhone, validateVolume } from '@/utils/validators';
+import { validateCNPJ, validatePhone, validateUF, validateEmail, formatCNPJ, formatPhone } from '@/utils/validators';
 
 interface FormData {
   // Identificação
@@ -35,10 +33,6 @@ interface FormData {
   regioes: string[];
   conflito_interesse: boolean;
   conflito_detalhe: string;
-  
-  // Produtos e Forecast
-  produtos_lista: string[];
-  forecast_data: Record<string, { volume: string; observacoes: string }>;
   
   // Infraestrutura
   infra_celular: boolean;
@@ -69,8 +63,6 @@ const initialFormData: FormData = {
   regioes: [],
   conflito_interesse: false,
   conflito_detalhe: '',
-  produtos_lista: [],
-  forecast_data: {},
   infra_celular: true,
   infra_internet: true,
   infra_veic_proprio: false,
@@ -105,7 +97,7 @@ export function RepresentativeApplicationForm() {
       // Criar dados para submissão com status "reprovado"
       const blockedData = {
         ...formData,
-        produtos_lista: formData.produtos_lista.join('\n'), // Converter array para string
+        produtos_lista: '', // Campo vazio para compatibilidade
         possui_pj: false,
         status: 'reprovado' as const,
         motivo_status: 'Não possui CNPJ ativo (MEI ou empresa)'
@@ -149,28 +141,18 @@ export function RepresentativeApplicationForm() {
         if (formData.regioes.length === 0) return 'Selecione pelo menos uma região';
         return true;
         
-      case 4: // Produtos e Forecast
-        if (formData.produtos_lista.length === 0) return 'Adicione pelo menos um produto';
-        // Verificar se tem pelo menos um produto com volume válido
-        const validProducts = formData.produtos_lista.filter(produto => {
-          const data = formData.forecast_data[produto];
-          return data?.volume.trim() && validateVolume(data.volume);
-        });
-        if (validProducts.length === 0) return 'Configure o volume para pelo menos um produto';
-        return true;
-        
-      case 5: // Infraestrutura
+      case 4: // Infraestrutura
         if (!formData.infra_celular && !formData.infra_internet) {
           return 'É necessário ter pelo menos celular ou internet';
         }
         return true;
         
-      case 6: // Documentos
+      case 5: // Documentos
         const docCount = Object.keys(formData.doc_urls).length;
         if (docCount < 3) return `Envie todos os 3 documentos obrigatórios (${docCount}/3 enviados)`;
         return true;
         
-      case 7: // Termos
+      case 6: // Termos
         if (!formData.termos_aceitos) return 'Você deve aceitar os termos e condições';
         return true;
         
@@ -184,7 +166,7 @@ export function RepresentativeApplicationForm() {
     try {
       await submitApplication({
         ...formData,
-        produtos_lista: formData.produtos_lista.join('\n'), // Converter array para string
+        produtos_lista: '', // Campo vazio para compatibilidade
         status: 'aguardando',
         motivo_status: 'Aguardando análise'
       });
@@ -444,20 +426,6 @@ export function RepresentativeApplicationForm() {
       validate: () => validateStep(3)
     },
     {
-      id: 'produtos-forecast',
-      title: 'Produtos e Potencial',
-      description: 'Produtos que comercializa e projeções',
-      component: (
-        <ProductAndVolumeStep
-          products={formData.produtos_lista}
-          volumeData={formData.forecast_data}
-          onProductsChange={(products) => updateFormData('produtos_lista', products)}
-          onVolumeDataChange={(data) => updateFormData('forecast_data', data)}
-        />
-      ),
-      validate: () => validateStep(4)
-    },
-    {
       id: 'infraestrutura',
       title: 'Infraestrutura',
       description: 'Recursos disponíveis para trabalho',
@@ -504,7 +472,7 @@ export function RepresentativeApplicationForm() {
           </Card>
         </div>
       ),
-      validate: () => validateStep(5)
+      validate: () => validateStep(4)
     },
     {
       id: 'documentos',
@@ -516,7 +484,7 @@ export function RepresentativeApplicationForm() {
           onDocumentsChange={(urls) => updateFormData('doc_urls', urls)}
         />
       ),
-      validate: () => validateStep(6)
+      validate: () => validateStep(5)
     },
     {
       id: 'termos',
@@ -553,7 +521,7 @@ export function RepresentativeApplicationForm() {
           </div>
         </div>
       ),
-      validate: () => validateStep(7)
+      validate: () => validateStep(6)
     }
   ];
 

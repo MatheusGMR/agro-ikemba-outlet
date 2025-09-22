@@ -19,7 +19,6 @@ interface ApplicationData {
   conflito_interesse: boolean;
   conflito_detalhe?: string;
   produtos_lista: string;
-  forecast_data: Record<string, { volume: string; observacoes: string }>;
   infra_celular: boolean;
   infra_internet: boolean;
   infra_veic_proprio: boolean;
@@ -55,14 +54,14 @@ export function useRepresentativeApplication() {
         conflito_interesse: data.conflito_interesse,
         conflito_detalhe: data.conflito_detalhe || null,
         produtos_lista: data.produtos_lista,
-        forecast_data: data.forecast_data,
+        forecast_data: {}, // Objeto vazio para compatibilidade
         infra_celular: data.infra_celular,
         infra_internet: data.infra_internet,
         infra_veic_proprio: data.infra_veic_proprio,
         infra_veic_alugado: data.infra_veic_alugado,
         docs_ok: Object.keys(data.doc_urls).length >= 3,
-        // Converter doc_urls para array para compatibilidade
-        doc_urls: Object.values(data.doc_urls),
+        // Manter doc_urls como objeto para compatibilidade  
+        doc_urls: data.doc_urls ? Object.values(data.doc_urls) : [],
         termos_aceitos: data.termos_aceitos,
         status: data.status || 'aguardando',
         motivo_status: data.motivo_status || 'Aguardando análise'
