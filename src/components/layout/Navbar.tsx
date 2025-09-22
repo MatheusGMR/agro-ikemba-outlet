@@ -226,8 +226,8 @@ export default function Navbar() {
       </div>
       
       {/* Mobile menu */}
-      {isMenuOpen && <div className="fixed inset-0 z-50 bg-background/98 backdrop-blur-md md:hidden pt-16 border-r border-border/40">
-          <nav className="container-custom py-4 h-full bg-background/95">
+      {isMenuOpen && <div className="fixed inset-0 z-50 bg-background backdrop-blur-md md:hidden pt-16 border-r border-border/40">
+          <nav className="container-custom py-4 h-full bg-background border-t border-border/20">
             <ul className="space-y-4 text-lg">
               <NavItem href="/products">Produtos</NavItem>
               <NavItem href="/sobre">Sobre Nós</NavItem>
