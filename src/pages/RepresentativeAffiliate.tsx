@@ -1,7 +1,7 @@
 import { Helmet } from 'react-helmet-async';
 import { RepresentativeApplicationForm } from '@/components/representative/RepresentativeApplicationForm';
 import { Card } from '@/components/ui/card';
-import { CheckCircle, Users, TrendingUp, Handshake } from 'lucide-react';
+import { CheckCircle, Users, TrendingUp, Handshake, FileCheck, Award, Users2 } from 'lucide-react';
 
 export default function RepresentativeAffiliate() {
   const benefits = [
@@ -19,6 +19,26 @@ export default function RepresentativeAffiliate() {
       icon: Users,
       title: "Rede Consolidada", 
       description: "Faça parte da maior rede de distribuição de genéricos do agronegócio"
+    },
+    {
+      icon: FileCheck,
+      title: "Venda e deixe a burocracia para nós",
+      description: "Foque apenas nas vendas enquanto cuidamos de toda documentação, logística e processos administrativos"
+    }
+  ];
+
+  const founders = [
+    {
+      name: "Renato Seraphim",
+      role: "Founder & Estrategista",
+      image: "/assets/founders/renato-seraphim.png",
+      bio: "Estrategista, CEO e membro de conselho com uma visão de liderança no agronegócio de alta performance. Focado em inovação, tecnologia e transformação digital, é fundador da Agro Ikemba e autor do livro \"Estratégia e Fé\". Com experiência como CEO na Albaugh, AgroGalaxy, com legado também na Syngenta, Bayer, UPL. Atualmente é Associate na ADIMAG, Professor de Marketing e Vendas na Terras Gerais Educação e Elevagro, e Board Member e fundador da SMALL NANOTECHNOLOGY e NIRUS."
+    },
+    {
+      name: "Matheus Roldan", 
+      role: "Co-Founder & CEO",
+      image: "/assets/founders/matheus-roldan.png",
+      bio: "Profissional de Marketing & Sales com vasta experiência em ideiação, execução, desenvolvimento de times, economia comportamental e marketing. Atuou como Marketing & Sales Enablement - CMO no Genesis Group, é fundador da Legac-y Consulting, e teve anos de experiência na Syngenta, AgroGalaxy, e Ourofino. Especialista em transformar a agricultura brasileira e o comportamento do agricultor, com foco em tecnologias digitais e economia comportamental."
     }
   ];
 
@@ -46,11 +66,16 @@ export default function RepresentativeAffiliate() {
           }} />
           
           <div className="container-custom relative z-10 text-center">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-gradient">
-              Seja Representante Técnico
-              <br />
-              <span className="text-primary">Afiliado AgroIkemba</span>
-            </h1>
+            <div className="mb-6">
+              <p className="text-xl md:text-2xl text-primary font-semibold mb-4">
+                Conquiste sua autonomia
+              </p>
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gradient">
+                Seja Representante Técnico
+                <br />
+                <span className="text-primary">Afiliado AgroIkemba</span>
+              </h1>
+            </div>
             
             <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
               Faça parte da maior rede de distribuição de produtos genéricos do agronegócio. 
@@ -80,7 +105,7 @@ export default function RepresentativeAffiliate() {
               </p>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-8 mb-16">
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
               {benefits.map((benefit, index) => {
                 const Icon = benefit.icon;
                 return (
@@ -95,7 +120,74 @@ export default function RepresentativeAffiliate() {
               })}
             </div>
 
-            {/* Requirements */}
+        {/* Value Proposition Section */}
+        <section className="py-16 bg-primary/5">
+          <div className="container-custom">
+            <div className="text-center max-w-4xl mx-auto">
+              <h2 className="text-3xl md:text-4xl font-bold mb-6">
+                Valorizamos seu relacionamento
+              </h2>
+              <p className="text-lg text-muted-foreground mb-8">
+                Acreditamos que o sucesso vem de parcerias duradouras. Por isso, investimos no seu crescimento, 
+                oferecendo as ferramentas e o suporte necessários para que você alcance seus objetivos.
+              </p>
+              <div className="grid md:grid-cols-3 gap-8">
+                <Card className="p-6 text-center">
+                  <Award className="w-12 h-12 mx-auto mb-4 text-primary" />
+                  <h3 className="text-xl font-semibold mb-2">Autonomia</h3>
+                  <p className="text-muted-foreground">Trabalhe no seu ritmo e gerencie seu território</p>
+                </Card>
+                <Card className="p-6 text-center">
+                  <Users2 className="w-12 h-12 mx-auto mb-4 text-primary" />
+                  <h3 className="text-xl font-semibold mb-2">Relacionamento</h3>
+                  <p className="text-muted-foreground">Parceria genuína focada no seu sucesso</p>
+                </Card>
+                <Card className="p-6 text-center">
+                  <FileCheck className="w-12 h-12 mx-auto mb-4 text-primary" />
+                  <h3 className="text-xl font-semibold mb-2">Simplicidade</h3>
+                  <p className="text-muted-foreground">Processos descomplicados e suporte completo</p>
+                </Card>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Founders Section */}
+        <section className="py-16">
+          <div className="container-custom">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                Liderados por Especialistas do Agronegócio
+              </h2>
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                Nossa liderança combina décadas de experiência no setor com visão inovadora para o futuro do agronegócio
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-12 max-w-6xl mx-auto">
+              {founders.map((founder, index) => (
+                <Card key={index} className="p-8 text-center md:text-left">
+                  <div className="flex flex-col md:flex-row items-center gap-6">
+                    <div className="flex-shrink-0">
+                      <img 
+                        src={founder.image} 
+                        alt={founder.name}
+                        className="w-32 h-32 rounded-full object-cover border-4 border-primary/20"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-2xl font-bold mb-2">{founder.name}</h3>
+                      <p className="text-primary font-semibold mb-4">{founder.role}</p>
+                      <p className="text-muted-foreground text-sm leading-relaxed">{founder.bio}</p>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Requirements */}
             <div className="max-w-2xl mx-auto">
               <h3 className="text-2xl font-bold text-center mb-8">Requisitos Básicos</h3>
               <Card className="p-6">
