@@ -1,8 +1,18 @@
 
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
+import { ShoppingCart, UserPlus } from 'lucide-react';
+import { analyticsService } from '@/services/analyticsService';
 
 export default function CallToAction() {
+  const handleVerProdutos = () => {
+    analyticsService.trackConversion('lead');
+  };
+
+  const handleCadastro = () => {
+    analyticsService.trackConversion('quote_request');
+  };
+
   const stats = [{
     value: "+25%",
     label: "Tempo médio reduzido"
@@ -31,8 +41,25 @@ export default function CallToAction() {
             </h2>
             <p className="text-xl mb-6 text-gray-200">Junte-se a milhares de compradores que buscam melhor preço em seus genéricos</p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button className="bg-white text-primary hover:bg-primary hover:text-white px-8 py-6 text-lg" asChild>
-                <Link to="/register">Pedir cadastro</Link>
+              <Button 
+                className="bg-green-600 hover:bg-green-700 text-white px-8 py-6 text-lg border-0" 
+                asChild
+                onClick={handleVerProdutos}
+              >
+                <Link to="/products" className="flex items-center gap-2">
+                  <ShoppingCart className="w-5 h-5" />
+                  Explorar Produtos
+                </Link>
+              </Button>
+              <Button 
+                className="bg-white text-primary hover:bg-gray-100 hover:text-primary px-8 py-6 text-lg border-0" 
+                asChild
+                onClick={handleCadastro}
+              >
+                <Link to="/register" className="flex items-center gap-2">
+                  <UserPlus className="w-5 h-5" />
+                  Pedir Cadastro
+                </Link>
               </Button>
             </div>
           </div>

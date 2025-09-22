@@ -11,9 +11,17 @@ import CallToAction from '@/components/home/CallToAction';
 import PreRegistration from '@/components/home/PreRegistration';
 import { LoadingFallback } from '@/components/ui/LoadingFallback';
 import { logger } from '@/utils/logger';
+import { usePageAnalytics } from '@/hooks/useAnalytics';
 
 const Index = () => {
   logger.log('Index page rendering');
+  
+  // Track landing page analytics
+  usePageAnalytics({
+    pagePath: '/',
+    pageTitle: 'Home - AgroIkemba',
+    enableTimeTracking: true
+  });
   
   const structuredData = {
     "@context": "https://schema.org",

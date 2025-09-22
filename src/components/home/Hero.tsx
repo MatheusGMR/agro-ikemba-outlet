@@ -1,10 +1,11 @@
 
-import { ArrowRight, Play, Maximize } from 'lucide-react';
+import { ArrowRight, Play, Maximize, ShoppingCart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { useState, useRef } from 'react';
+import { analyticsService } from '@/services/analyticsService';
 
 export default function Hero() {
   // Video component updated to fix runtime errors
@@ -24,10 +25,19 @@ export default function Hero() {
   };
 
   const handleSaibaMais = () => {
+    analyticsService.trackConversion('lead');
     const featuresSection = document.querySelector('section.py-20.bg-gray-50');
     if (featuresSection) {
       featuresSection.scrollIntoView({ behavior: 'smooth' });
     }
+  };
+
+  const handleVerProdutos = () => {
+    analyticsService.trackConversion('lead');
+  };
+
+  const handleCadastro = () => {
+    analyticsService.trackConversion('quote_request');
   };
 
   const handleFullscreen = () => {
@@ -54,8 +64,18 @@ export default function Hero() {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
-              <Button className="bg-primary hover:bg-primary/90 text-white px-8 py-6 text-lg" asChild>
+              <Button className="bg-primary hover:bg-primary/90 text-white px-8 py-6 text-lg" asChild onClick={handleCadastro}>
                 <Link to="/register">Pedir cadastro</Link>
+              </Button>
+              <Button 
+                className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white px-8 py-6 text-lg border-0" 
+                asChild
+                onClick={handleVerProdutos}
+              >
+                <Link to="/products" className="flex items-center gap-2">
+                  <ShoppingCart className="w-5 h-5" />
+                  Ver Produtos
+                </Link>
               </Button>
               <Button 
                 variant="outline" 
