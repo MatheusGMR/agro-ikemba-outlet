@@ -35,66 +35,18 @@ export function useRepresentativeApplication() {
     setIsLoading(true);
     
     try {
-      // Preparar dados para inserção
-      const insertData = {
-        nome: data.nome,
-        email: data.email,
-        whatsapp: data.whatsapp,
-        cidade: data.cidade,
-        uf: data.uf,
-        linkedin: data.linkedin || null,
-        possui_pj: data.possui_pj,
-        cnpj: data.cnpj || null,
-        razao_social: data.razao_social || null,
-        experiencia_anos: data.experiencia_anos,
-        segmentos: data.segmentos,
-        canais: data.canais,
-        regioes: data.regioes,
-        conflito_interesse: data.conflito_interesse,
-        conflito_detalhe: data.conflito_detalhe || null,
-        produtos_lista: data.produtos_lista,
-        forecast_data: {}, // Objeto vazio para compatibilidade
-        infra_celular: data.infra_celular,
-        infra_internet: data.infra_internet,
-        infra_veic_proprio: data.infra_veic_proprio,
-        infra_veic_alugado: data.infra_veic_alugado,
-        docs_ok: false, // Documentos coletados posteriormente
-        doc_urls: [], // Array vazio para compatibilidade
-        termos_aceitos: data.termos_aceitos,
-        status: data.status || 'aguardando',
-        motivo_status: data.motivo_status || 'Aguardando análise'
-      };
-
-      // Inserir no banco de dados
-      const { data: insertedData, error } = await supabase
-        .from('representative_applications')
-        .insert(insertData)
-        .select()
-        .single();
+      // Submit application via Edge Function to bypass RLS issues
+      const { data: responseData, error } = await supabase.functions.invoke('submit-representative-application', {
+        body: {
+          applicationData: data
+        }
+      });
 
       if (error) {
         throw error;
       }
 
-      console.log('Aplicação inserida:', insertedData);
-
-      // Enviar notificação por email via Edge Function
-      try {
-        const { error: emailError } = await supabase.functions.invoke('send-representative-notification', {
-          body: {
-            application: insertedData,
-            type: 'new_application'
-          }
-        });
-
-        if (emailError) {
-          console.error('Erro ao enviar email:', emailError);
-          // Não bloquear o fluxo se o email falhar
-        }
-      } catch (emailErr) {
-        console.error('Erro ao chamar função de email:', emailErr);
-        // Não bloquear o fluxo se o email falhar
-      }
+      console.log('Application submitted successfully:', responseData);
 
       // Tracking do Google Analytics
       if (typeof window !== 'undefined' && (window as any).gtag) {
@@ -117,6 +69,14 @@ export function useRepresentativeApplication() {
 
     } catch (error) {
       console.error('Erro ao submeter aplicação:', error);
+      
+      // More specific error message
+      if (error.message?.includes('RLS')) {
+        toast.error('Erro de permissão. Por favor, tente novamente ou entre em contato conosco.');
+      } else {
+        toast.error('Erro ao enviar inscrição. Por favor, tente novamente.');
+      }
+      
       throw error;
     } finally {
       setIsLoading(false);

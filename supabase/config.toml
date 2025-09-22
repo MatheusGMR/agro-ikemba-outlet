@@ -57,3 +57,9 @@ verify_jwt = false
 
 [functions.create-auth-users-batch]
 verify_jwt = false
+
+[functions.submit-representative-application]
+verify_jwt = false
+
+[functions.send-representative-notification]
+verify_jwt = false
