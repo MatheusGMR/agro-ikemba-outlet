@@ -255,7 +255,10 @@ export default function RepresentativeAffiliate() {
             }`}
           >
             <div className="max-w-2xl mx-auto">
-              <h3 className="text-2xl font-bold text-center mb-8">Requisitos Básicos</h3>
+              <h2 className="text-3xl md:text-4xl font-bold text-center mb-6">
+                O que é importante para começar?
+              </h2>
+              <h3 className="text-xl font-semibold text-center mb-8 text-muted-foreground">Requisitos Básicos</h3>
               <Card className="p-6">
                 <ul className="space-y-3">
                   {requirements.map((requirement, index) => (
