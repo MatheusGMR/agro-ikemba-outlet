@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { analyticsService } from '@/services/analyticsService';
+import { useAuth } from '@/hooks/useAuth';
 
 interface UsePageAnalyticsProps {
   pagePath: string;
@@ -16,8 +17,12 @@ export function usePageAnalytics({
   enableTimeTracking = true 
 }: UsePageAnalyticsProps) {
   const startTimeRef = useRef<number>(Date.now());
+  const { user } = useAuth();
 
   useEffect(() => {
+    // Update current user in analytics service
+    analyticsService.updateCurrentUser(user);
+    
     // Track page view
     analyticsService.trackPageView(pagePath, pageTitle);
     startTimeRef.current = Date.now();
@@ -35,13 +40,20 @@ export function usePageAnalytics({
         }
       }
     };
-  }, [pagePath, pageTitle, enableTimeTracking]);
+  }, [pagePath, pageTitle, enableTimeTracking, user]);
 }
 
 /**
  * Hook to track product interactions
  */
 export function useProductAnalytics(productSku?: string) {
+  const { user } = useAuth();
+
+  useEffect(() => {
+    // Update analytics service with current user whenever it changes
+    analyticsService.updateCurrentUser(user);
+  }, [user]);
+
   const trackVolumeChange = (volume: number, price: number) => {
     if (productSku) {
       analyticsService.trackVolumeChange(productSku, volume, price);
@@ -78,6 +90,13 @@ export function useProductAnalytics(productSku?: string) {
  * Hook to track checkout funnel analytics
  */
 export function useCheckoutAnalytics() {
+  const { user } = useAuth();
+
+  useEffect(() => {
+    // Update analytics service with current user
+    analyticsService.updateCurrentUser(user);
+  }, [user]);
+
   const trackCheckoutStep = (
     step: 'volume_selection' | 'logistics' | 'payment' | 'confirmation',
     action: 'enter_step' | 'exit_step' | 'abandon' | 'complete',

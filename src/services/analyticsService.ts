@@ -55,14 +55,29 @@ class AnalyticsService {
     return sessionId;
   }
 
+  private currentUser: any = null;
+
   private async getCurrentUser() {
     try {
+      // Try to get cached user first
+      if (this.currentUser) {
+        return this.currentUser;
+      }
+      
       const { data: { user } } = await supabase.auth.getUser();
+      this.currentUser = user;
+      console.log('[Analytics] User captured:', user?.id ? 'Logged in' : 'Anonymous');
       return user;
     } catch (error) {
-      console.error('Error getting user:', error);
+      console.error('[Analytics] Error getting user:', error);
       return null;
     }
+  }
+
+  // Method to update current user from auth context
+  public updateCurrentUser(user: any) {
+    this.currentUser = user;
+    console.log('[Analytics] User updated:', user?.id ? `User ID: ${user.id}` : 'Anonymous');
   }
 
   private getBrowserInfo() {
@@ -85,17 +100,25 @@ class AnalyticsService {
     try {
       const user = await this.getCurrentUser();
       
-      await supabase.from('user_navigation_logs').insert({
+      const logData = {
         user_id: user?.id || null,
         session_id: this.sessionId,
         ...navigationData,
         browser_info: this.getBrowserInfo()
+      };
+
+      console.log('[Analytics] Logging navigation:', {
+        page: navigationData.page_path,
+        user_id: user?.id || 'anonymous',
+        session_id: this.sessionId
       });
+      
+      await supabase.from('user_navigation_logs').insert(logData);
 
       // Reset page start time for next page
       this.pageStartTime = Date.now();
     } catch (error) {
-      console.error('Error logging navigation:', error);
+      console.error('[Analytics] Error logging navigation:', error);
     }
   }
 

@@ -80,6 +80,8 @@ const ProductDetail = () => {
   // Track page view after authentication check
   useEffect(() => {
     if (sku && user && isApproved) {
+      // Update analytics service with current user
+      analyticsService.updateCurrentUser(user);
       analyticsService.trackPageView(`/products/${sku}`, `Produto: ${sku}`);
       analyticsService.trackProductView(sku);
     }
