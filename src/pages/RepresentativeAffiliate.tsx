@@ -1,4 +1,6 @@
 import { Helmet } from 'react-helmet-async';
+import Navbar from '@/components/layout/Navbar';
+import Footer from '@/components/layout/Footer';
 import { RepresentativeApplicationForm } from '@/components/representative/RepresentativeApplicationForm';
 import { Card } from '@/components/ui/card';
 import { CheckCircle, Users, TrendingUp, Handshake, FileCheck, Award, Users2 } from 'lucide-react';
@@ -57,6 +59,8 @@ export default function RepresentativeAffiliate() {
         <meta name="keywords" content="representante técnico, afiliado, agronegócio, comissão, vendas, AgroIkemba" />
         <link rel="canonical" href={`${window.location.origin}/representante-afiliado`} />
       </Helmet>
+
+      <Navbar />
 
       <main className="min-h-screen bg-gradient-to-br from-background to-muted">
         {/* Hero Section */}
@@ -222,6 +226,8 @@ export default function RepresentativeAffiliate() {
           </div>
         </section>
       </main>
+      
+      <Footer />
     </>
   );
 }
