@@ -193,12 +193,7 @@ class AnalyticsService {
 
   // Page tracking helpers
   trackPageView(path: string, title?: string, referrer?: string) {
-    // Only track page views for authenticated users
-    if (!this.currentUser?.id) {
-      console.log('[Analytics] Skipping page view tracking - user not authenticated');
-      return;
-    }
-    
+    // Allow page view tracking for all users (marketing analytics)
     this.logNavigation({
       page_path: path,
       page_title: title || document.title,
@@ -208,12 +203,7 @@ class AnalyticsService {
 
   // Product interaction helpers
   trackProductView(productSku: string) {
-    // Only track product views for authenticated users
-    if (!this.currentUser?.id) {
-      console.log('[Analytics] Skipping product view tracking - user not authenticated');
-      return;
-    }
-    
+    // Allow product view tracking for all users (marketing analytics)
     this.logProductInteraction({
       product_sku: productSku,
       interaction_type: 'view'
