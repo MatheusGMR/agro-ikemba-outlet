@@ -17,7 +17,7 @@ export default function RepresentativeAffiliate() {
   const benefits = [
     {
       icon: TrendingUp,
-      title: "Comissão Atrativa",
+      title: "Ganhe de 0,75% a 1,50% do volume vendido",
       description: "Sistema de comissão competitivo sobre vendas efetivadas com possibilidade de bonificação por indicação"
     },
     {
