@@ -4,8 +4,16 @@ import Footer from '@/components/layout/Footer';
 import { RepresentativeApplicationForm } from '@/components/representative/RepresentativeApplicationForm';
 import { Card } from '@/components/ui/card';
 import { CheckCircle, Users, TrendingUp, Handshake, FileCheck, Award, Users2 } from 'lucide-react';
+import { useScrollAnimation } from '@/hooks/useScrollAnimation';
 
 export default function RepresentativeAffiliate() {
+  const heroRef = useScrollAnimation();
+  const benefitsRef = useScrollAnimation();
+  const valueRef = useScrollAnimation(); 
+  const foundersRef = useScrollAnimation();
+  const requirementsRef = useScrollAnimation();
+  const formRef = useScrollAnimation();
+
   const benefits = [
     {
       icon: TrendingUp,
@@ -69,7 +77,12 @@ export default function RepresentativeAffiliate() {
             backgroundImage: `url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23075e54' fill-opacity='0.1'%3E%3Cpath d='M50 50c0 5.523-4.477 10-10 10s-10-4.477-10-10 4.477-10 10-10 10 4.477 10 10zm10 0c0-11.046-8.954-20-20-20s-20 8.954-20 20 8.954 20 20 20 20-8.954 20-20z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
           }} />
           
-          <div className="container-custom relative z-10 text-center">
+          <div 
+            ref={heroRef.ref}
+            className={`container-custom relative z-10 text-center transition-all duration-1000 ${
+              heroRef.isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+            }`}
+          >
             <div className="mb-6">
               <p className="text-xl md:text-2xl text-primary font-semibold mb-4">
                 Conquiste sua autonomia
@@ -87,7 +100,7 @@ export default function RepresentativeAffiliate() {
             </p>
 
             <div className="flex justify-center">
-              <Card className="p-6 bg-card/50 backdrop-blur-sm border-primary/20">
+              <Card className="p-6 bg-card/50 backdrop-blur-sm border-primary/20 animate-pulse">
                 <div className="flex items-center gap-2 text-primary font-medium">
                   <CheckCircle className="w-5 h-5" />
                   Programa de Recrutamento Ativo
@@ -99,7 +112,12 @@ export default function RepresentativeAffiliate() {
 
         {/* Benefits Section */}
         <section className="py-16 bg-card/30">
-          <div className="container-custom">
+          <div 
+            ref={benefitsRef.ref}
+            className={`container-custom transition-all duration-1000 delay-200 ${
+              benefitsRef.isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+            }`}
+          >
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold mb-4">
                 Por que ser um Representante AgroIkemba?
@@ -113,7 +131,13 @@ export default function RepresentativeAffiliate() {
               {benefits.map((benefit, index) => {
                 const Icon = benefit.icon;
                 return (
-                  <Card key={index} className="p-6 text-center hover-scale">
+                  <Card 
+                    key={index} 
+                    className={`p-6 text-center hover-scale transition-all duration-700 ${
+                      benefitsRef.isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+                    }`}
+                    style={{ transitionDelay: `${400 + index * 100}ms` }}
+                  >
                     <div className="w-16 h-16 mx-auto mb-4 bg-primary/10 rounded-full flex items-center justify-center">
                       <Icon className="w-8 h-8 text-primary" />
                     </div>
@@ -123,10 +147,17 @@ export default function RepresentativeAffiliate() {
                 );
               })}
             </div>
+          </div>
+        </section>
 
         {/* Value Proposition Section */}
         <section className="py-16 bg-primary/5">
-          <div className="container-custom">
+          <div 
+            ref={valueRef.ref}
+            className={`container-custom transition-all duration-1000 delay-300 ${
+              valueRef.isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+            }`}
+          >
             <div className="text-center max-w-4xl mx-auto">
               <h2 className="text-3xl md:text-4xl font-bold mb-6">
                 Valorizamos seu relacionamento
@@ -158,7 +189,12 @@ export default function RepresentativeAffiliate() {
 
         {/* Founders Section */}
         <section className="py-16">
-          <div className="container-custom">
+          <div 
+            ref={foundersRef.ref}
+            className={`container-custom transition-all duration-1000 delay-400 ${
+              foundersRef.isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+            }`}
+          >
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold mb-4">
                 Liderados por Especialistas do Agronegócio
@@ -170,7 +206,13 @@ export default function RepresentativeAffiliate() {
 
             <div className="grid md:grid-cols-2 gap-12 max-w-6xl mx-auto">
               {founders.map((founder, index) => (
-                <Card key={index} className="p-8 text-center md:text-left">
+                <Card 
+                  key={index} 
+                  className={`p-8 text-center md:text-left transition-all duration-700 ${
+                    foundersRef.isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+                  }`}
+                  style={{ transitionDelay: `${600 + index * 200}ms` }}
+                >
                   <div className="flex flex-col md:flex-row items-center gap-6">
                     <div className="flex-shrink-0">
                       <img 
@@ -192,6 +234,13 @@ export default function RepresentativeAffiliate() {
         </section>
 
         {/* Requirements */}
+        <section className="py-16 bg-card/30">
+          <div 
+            ref={requirementsRef.ref}
+            className={`container-custom transition-all duration-1000 delay-500 ${
+              requirementsRef.isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+            }`}
+          >
             <div className="max-w-2xl mx-auto">
               <h3 className="text-2xl font-bold text-center mb-8">Requisitos Básicos</h3>
               <Card className="p-6">
@@ -210,7 +259,12 @@ export default function RepresentativeAffiliate() {
 
         {/* Application Form Section */}
         <section className="py-16">
-          <div className="container-custom">
+          <div 
+            ref={formRef.ref}
+            className={`container-custom transition-all duration-1000 delay-600 ${
+              formRef.isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+            }`}
+          >
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold mb-4">
                 Candidate-se Agora
