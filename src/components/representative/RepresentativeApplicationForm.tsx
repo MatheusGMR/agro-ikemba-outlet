@@ -9,9 +9,11 @@ import { Card } from '@/components/ui/card';
 import { PersonJuridicaPopup } from './PersonJuridicaPopup';
 import { ForecastTable } from './ForecastTable';
 import { DocumentUpload } from './DocumentUpload';
+import { ProductInputStep } from './ProductInputStep';
+import { ProductVolumeStep } from './ProductVolumeStep';
 import { useRepresentativeApplication } from '@/hooks/useRepresentativeApplication';
 import { toast } from 'sonner';
-import { validateCNPJ, validatePhone, validateUF, validateEmail, formatCNPJ, formatPhone } from '@/utils/validators';
+import { validateCNPJ, validatePhone, validateUF, validateEmail, formatCNPJ, formatPhone, validateVolume } from '@/utils/validators';
 
 interface FormData {
   // Identificação
@@ -36,7 +38,7 @@ interface FormData {
   conflito_detalhe: string;
   
   // Produtos e Forecast
-  produtos_lista: string;
+  produtos_lista: string[];
   forecast_data: Record<string, { volume: string; observacoes: string }>;
   
   // Infraestrutura
@@ -68,7 +70,7 @@ const initialFormData: FormData = {
   regioes: [],
   conflito_interesse: false,
   conflito_detalhe: '',
-  produtos_lista: '',
+  produtos_lista: [],
   forecast_data: {},
   infra_celular: true,
   infra_internet: true,
@@ -83,8 +85,17 @@ export function RepresentativeApplicationForm() {
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [showPJPopup, setShowPJPopup] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [productSubStep, setProductSubStep] = useState<'input' | 'volume'>('input');
   
   const { submitApplication } = useRepresentativeApplication();
+
+  // Reset product sub-step when leaving step 4
+  const handleStepChange = (newStep: number) => {
+    if (currentStep === 4 && newStep !== 4) {
+      setProductSubStep('input');
+    }
+    setCurrentStep(newStep);
+  };
 
   const updateFormData = (field: keyof FormData, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -105,6 +116,7 @@ export function RepresentativeApplicationForm() {
       // Criar dados para submissão com status "reprovado"
       const blockedData = {
         ...formData,
+        produtos_lista: formData.produtos_lista.join('\n'), // Converter array para string
         possui_pj: false,
         status: 'reprovado' as const,
         motivo_status: 'Não possui CNPJ ativo (MEI ou empresa)'
@@ -149,9 +161,13 @@ export function RepresentativeApplicationForm() {
         return true;
         
       case 4: // Produtos e Forecast
-        if (!formData.produtos_lista.trim()) return 'Lista de produtos é obrigatória';
-        const produtos = formData.produtos_lista.split('\n').filter(p => p.trim());
-        if (produtos.length === 0) return 'Liste pelo menos um produto';
+        if (formData.produtos_lista.length === 0) return 'Adicione pelo menos um produto';
+        // Verificar se tem pelo menos um produto com volume válido
+        const validProducts = formData.produtos_lista.filter(produto => {
+          const data = formData.forecast_data[produto];
+          return data?.volume.trim() && validateVolume(data.volume);
+        });
+        if (validProducts.length === 0) return 'Configure o volume para pelo menos um produto';
         return true;
         
       case 5: // Infraestrutura
@@ -179,6 +195,7 @@ export function RepresentativeApplicationForm() {
     try {
       await submitApplication({
         ...formData,
+        produtos_lista: formData.produtos_lista.join('\n'), // Converter array para string
         status: 'aguardando',
         motivo_status: 'Aguardando análise'
       });
@@ -443,32 +460,34 @@ export function RepresentativeApplicationForm() {
       description: 'Produtos que comercializa e projeções',
       component: (
         <div className="space-y-6">
-          <div>
-            <Label htmlFor="produtos">Produtos que vende *</Label>
-            <Textarea
-              id="produtos"
-              value={formData.produtos_lista}
-              onChange={(e) => {
-                updateFormData('produtos_lista', e.target.value);
-                // Auto-gerar forecast table baseado nos produtos
-                const produtos = e.target.value.split('\n').filter(p => p.trim());
+          {productSubStep === 'input' ? (
+            <ProductInputStep
+              products={formData.produtos_lista}
+              onProductsChange={(products) => {
+                updateFormData('produtos_lista', products);
+                // Auto-gerar forecast data para novos produtos
                 const newForecast: Record<string, { volume: string; observacoes: string }> = {};
-                produtos.forEach(produto => {
-                  if (produto.trim() && !formData.forecast_data[produto.trim()]) {
-                    newForecast[produto.trim()] = { volume: '', observacoes: '' };
+                products.forEach(produto => {
+                  if (!formData.forecast_data[produto]) {
+                    newForecast[produto] = { volume: '', observacoes: '' };
                   }
                 });
                 updateFormData('forecast_data', { ...formData.forecast_data, ...newForecast });
               }}
-              placeholder="Digite um produto por linha&#10;Exemplo:&#10;Glifosato&#10;2,4D&#10;Atrazina&#10;Fomesafem&#10;Haloxifope"
-              rows={6}
+              onNext={() => {
+                if (formData.produtos_lista.length > 0) {
+                  setProductSubStep('volume');
+                } else {
+                  toast.error('Adicione pelo menos um produto antes de continuar');
+                }
+              }}
             />
-          </div>
-
-          {Object.keys(formData.forecast_data).length > 0 && (
-            <ForecastTable
-              forecastData={formData.forecast_data}
-              onUpdateForecast={(newForecast) => updateFormData('forecast_data', newForecast)}
+          ) : (
+            <ProductVolumeStep
+              products={formData.produtos_lista}
+              volumeData={formData.forecast_data}
+              onVolumeDataChange={(data) => updateFormData('forecast_data', data)}
+              onBack={() => setProductSubStep('input')}
             />
           )}
         </div>
@@ -580,7 +599,7 @@ export function RepresentativeApplicationForm() {
       <ProgressiveForm
         steps={steps}
         currentStep={currentStep}
-        onStepChange={setCurrentStep}
+        onStepChange={handleStepChange}
         onSubmit={handleSubmit}
         isSubmitting={isSubmitting}
         submitText="Enviar Inscrição"
