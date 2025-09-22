@@ -22,7 +22,7 @@ export default function RepresentativeAffiliate() {
     },
     {
       icon: Handshake,
-      title: "Suporte Completo",
+      title: "Campanhas Digitais para sua região",
       description: "Acompanhamento técnico e comercial para maximizar suas oportunidades de vendas"
     },
     {
