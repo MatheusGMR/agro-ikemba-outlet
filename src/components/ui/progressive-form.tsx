@@ -64,16 +64,12 @@ export function ProgressiveForm({
       onSubmit();
     } else {
       onStepChange(currentStep + 1);
-      // Scroll to top when advancing to next step
-      setTimeout(() => scrollToTop(), 100);
     }
-  }, [currentStepData, isLastStep, onSubmit, onStepChange, currentStep, scrollToTop]);
+  }, [currentStepData, isLastStep, onSubmit, onStepChange, currentStep]);
 
   const handleBack = () => {
     if (!isFirstStep && allowBack) {
       onStepChange(currentStep - 1);
-      // Scroll to top when going back
-      setTimeout(() => scrollToTop(), 100);
     }
   };
 
