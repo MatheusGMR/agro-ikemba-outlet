@@ -448,38 +448,12 @@ export function RepresentativeApplicationForm() {
       title: 'Produtos e Potencial',
       description: 'Produtos que comercializa e projeções',
       component: (
-        <div className="space-y-6">
-          {productSubStep === 'input' ? (
-            <ProductInputStep
-              products={formData.produtos_lista}
-              onProductsChange={(products) => {
-                updateFormData('produtos_lista', products);
-                // Auto-gerar forecast data para novos produtos
-                const newForecast: Record<string, { volume: string; observacoes: string }> = {};
-                products.forEach(produto => {
-                  if (!formData.forecast_data[produto]) {
-                    newForecast[produto] = { volume: '', observacoes: '' };
-                  }
-                });
-                updateFormData('forecast_data', { ...formData.forecast_data, ...newForecast });
-              }}
-              onNext={() => {
-                if (formData.produtos_lista.length > 0) {
-                  setProductSubStep('volume');
-                } else {
-                  toast.error('Adicione pelo menos um produto antes de continuar');
-                }
-              }}
-            />
-          ) : (
-            <ProductVolumeStep
-              products={formData.produtos_lista}
-              volumeData={formData.forecast_data}
-              onVolumeDataChange={(data) => updateFormData('forecast_data', data)}
-              onBack={() => setProductSubStep('input')}
-            />
-          )}
-        </div>
+        <ProductAndVolumeStep
+          products={formData.produtos_lista}
+          volumeData={formData.forecast_data}
+          onProductsChange={(products) => updateFormData('produtos_lista', products)}
+          onVolumeDataChange={(data) => updateFormData('forecast_data', data)}
+        />
       ),
       validate: () => validateStep(4)
     },
