@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { GoogleReCaptchaProvider } from 'react-google-recaptcha-v3';
 import { ProgressiveForm, ProgressiveFormStep } from '@/components/ui/progressive-form';
 import { ProgressiveInput } from '@/components/ui/progressive-input';
@@ -103,7 +103,33 @@ function UnifiedRegistrationFormInner({
   });
 
   // Bot protection hooks
-  const { honeypotData, updateHoneypot, validateBotProtection, formStartTime } = useBotProtection();
+  const { 
+    honeypotData, 
+    updateHoneypot, 
+    validateBotProtection, 
+    testReCaptcha, 
+    formStartTime, 
+    isReCaptchaReady 
+  } = useBotProtection();
+
+  // Test reCAPTCHA on component mount
+  useEffect(() => {
+    const testCaptcha = async () => {
+      if (isReCaptchaReady) {
+        console.log('🧪 Component mounted - testing reCAPTCHA...');
+        const test = await testReCaptcha();
+        if (!test.working) {
+          console.warn('⚠️ reCAPTCHA test failed on mount:', test.error);
+        } else {
+          console.log('✅ reCAPTCHA is working properly. Score:', test.score);
+        }
+      }
+    };
+
+    // Wait a bit for reCAPTCHA to initialize
+    const timer = setTimeout(testCaptcha, 2000);
+    return () => clearTimeout(timer);
+  }, [isReCaptchaReady, testReCaptcha]);
 
   const updateFormData = (field: keyof UnifiedRegistrationData, value: string) => {
     // Track form_start on first interaction
@@ -190,7 +216,9 @@ function UnifiedRegistrationFormInner({
       console.log(`[REG][${attemptId}] Start unified registration`, { context, data: formData });
       
       // 🛡️ BOT PROTECTION - Check before processing
+      console.log(`[REG][${attemptId}] Running bot protection validation...`);
       const botCheck = await validateBotProtection();
+      
       if (botCheck.isBot) {
         console.log(`[REG][${attemptId}] Bot detected:`, botCheck);
         trackFormEvent('bot_detected', {
@@ -199,10 +227,22 @@ function UnifiedRegistrationFormInner({
           recaptcha_score: botCheck.recaptchaScore,
           form_time: Date.now() - formStartTime
         });
-        toast.error('Verificação de segurança falhada. Tente novamente.');
+        
+        // Show specific error messages based on bot detection reason
+        let errorMessage = 'Verificação de segurança falhada. Tente novamente.';
+        if (botCheck.reason === 'honeypot') {
+          errorMessage = 'Suspeita de atividade automatizada detectada.';
+        } else if (botCheck.reason === 'too_fast') {
+          errorMessage = 'Por favor, preencha o formulário mais devagar e com cuidado.';
+        } else if (botCheck.reason?.includes('recaptcha')) {
+          errorMessage = 'Verificação reCAPTCHA falhou. Recarregue a página e tente novamente.';
+        }
+        
+        toast.error(errorMessage);
         return;
       }
 
+      console.log(`[REG][${attemptId}] Bot protection passed. Score: ${botCheck.recaptchaScore}`);
       trackFormEvent('form_attempt_start', {
         ...common,
         account_type: formData.tipo,
