@@ -23,7 +23,7 @@ export default function RepresentativeAffiliate() {
     {
       icon: Handshake,
       title: "Campanhas Digitais para sua região",
-      description: "Acompanhamento técnico e comercial para maximizar suas oportunidades de vendas"
+      description: "Maximizamos a geração de leads direcionado para sua região de atuação"
     },
     {
       icon: Users,
