@@ -7,6 +7,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Card } from '@/components/ui/card';
 import { PersonJuridicaPopup } from './PersonJuridicaPopup';
+import { TermsDialog } from './TermsDialog';
 import { useRepresentativeApplication } from '@/hooks/useRepresentativeApplication';
 import { toast } from 'sonner';
 import { validateCNPJ, validatePhone, validateUF, validateEmail, formatCNPJ, formatPhone } from '@/utils/validators';
@@ -70,11 +71,16 @@ export function RepresentativeApplicationForm() {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [showPJPopup, setShowPJPopup] = useState(false);
+  const [showTermsDialog, setShowTermsDialog] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { submitApplication } = useRepresentativeApplication();
 
   const updateFormData = (field: keyof FormData, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleTermsAccept = () => {
+    updateFormData('termos_aceitos', true);
   };
 
   const handlePJResponse = (hasActivePJ: boolean, confirmed?: boolean) => {
@@ -499,9 +505,13 @@ export function RepresentativeApplicationForm() {
             />
             <Label htmlFor="termos" className="text-sm">
               Li e aceito os{' '}
-              <a href="#" className="text-primary hover:underline">
+              <button 
+                type="button"
+                onClick={() => setShowTermsDialog(true)}
+                className="text-primary hover:underline underline-offset-2 cursor-pointer"
+              >
                 Termos de Parceria e Política de Comissão
-              </a>
+              </button>
               {' '}da AgroIkemba *
             </Label>
           </div>
@@ -528,6 +538,12 @@ export function RepresentativeApplicationForm() {
           onClose={() => setShowPJPopup(false)}
           onResponse={handlePJResponse}
           onSubmitBlocked={handleSubmitBlocked}
+        />
+
+        <TermsDialog
+          open={showTermsDialog}
+          onOpenChange={setShowTermsDialog}
+          onAccept={handleTermsAccept}
         />
     </>
   );
