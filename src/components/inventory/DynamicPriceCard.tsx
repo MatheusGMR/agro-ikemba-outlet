@@ -127,23 +127,28 @@ export default function DynamicPriceCard({
   }, [isApproved, productSku, totalAvailable, trackVolumeOptimization, onVolumeCommit, getCurrentPrice, savings]);
 
   const handleVolumeChange = (value: number[]) => {
+    if (!isApproved) {
+      setShowConversionModal(true);
+      return;
+    }
+    
     const newVolume = value[0];
     setSelectedVolume(newVolume);
     
-    // Debounce the analytics tracking (800ms) - only for approved users
-    if (isApproved) {
-      if (debounceTimeoutRef.current) {
-        clearTimeout(debounceTimeoutRef.current);
-      }
-      
-      debounceTimeoutRef.current = setTimeout(() => {
-        trackVolumeCommit(newVolume);
-      }, 800);
+    // Debounce the analytics tracking (800ms)
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
     }
+    
+    debounceTimeoutRef.current = setTimeout(() => {
+      trackVolumeCommit(newVolume);
+    }, 800);
   };
 
   const handleSliderInteraction = () => {
-    // Allow interaction for everyone - no modal trigger here
+    if (!isApproved) {
+      setShowConversionModal(true);
+    }
   };
 
   // Track on mouse/touch up for immediate commits
@@ -186,7 +191,7 @@ export default function DynamicPriceCard({
           </div>
           {!isApproved && (
             <div className="text-xs text-primary mt-2">
-              💡 Simulação gratuita - Cadastre-se para comprar
+              💡 Cadastre-se para usar o simulador interativo
             </div>
           )}
         </div>
@@ -209,7 +214,14 @@ export default function DynamicPriceCard({
               min={minVolume}
               step={20}
               className="w-full"
+              disabled={!isApproved}
             />
+            {!isApproved && (
+              <div 
+                className="absolute inset-0 cursor-pointer" 
+                onClick={handleSliderInteraction}
+              />
+            )}
           </div>
           
           <div className="flex justify-between text-xs text-muted-foreground">
@@ -217,95 +229,115 @@ export default function DynamicPriceCard({
             <span>Max: {totalAvailable.toLocaleString()}L</span>
           </div>
           
-        </div>
-
-        {/* Savings Display - Now available for everyone */}
-        <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
-          <div className="flex items-center gap-2">
-            <TrendingUp className="w-4 h-4 text-green-600" />
-            <span className="text-sm font-medium text-green-800">Economia Total</span>
-          </div>
-          <div className="text-right">
-            <div className="text-lg font-bold text-green-600">
-              R$ {savings.toFixed(2)}
-            </div>
-            <div className="text-xs text-green-600">
-              ({((savings / (maxPrice * selectedVolume)) * 100).toFixed(1)}% de desconto)
-            </div>
-            {!isApproved && (
-              <div className="text-xs text-primary mt-1">
-                Faça login para comprar com este desconto
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Volume Incentive Message - Now available for everyone */}
-        <div className="text-center p-3 bg-blue-50 border border-blue-200 rounded-lg">
-          <Volume2 className="w-5 h-5 text-blue-600 mx-auto mb-2" />
-          <p className="text-sm text-blue-800 font-medium mb-1">
-            {selectedVolume < totalAvailable * 0.5 
-              ? "Aumente o volume para melhores preços!" 
-              : selectedVolume < totalAvailable * 0.8
-                ? "Ótimo volume de compra!"
-                : "Máxima economia atingida!"
-            }
-          </p>
-          <p className="text-xs text-blue-600">
-            Volume restante até Banda Menor: {Math.max(0, totalAvailable - selectedVolume).toLocaleString()}L
-          </p>
           {!isApproved && (
-            <p className="text-xs text-primary mt-2">
-              📝 Faça seu cadastro para comprar com estes preços
-            </p>
+            <div 
+              className="flex items-center justify-center gap-2 text-sm bg-gradient-to-r from-primary/10 to-primary/5 p-3 rounded-lg border border-primary/20 cursor-pointer hover:from-primary/15 hover:to-primary/10 transition-colors"
+              onClick={handleSliderInteraction}
+            >
+              <Target className="w-4 h-4 text-primary" />
+              <span className="text-primary font-medium">
+                Clique para simular volumes e descobrir descontos
+              </span>
+            </div>
           )}
         </div>
 
-        {/* Quick Volume Actions - Now available for everyone */}
-        <div className="grid grid-cols-3 gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              const newVolume = Math.ceil(totalAvailable * 0.25);
-              setSelectedVolume(newVolume);
-              if (isApproved) trackVolumeCommit(newVolume);
-            }}
-            className="text-xs"
+        {/* Savings Display - Only for approved users */}
+        {isApproved && (
+          <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-green-600" />
+              <span className="text-sm font-medium text-green-800">Economia Total</span>
+            </div>
+            <div className="text-right">
+              <div className="text-lg font-bold text-green-600">
+                R$ {savings.toFixed(2)}
+              </div>
+              <div className="text-xs text-green-600">
+                ({((savings / (maxPrice * selectedVolume)) * 100).toFixed(1)}% de desconto)
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Volume Incentive Message - Only for approved users */}
+        {isApproved ? (
+          <div className="text-center p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <Volume2 className="w-5 h-5 text-blue-600 mx-auto mb-2" />
+            <p className="text-sm text-blue-800 font-medium mb-1">
+              {selectedVolume < totalAvailable * 0.5 
+                ? "Aumente o volume para melhores preços!" 
+                : selectedVolume < totalAvailable * 0.8
+                  ? "Ótimo volume de compra!"
+                  : "Máxima economia atingida!"
+              }
+            </p>
+            <p className="text-xs text-blue-600">
+              Volume restante até Banda Menor: {Math.max(0, totalAvailable - selectedVolume).toLocaleString()}L
+            </p>
+          </div>
+        ) : (
+          <div 
+            className="text-center p-3 bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg cursor-pointer hover:from-green-100 hover:to-blue-100 transition-colors"
+            onClick={handleSliderInteraction}
           >
-            25%
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              const newVolume = Math.ceil(totalAvailable * 0.5);
-              setSelectedVolume(newVolume);
-              if (isApproved) trackVolumeCommit(newVolume);
-            }}
-            className="text-xs"
-          >
-            50%
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              const newVolume = totalAvailable;
-              setSelectedVolume(newVolume);
-              if (isApproved) trackVolumeCommit(newVolume);
-            }}
-            className="text-xs"
-          >
-            100%
-          </Button>
-        </div>
+            <TrendingUp className="w-5 h-5 text-green-600 mx-auto mb-2" />
+            <p className="text-sm text-green-700 font-medium mb-1">
+              Descontos progressivos por volume
+            </p>
+            <p className="text-xs text-green-600">
+              Cadastre-se e descubra até 15% de economia em compras maiores
+            </p>
+          </div>
+        )}
+
+        {/* Quick Volume Actions - Only for approved users */}
+        {isApproved && (
+          <div className="grid grid-cols-3 gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const newVolume = Math.ceil(totalAvailable * 0.25);
+                setSelectedVolume(newVolume);
+                trackVolumeCommit(newVolume);
+              }}
+              className="text-xs"
+            >
+              25%
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const newVolume = Math.ceil(totalAvailable * 0.5);
+                setSelectedVolume(newVolume);
+                trackVolumeCommit(newVolume);
+              }}
+              className="text-xs"
+            >
+              50%
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const newVolume = totalAvailable;
+                setSelectedVolume(newVolume);
+                trackVolumeCommit(newVolume);
+              }}
+              className="text-xs"
+            >
+              100%
+            </Button>
+          </div>
+        )}
       </CardContent>
 
       <ConversionModal 
         open={showConversionModal}
         onOpenChange={setShowConversionModal}
-        featureRequested="Finalizar compra"
+        featureRequested="O simulador de preços"
       />
     </Card>
   );

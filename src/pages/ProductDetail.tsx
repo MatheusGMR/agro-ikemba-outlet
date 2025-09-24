@@ -18,7 +18,6 @@ import { ProductDocuments } from '@/components/inventory/ProductDocuments';
 import { RelatedProducts } from '@/components/inventory/RelatedProducts';
 import { InventoryService } from '@/services/inventoryService';
 import { analyticsService } from '@/services/analyticsService';
-import { ConversionModal } from '@/components/ui/ConversionModal';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserApproval } from '@/hooks/useUserApproval';
 
@@ -44,7 +43,6 @@ const ProductDetail = () => {
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [quantity, setQuantity] = useState(1);
   const [isFavorite, setIsFavorite] = useState(false);
-  const [showConversionModal, setShowConversionModal] = useState(false);
 
   // Set default selections when data loads
   useEffect(() => {
@@ -79,18 +77,13 @@ const ProductDetail = () => {
   }, {} as Record<string, { items: any[], totalVolume: number }>);
   
 
-  // Track page view for all users (not just approved ones)
+  // Track page view after authentication check
   useEffect(() => {
-    if (sku) {
-      if (user && isApproved) {
-        // Track with user data for approved users
-        analyticsService.updateCurrentUser(user);
-        analyticsService.trackPageView(`/products/${sku}`, `Produto: ${sku}`);
-        analyticsService.trackProductView(sku);
-      } else {
-        // Track anonymously for non-logged users  
-        analyticsService.trackPageView(`/products/${sku}`, `Produto: ${sku}`, document.referrer);
-      }
+    if (sku && user && isApproved) {
+      // Update analytics service with current user
+      analyticsService.updateCurrentUser(user);
+      analyticsService.trackPageView(`/products/${sku}`, `Produto: ${sku}`);
+      analyticsService.trackProductView(sku);
     }
   }, [sku, user, isApproved]);
   
@@ -105,12 +98,6 @@ const ProductDetail = () => {
   };
   
   const handleAddToCart = () => {
-    if (!user) {
-      // Show conversion modal for non-logged users
-      setShowConversionModal(true);
-      return;
-    }
-    
     if (!selectedItem || !productInfo) return;
     
     // Use currentPrice from DynamicPriceCard if available, otherwise use preco_unitario
@@ -137,12 +124,6 @@ const ProductDetail = () => {
   };
   
   const handleBuyNow = () => {
-    if (!user) {
-      // Show conversion modal for non-logged users
-      setShowConversionModal(true);
-      return;
-    }
-    
     handleAddToCart();
     navigate('/checkout');
   };
@@ -465,12 +446,6 @@ const ProductDetail = () => {
         </div>
       </main>
       <Footer />
-      
-      <ConversionModal 
-        open={showConversionModal}
-        onOpenChange={setShowConversionModal}
-        featureRequested="Finalizar compra deste produto"
-      />
     </div>
   );
 };
