@@ -38,6 +38,14 @@
     <priority>0.7</priority>
   </url>
   
+  <!-- Landing Page -->
+  <url>
+    <loc>https://www.agroikemba.com.br/landing</loc>
+    <lastmod>2025-01-07T00:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
   <!-- Dashboard Page -->
   <url>
     <loc>https://www.agroikemba.com.br/dashboard</loc>

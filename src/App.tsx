@@ -20,7 +20,7 @@ import RepresentativeProtectedRoute from "./components/representative/Representa
 import RepresentativeRegistration from "./pages/RepresentativeRegistration";
 import RepresentativeLogin from "./pages/RepresentativeLogin";
 import RepresentativeAffiliate from "./pages/RepresentativeAffiliate";
-import TestPage from '@/pages/TestPage';
+
 import Simulador from './pages/Simulador';
 import LandingPage from './pages/LandingPage';
 import Representative from './pages/Representative';
@@ -82,7 +82,7 @@ function App() {
                   <Route path="/landing" element={<LandingPage />} />
                   <Route path="/video/boas-vindas" element={<VideoBoasVindas />} />
                   <Route path="/proposta/:publicLink" element={<ProposalView />} />
-                  <Route path="/test-openai" element={<TestPage />} />
+                  
                   <Route path="*" element={<NotFound />} />
                 </Routes>  
               </AuthProvider>
