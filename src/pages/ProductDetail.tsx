@@ -288,10 +288,11 @@ const ProductDetail = () => {
                           currentPrice: price
                         });
                       }
-                      // Track volume changes for analytics - only for authenticated and approved users
-                      if (user && isApproved) {
-                        analyticsService.trackVolumeChange(productInfo.product_sku, volume, price);
-                      }
+                      // Analytics tracking is now handled internally by DynamicPriceCard
+                    }}
+                    onVolumeCommit={(volume, price, savings) => {
+                      // Final volume commit - can be used for additional logic if needed
+                      console.log(`Volume committed: ${volume}L at R$${price}/L`);
                     }}
                     minVolume={1000}
                     initialVolumePercentage={100}

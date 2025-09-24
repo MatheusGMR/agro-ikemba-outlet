@@ -125,17 +125,20 @@ export function useCheckoutAnalytics() {
 }
 
 /**
- * Hook to track volume optimization analytics
+ * Hook to track volume optimization analytics with session management and cooldowns
  */
 export function useVolumeAnalytics(productSku?: string) {
   const startVolumeRef = useRef<number | null>(null);
   const startPriceRef = useRef<number | null>(null);
   const startTimeRef = useRef<number>(Date.now());
+  const lastTrackingRef = useRef<number>(0);
+  const sessionIdRef = useRef<string | null>(null);
 
   const startVolumeSession = (initialVolume: number, initialPrice: number) => {
     startVolumeRef.current = initialVolume;
     startPriceRef.current = initialPrice;
     startTimeRef.current = Date.now();
+    sessionIdRef.current = `${productSku}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   };
 
   const trackVolumeOptimization = (
@@ -145,7 +148,23 @@ export function useVolumeAnalytics(productSku?: string) {
   ) => {
     if (!productSku || !startVolumeRef.current || !startPriceRef.current) return;
 
-    const timeSpent = Math.floor((Date.now() - startTimeRef.current) / 1000);
+    const now = Date.now();
+    const timeSpent = Math.floor((now - startTimeRef.current) / 1000);
+    
+    // Cooldown check: minimum 30 seconds between trackings for the same product
+    if (now - lastTrackingRef.current < 30000) {
+      return;
+    }
+
+    // Quality validations
+    const volumeChange = Math.abs(finalVolume - startVolumeRef.current);
+    const priceChange = Math.abs(finalPrice - startPriceRef.current);
+    
+    // Only track meaningful interactions
+    if (timeSpent < 3 || volumeChange < 50) {
+      return;
+    }
+
     const savingsAmount = (startPriceRef.current - finalPrice) * finalVolume;
     const savingsPercentage = startPriceRef.current > 0 
       ? ((startPriceRef.current - finalPrice) / startPriceRef.current) * 100 
@@ -162,6 +181,12 @@ export function useVolumeAnalytics(productSku?: string) {
       time_spent: timeSpent,
       reached_banda_menor: reachedBandaMenor
     });
+
+    // Update tracking timestamp and reset session for next interaction
+    lastTrackingRef.current = now;
+    startVolumeRef.current = finalVolume;
+    startPriceRef.current = finalPrice;
+    startTimeRef.current = now;
   };
 
   return {

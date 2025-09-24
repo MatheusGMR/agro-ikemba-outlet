@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Slider } from '@/components/ui/slider';
@@ -8,22 +8,38 @@ import { ConversionModal } from '@/components/ui/ConversionModal';
 import { Target, TrendingUp, Volume2, Lock } from 'lucide-react';
 import { useUserApproval } from '@/hooks/useUserApproval';
 import { useAuth } from '@/hooks/useAuth';
+import { useVolumeAnalytics } from '@/hooks/useAnalytics';
 import type { InventoryItem } from '@/types/inventory';
 
 interface DynamicPriceCardProps {
   inventoryItems: InventoryItem[];
   onVolumeChange?: (volume: number, price: number, savings: number) => void;
+  onVolumeCommit?: (volume: number, price: number, savings: number) => void;
   minVolume?: number;
   initialVolumePercentage?: number;
 }
 
-export default function DynamicPriceCard({ inventoryItems, onVolumeChange, minVolume = 20, initialVolumePercentage = 100 }: DynamicPriceCardProps) {
+export default function DynamicPriceCard({ 
+  inventoryItems, 
+  onVolumeChange, 
+  onVolumeCommit, 
+  minVolume = 20, 
+  initialVolumePercentage = 100 
+}: DynamicPriceCardProps) {
   const totalAvailable = inventoryItems.reduce((sum, item) => sum + item.volume_available, 0);
   const initialVolume = Math.max(minVolume, Math.ceil(totalAvailable * (initialVolumePercentage / 100)));
   const [selectedVolume, setSelectedVolume] = useState(initialVolume);
   const [showConversionModal, setShowConversionModal] = useState(false);
   const { user } = useAuth();
   const { isApproved, isPending } = useUserApproval();
+  
+  // Analytics and session tracking
+  const productSku = inventoryItems[0]?.product_sku;
+  const { startVolumeSession, trackVolumeOptimization } = useVolumeAnalytics(productSku);
+  const sessionStarted = useRef(false);
+  const lastCommittedVolume = useRef(initialVolume);
+  const sessionStartTime = useRef(Date.now());
+  const debounceTimeoutRef = useRef<NodeJS.Timeout>();
   
   const priceRange = useMemo(() => {
     if (!inventoryItems.length) return { min: 0, max: 0 };
@@ -69,16 +85,64 @@ export default function DynamicPriceCard({ inventoryItems, onVolumeChange, minVo
     return "bg-orange-100 text-orange-800 border-orange-200";
   };
 
+  // Initialize analytics session when component mounts
+  useEffect(() => {
+    if (isApproved && productSku && !sessionStarted.current) {
+      startVolumeSession(initialVolume, getCurrentPrice(initialVolume));
+      sessionStarted.current = true;
+      sessionStartTime.current = Date.now();
+    }
+  }, [isApproved, productSku, initialVolume, startVolumeSession]);
+
+  // Immediate UI callback (for real-time price updates)
   useEffect(() => {
     onVolumeChange?.(selectedVolume, currentPrice, savings);
   }, [selectedVolume, currentPrice, savings, onVolumeChange]);
+
+  // Debounced analytics tracking
+  const trackVolumeCommit = useCallback((finalVolume: number) => {
+    if (!isApproved || !productSku) return;
+    
+    const finalPrice = getCurrentPrice(finalVolume);
+    const volumeChange = Math.abs(finalVolume - lastCommittedVolume.current);
+    const volumeChangePercentage = (volumeChange / totalAvailable) * 100;
+    const timeSpent = Math.floor((Date.now() - sessionStartTime.current) / 1000);
+    
+    // Only track if significant change (>5% of total or >100L) and spent >2 seconds
+    if ((volumeChangePercentage > 5 || volumeChange > 100) && timeSpent > 2) {
+      const reachedBandaMenor = finalVolume >= totalAvailable * 0.8;
+      
+      trackVolumeOptimization(
+        finalVolume,
+        finalPrice,
+        reachedBandaMenor
+      );
+      
+      // Call the commit callback
+      onVolumeCommit?.(finalVolume, finalPrice, savings);
+      
+      lastCommittedVolume.current = finalVolume;
+      sessionStartTime.current = Date.now(); // Reset session for next interaction
+    }
+  }, [isApproved, productSku, totalAvailable, trackVolumeOptimization, onVolumeCommit, getCurrentPrice, savings]);
 
   const handleVolumeChange = (value: number[]) => {
     if (!isApproved) {
       setShowConversionModal(true);
       return;
     }
-    setSelectedVolume(value[0]);
+    
+    const newVolume = value[0];
+    setSelectedVolume(newVolume);
+    
+    // Debounce the analytics tracking (800ms)
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
+    }
+    
+    debounceTimeoutRef.current = setTimeout(() => {
+      trackVolumeCommit(newVolume);
+    }, 800);
   };
 
   const handleSliderInteraction = () => {
@@ -86,6 +150,23 @@ export default function DynamicPriceCard({ inventoryItems, onVolumeChange, minVo
       setShowConversionModal(true);
     }
   };
+
+  // Track on mouse/touch up for immediate commits
+  const handleVolumeCommitImmediate = useCallback(() => {
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
+    }
+    trackVolumeCommit(selectedVolume);
+  }, [selectedVolume, trackVolumeCommit]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+      }
+    };
+  }, []);
 
   return (
     <Card className="border-2 border-primary/20 bg-gradient-to-br from-background to-muted/20">
@@ -128,6 +209,7 @@ export default function DynamicPriceCard({ inventoryItems, onVolumeChange, minVo
             <Slider
               value={[selectedVolume]}
               onValueChange={handleVolumeChange}
+              onValueCommit={handleVolumeCommitImmediate}
               max={totalAvailable}
               min={minVolume}
               step={20}
@@ -215,7 +297,11 @@ export default function DynamicPriceCard({ inventoryItems, onVolumeChange, minVo
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setSelectedVolume(Math.ceil(totalAvailable * 0.25))}
+              onClick={() => {
+                const newVolume = Math.ceil(totalAvailable * 0.25);
+                setSelectedVolume(newVolume);
+                trackVolumeCommit(newVolume);
+              }}
               className="text-xs"
             >
               25%
@@ -223,7 +309,11 @@ export default function DynamicPriceCard({ inventoryItems, onVolumeChange, minVo
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setSelectedVolume(Math.ceil(totalAvailable * 0.5))}
+              onClick={() => {
+                const newVolume = Math.ceil(totalAvailable * 0.5);
+                setSelectedVolume(newVolume);
+                trackVolumeCommit(newVolume);
+              }}
               className="text-xs"
             >
               50%
@@ -231,7 +321,11 @@ export default function DynamicPriceCard({ inventoryItems, onVolumeChange, minVo
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setSelectedVolume(totalAvailable)}
+              onClick={() => {
+                const newVolume = totalAvailable;
+                setSelectedVolume(newVolume);
+                trackVolumeCommit(newVolume);
+              }}
               className="text-xs"
             >
               100%
