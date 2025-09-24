@@ -127,11 +127,6 @@ export default function DynamicPriceCard({
   }, [isApproved, productSku, totalAvailable, trackVolumeOptimization, onVolumeCommit, getCurrentPrice, savings]);
 
   const handleVolumeChange = (value: number[]) => {
-    if (!isApproved) {
-      setShowConversionModal(true);
-      return;
-    }
-    
     const newVolume = value[0];
     setSelectedVolume(newVolume);
     
@@ -146,9 +141,7 @@ export default function DynamicPriceCard({
   };
 
   const handleSliderInteraction = () => {
-    if (!isApproved) {
-      setShowConversionModal(true);
-    }
+    // Allow all users to interact with slider for simulation
   };
 
   // Track on mouse/touch up for immediate commits
@@ -214,14 +207,7 @@ export default function DynamicPriceCard({
               min={minVolume}
               step={20}
               className="w-full"
-              disabled={!isApproved}
             />
-            {!isApproved && (
-              <div 
-                className="absolute inset-0 cursor-pointer" 
-                onClick={handleSliderInteraction}
-              />
-            )}
           </div>
           
           <div className="flex justify-between text-xs text-muted-foreground">
@@ -230,35 +216,35 @@ export default function DynamicPriceCard({
           </div>
           
           {!isApproved && (
-            <div 
-              className="flex items-center justify-center gap-2 text-sm bg-gradient-to-r from-primary/10 to-primary/5 p-3 rounded-lg border border-primary/20 cursor-pointer hover:from-primary/15 hover:to-primary/10 transition-colors"
-              onClick={handleSliderInteraction}
-            >
-              <Target className="w-4 h-4 text-primary" />
-              <span className="text-primary font-medium">
-                Clique para simular volumes e descobrir descontos
+            <div className="text-center text-sm text-muted-foreground p-2 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg border border-green-200">
+              <TrendingUp className="w-4 h-4 text-green-600 mx-auto mb-1" />
+              <span className="text-green-700 font-medium">
+                Simulação liberada! Mova a barra para ver preços em tempo real
               </span>
             </div>
           )}
         </div>
 
-        {/* Savings Display - Only for approved users */}
-        {isApproved && (
-          <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
-            <div className="flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-green-600" />
-              <span className="text-sm font-medium text-green-800">Economia Total</span>
-            </div>
-            <div className="text-right">
-              <div className="text-lg font-bold text-green-600">
-                R$ {savings.toFixed(2)}
-              </div>
-              <div className="text-xs text-green-600">
-                ({((savings / (maxPrice * selectedVolume)) * 100).toFixed(1)}% de desconto)
-              </div>
-            </div>
+        {/* Savings Display - Show for all users */}
+        <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
+          <div className="flex items-center gap-2">
+            <TrendingUp className="w-4 h-4 text-green-600" />
+            <span className="text-sm font-medium text-green-800">Economia Total</span>
           </div>
-        )}
+          <div className="text-right">
+            <div className="text-lg font-bold text-green-600">
+              R$ {savings.toFixed(2)}
+            </div>
+            <div className="text-xs text-green-600">
+              ({((savings / (maxPrice * selectedVolume)) * 100).toFixed(1)}% de desconto)
+            </div>
+            {!isApproved && (
+              <div className="text-xs text-primary mt-1">
+                💡 Cadastre-se para comprar com estes preços
+              </div>
+            )}
+          </div>
+        </div>
 
         {/* Volume Incentive Message - Only for approved users */}
         {isApproved ? (
@@ -277,16 +263,13 @@ export default function DynamicPriceCard({
             </p>
           </div>
         ) : (
-          <div 
-            className="text-center p-3 bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg cursor-pointer hover:from-green-100 hover:to-blue-100 transition-colors"
-            onClick={handleSliderInteraction}
-          >
+          <div className="text-center p-3 bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg">
             <TrendingUp className="w-5 h-5 text-green-600 mx-auto mb-2" />
             <p className="text-sm text-green-700 font-medium mb-1">
-              Descontos progressivos por volume
+              Próximo passo: finalizar sua compra
             </p>
             <p className="text-xs text-green-600">
-              Cadastre-se e descubra até 15% de economia em compras maiores
+              Para comprar com estes preços simulados, faça seu cadastro gratuito
             </p>
           </div>
         )}

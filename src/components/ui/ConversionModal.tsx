@@ -14,11 +14,17 @@ export function ConversionModal({ open, onOpenChange, featureRequested }: Conver
   const navigate = useNavigate();
 
   const handleRegister = () => {
-    navigate('/register');
+    onOpenChange(false);
+    navigate('/registration');
   };
 
   const handleLogin = () => {
+    onOpenChange(false);
     navigate('/login');
+  };
+
+  const handleContinueNavigating = () => {
+    onOpenChange(false);
   };
 
   return (
@@ -26,10 +32,10 @@ export function ConversionModal({ open, onOpenChange, featureRequested }: Conver
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="text-xl text-center">
-            Desbloqueie Preços Exclusivos
+            Desbloqueie Acesso Completo
           </DialogTitle>
           <DialogDescription className="text-center text-muted-foreground">
-            {featureRequested} requer cadastro para acesso completo
+            {featureRequested} requer cadastro para prosseguir
           </DialogDescription>
         </DialogHeader>
 
@@ -85,6 +91,14 @@ export function ConversionModal({ open, onOpenChange, featureRequested }: Conver
               className="w-full"
             >
               Já tenho conta
+            </Button>
+
+            <Button 
+              variant="ghost" 
+              onClick={handleContinueNavigating}
+              className="w-full text-muted-foreground text-sm"
+            >
+              Continuar navegando
             </Button>
           </div>
 

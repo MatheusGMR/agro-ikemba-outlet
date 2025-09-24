@@ -16,6 +16,7 @@ import { ProductImage } from '@/components/ui/custom/ProductImage';
 import DynamicPriceCard from '@/components/inventory/DynamicPriceCard';
 import { ProductDocuments } from '@/components/inventory/ProductDocuments';
 import { RelatedProducts } from '@/components/inventory/RelatedProducts';
+import { ConversionModal } from '@/components/ui/ConversionModal';
 import { InventoryService } from '@/services/inventoryService';
 import { analyticsService } from '@/services/analyticsService';
 import { useAuth } from '@/hooks/useAuth';
@@ -43,6 +44,7 @@ const ProductDetail = () => {
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [quantity, setQuantity] = useState(1);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [showConversionModal, setShowConversionModal] = useState(false);
 
   // Set default selections when data loads
   useEffect(() => {
@@ -98,6 +100,11 @@ const ProductDetail = () => {
   };
   
   const handleAddToCart = () => {
+    if (!user || !isApproved) {
+      setShowConversionModal(true);
+      return;
+    }
+    
     if (!selectedItem || !productInfo) return;
     
     // Use currentPrice from DynamicPriceCard if available, otherwise use preco_unitario
@@ -124,6 +131,11 @@ const ProductDetail = () => {
   };
   
   const handleBuyNow = () => {
+    if (!user || !isApproved) {
+      setShowConversionModal(true);
+      return;
+    }
+    
     handleAddToCart();
     navigate('/checkout');
   };
@@ -446,6 +458,12 @@ const ProductDetail = () => {
         </div>
       </main>
       <Footer />
+      
+      <ConversionModal 
+        open={showConversionModal}
+        onOpenChange={setShowConversionModal}
+        featureRequested="Compra de produtos"
+      />
     </div>
   );
 };
