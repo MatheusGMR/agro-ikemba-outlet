@@ -14,11 +14,17 @@ export function ConversionModal({ open, onOpenChange, featureRequested }: Conver
   const navigate = useNavigate();
 
   const handleRegister = () => {
+    onOpenChange(false);
     navigate('/register');
   };
 
   const handleLogin = () => {
+    onOpenChange(false);
     navigate('/login');
+  };
+
+  const handleContinue = () => {
+    onOpenChange(false);
   };
 
   return (
@@ -38,10 +44,10 @@ export function ConversionModal({ open, onOpenChange, featureRequested }: Conver
           <div className="bg-gradient-to-r from-primary/10 to-primary/5 p-4 rounded-lg border border-primary/20">
             <div className="flex items-center gap-2 mb-2">
               <Zap className="h-5 w-5 text-primary" />
-              <h3 className="font-semibold text-primary">Simulador Interativo</h3>
+              <h3 className="font-semibold text-primary">Compre com Desconto</h3>
             </div>
             <p className="text-sm text-muted-foreground">
-              Ajuste volumes em tempo real e descubra até 15% de economia em compras maiores
+              Complete seu cadastro e finalize a compra com os preços simulados - economia garantida!
             </p>
           </div>
 
@@ -75,7 +81,7 @@ export function ConversionModal({ open, onOpenChange, featureRequested }: Conver
               onClick={handleRegister}
               className="w-full bg-primary hover:bg-primary/90"
             >
-              Cadastrar Gratuitamente
+              Cadastrar e Comprar
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
             
@@ -85,6 +91,14 @@ export function ConversionModal({ open, onOpenChange, featureRequested }: Conver
               className="w-full"
             >
               Já tenho conta
+            </Button>
+
+            <Button 
+              variant="ghost" 
+              onClick={handleContinue}
+              className="w-full text-sm"
+            >
+              Continuar navegando
             </Button>
           </div>
 

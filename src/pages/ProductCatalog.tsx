@@ -1,10 +1,9 @@
 import { Helmet } from 'react-helmet-async';
-import AuthGate from '@/components/auth/AuthGate';
 import ProductCatalogComponent from '@/components/ui/custom/ProductCatalogComponent';
 
 export default function ProductCatalog() {
   return (
-    <AuthGate>
+    <>
       <Helmet>
         <title>Catálogo de Produtos - AgroIkemba | Defensivos Agrícolas</title>
         <meta 
@@ -46,6 +45,6 @@ export default function ProductCatalog() {
       </Helmet>
 
       <ProductCatalogComponent />
-    </AuthGate>
+    </>
   );
 }
