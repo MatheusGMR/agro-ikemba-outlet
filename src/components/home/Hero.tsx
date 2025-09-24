@@ -1,4 +1,3 @@
-
 import { ArrowRight, Play, Maximize, ShoppingCart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
@@ -6,7 +5,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { useState, useRef } from 'react';
 import { analyticsService } from '@/services/analyticsService';
-
 export default function Hero() {
   // Video component updated to fix runtime errors
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -14,32 +12,34 @@ export default function Hero() {
 
   // Get the public URL for the video from Supabase Storage
   const getVideoUrl = () => {
-    const { data } = supabase.storage.from('media-assets').getPublicUrl('pitchdeck.mp4');
+    const {
+      data
+    } = supabase.storage.from('media-assets').getPublicUrl('pitchdeck.mp4');
     return data.publicUrl;
   };
 
   // Fallback URL for company welcome video if pitchdeck is not available
   const getFallbackVideoUrl = () => {
-    const { data } = supabase.storage.from('media-assets').getPublicUrl('Seja bem vindo!.mp4');
+    const {
+      data
+    } = supabase.storage.from('media-assets').getPublicUrl('Seja bem vindo!.mp4');
     return data.publicUrl;
   };
-
   const handleSaibaMais = () => {
     analyticsService.trackConversion('lead');
     const featuresSection = document.querySelector('section.py-20.bg-gray-50');
     if (featuresSection) {
-      featuresSection.scrollIntoView({ behavior: 'smooth' });
+      featuresSection.scrollIntoView({
+        behavior: 'smooth'
+      });
     }
   };
-
   const handleVerProdutos = () => {
     analyticsService.trackConversion('lead');
   };
-
   const handleCadastro = () => {
     analyticsService.trackConversion('quote_request');
   };
-
   const handleFullscreen = () => {
     if (videoRef.current) {
       if (videoRef.current.requestFullscreen) {
@@ -47,9 +47,7 @@ export default function Hero() {
       }
     }
   };
-
-  return (
-    <section className="relative bg-white overflow-hidden">
+  return <section className="relative bg-white overflow-hidden">
       <div className="container-custom relative z-10 py-16 md:py-24 lg:py-32">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           {/* Content loads first for immediate FCP */}
@@ -67,23 +65,13 @@ export default function Hero() {
               <Button className="bg-primary hover:bg-primary/90 text-white px-8 py-6 text-lg" asChild onClick={handleCadastro}>
                 <Link to="/register">Pedir cadastro</Link>
               </Button>
-              <Button 
-                className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white px-8 py-6 text-lg border-0" 
-                asChild
-                onClick={handleVerProdutos}
-              >
+              <Button className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white px-8 py-6 text-lg border-0" asChild onClick={handleVerProdutos}>
                 <Link to="/products" className="flex items-center gap-2">
                   <ShoppingCart className="w-5 h-5" />
                   Ver Produtos
                 </Link>
               </Button>
-              <Button 
-                variant="outline" 
-                className="border-gray-800 text-gray-800 hover:bg-gray-800 hover:text-white px-8 py-6 text-lg"
-                onClick={handleSaibaMais}
-              >
-                Saiba mais
-              </Button>
+              
             </div>
             
             <div className="flex items-center gap-8 pt-4">
@@ -97,20 +85,9 @@ export default function Hero() {
           <div className="relative flex-1 min-w-[300px] max-w-[600px]">
             <div className="relative group">
               {/* Video preview */}
-              <video 
-                ref={videoRef}
-                width="100%" 
-                controls 
-                autoPlay
-                muted 
-                loop 
-                playsInline
-                preload="metadata"
-                className="rounded-xl shadow-lg bg-gray-50 transition-all duration-300 group-hover:shadow-xl" 
-                style={{
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
-                }}
-              >
+              <video ref={videoRef} width="100%" controls autoPlay muted loop playsInline preload="metadata" className="rounded-xl shadow-lg bg-gray-50 transition-all duration-300 group-hover:shadow-xl" style={{
+              boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+            }}>
                 {/* Primary source: Supabase Storage MP4 */}
                 <source src={getVideoUrl()} type="video/mp4" />
                 {/* Fallback source: Company welcome video */}
@@ -125,11 +102,7 @@ export default function Hero() {
               </video>
 
               {/* Fullscreen button overlay */}
-              <button
-                onClick={handleFullscreen}
-                className="absolute top-4 right-4 bg-black/50 hover:bg-black/70 text-white p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 backdrop-blur-sm"
-                title="Assistir em tela cheia"
-              >
+              <button onClick={handleFullscreen} className="absolute top-4 right-4 bg-black/50 hover:bg-black/70 text-white p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 backdrop-blur-sm" title="Assistir em tela cheia">
                 <Maximize className="w-5 h-5" />
               </button>
 
@@ -144,14 +117,7 @@ export default function Hero() {
                 </DialogTrigger>
                 <DialogContent className="max-w-4xl w-full p-0 bg-black">
                   <div className="aspect-video w-full">
-                    <video 
-                      width="100%" 
-                      height="100%"
-                      controls 
-                      autoPlay
-                      loop
-                      className="w-full h-full"
-                    >
+                    <video width="100%" height="100%" controls autoPlay loop className="w-full h-full">
                       <source src={getVideoUrl()} type="video/mp4" />
                       <source src={getFallbackVideoUrl()} type="video/mp4" />
                     </video>
@@ -171,6 +137,5 @@ export default function Hero() {
       
       {/* Background decoration */}
       <div className="hidden md:block absolute -left-32 top-1/2 w-64 h-64 bg-primary/10 rounded-full blur-3xl"></div>
-    </section>
-  );
+    </section>;
 }
