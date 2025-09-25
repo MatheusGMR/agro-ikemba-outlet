@@ -1176,8 +1176,11 @@ export type Database = {
       }
       rep_clients: {
         Row: {
+          accountant_contact: string | null
+          accountant_name: string | null
           address: string | null
           city: string | null
+          cnae_codes: string[] | null
           cnpj_cpf: string | null
           company_name: string
           contact_function: string | null
@@ -1186,18 +1189,28 @@ export type Database = {
           credit_limit: number | null
           email: string | null
           id: string
+          ie_numbers: string[] | null
+          main_crops: string[] | null
+          nirf: string | null
+          partnership_details: string | null
           payment_terms: string | null
           phone: string | null
           postal_code: string | null
+          property_size: number | null
+          property_type: string | null
           representative_id: string
+          secondary_crops: string[] | null
           state: string | null
           state_registration: string | null
           updated_at: string
           whatsapp: string | null
         }
         Insert: {
+          accountant_contact?: string | null
+          accountant_name?: string | null
           address?: string | null
           city?: string | null
+          cnae_codes?: string[] | null
           cnpj_cpf?: string | null
           company_name: string
           contact_function?: string | null
@@ -1206,18 +1219,28 @@ export type Database = {
           credit_limit?: number | null
           email?: string | null
           id?: string
+          ie_numbers?: string[] | null
+          main_crops?: string[] | null
+          nirf?: string | null
+          partnership_details?: string | null
           payment_terms?: string | null
           phone?: string | null
           postal_code?: string | null
+          property_size?: number | null
+          property_type?: string | null
           representative_id: string
+          secondary_crops?: string[] | null
           state?: string | null
           state_registration?: string | null
           updated_at?: string
           whatsapp?: string | null
         }
         Update: {
+          accountant_contact?: string | null
+          accountant_name?: string | null
           address?: string | null
           city?: string | null
+          cnae_codes?: string[] | null
           cnpj_cpf?: string | null
           company_name?: string
           contact_function?: string | null
@@ -1226,10 +1249,17 @@ export type Database = {
           credit_limit?: number | null
           email?: string | null
           id?: string
+          ie_numbers?: string[] | null
+          main_crops?: string[] | null
+          nirf?: string | null
+          partnership_details?: string | null
           payment_terms?: string | null
           phone?: string | null
           postal_code?: string | null
+          property_size?: number | null
+          property_type?: string | null
           representative_id?: string
+          secondary_crops?: string[] | null
           state?: string | null
           state_registration?: string | null
           updated_at?: string
@@ -1690,6 +1720,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
+      find_representative_by_identifier: {
+        Args: { identifier_value: string }
+        Returns: string
+      }
       generate_order_number: {
         Args: Record<PropertyKey, never>
         Returns: string
@@ -1718,6 +1752,10 @@ export type Database = {
           user_phone: string
           user_type: string
         }[]
+      }
+      validate_cnpj: {
+        Args: { cnpj_input: string }
+        Returns: boolean
       }
     }
     Enums: {
