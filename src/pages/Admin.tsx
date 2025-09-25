@@ -1,4 +1,5 @@
 
+import RepresentativeApplicationsAnalysis from '@/components/admin/RepresentativeApplicationsAnalysis';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -340,11 +341,12 @@ export default function Admin() {
 
         {/* Administration Tabs */}
         <Tabs defaultValue="users" className="mb-8">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="users">User Management</TabsTrigger>
             <TabsTrigger value="auth">Auth Creation</TabsTrigger>
             <TabsTrigger value="images">Image Upload</TabsTrigger>
             <TabsTrigger value="email">Email Testing</TabsTrigger>
+            <TabsTrigger value="representatives">Candidatos Afiliado</TabsTrigger>
           </TabsList>
           
           <TabsContent value="users" className="mt-6">
@@ -722,6 +724,17 @@ export default function Admin() {
           
           <TabsContent value="email" className="mt-6">
             <EmailTestingPanel />
+          </TabsContent>
+
+          <TabsContent value="representatives" className="mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Análise de Candidatos a Afiliado</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <RepresentativeApplicationsAnalysis />
+              </CardContent>
+            </Card>
           </TabsContent>
         
         </Tabs>
