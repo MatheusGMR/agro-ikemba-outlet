@@ -31,6 +31,17 @@ export interface RepClient {
   payment_terms?: string;
   created_at: string;
   updated_at: string;
+  // Campos rurais adicionados
+  property_size?: number;
+  property_type?: string;
+  main_crops?: string[];
+  secondary_crops?: string[];
+  ie_numbers?: string[];
+  cnae_codes?: string[];
+  partnership_details?: string;
+  accountant_name?: string;
+  accountant_contact?: string;
+  nirf?: string;
 }
 
 export interface Opportunity {

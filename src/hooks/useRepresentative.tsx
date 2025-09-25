@@ -48,6 +48,18 @@ export function useCreateClient() {
   });
 }
 
+export function useUpdateClient() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: ({ id, updates }: { id: string; updates: Partial<RepClient> }) =>
+      RepresentativeService.updateClient(id, updates),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['rep-clients', data.representative_id] });
+    }
+  });
+}
+
 // Opportunity hooks
 export function useOpportunities(representativeId: string) {
   return useQuery({
