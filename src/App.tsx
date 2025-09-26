@@ -32,6 +32,7 @@ import ScrollToTop from '@/components/layout/ScrollToTop';
 import ApprovedProtectedRoute from '@/components/auth/ApprovedProtectedRoute';
 import PendingApproval from '@/pages/PendingApproval';
 import VideoBoasVindas from '@/pages/VideoBoasVindas';
+import ResetPassword from '@/pages/ResetPassword';
 import GlobalWhatsAppButton from '@/components/ui/GlobalWhatsAppButton';
 
 const queryClient = new QueryClient();
@@ -60,6 +61,7 @@ function App() {
                   } />
                   <Route path="/register" element={<Registration />} />
                   <Route path="/login" element={<Login />} />
+                  <Route path="/reset-password" element={<ResetPassword />} />
                   <Route path="/pending-approval" element={<PendingApproval />} />
                   <Route path="/representative/login" element={<RepresentativeLogin />} />
                   <Route path="/representative/register" element={<RepresentativeRegistration />} />

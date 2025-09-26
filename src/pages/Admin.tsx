@@ -32,6 +32,7 @@ import { userService } from '@/services/userService';
 import { ImageUploader } from '@/components/admin/ImageUploader';
 import EmailTestingPanel from '@/components/admin/EmailTestingPanel';
 import { AuthUsersBatchPanel } from '@/components/admin/AuthUsersBatchPanel';
+import { IndividualCredentialsPanel } from '@/components/admin/IndividualCredentialsPanel';
 import { supabase } from '@/integrations/supabase/client';
 
 export default function Admin() {
@@ -341,9 +342,10 @@ export default function Admin() {
 
         {/* Administration Tabs */}
         <Tabs defaultValue="users" className="mb-8">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="users">User Management</TabsTrigger>
             <TabsTrigger value="auth">Auth Creation</TabsTrigger>
+            <TabsTrigger value="credentials">Credenciais</TabsTrigger>
             <TabsTrigger value="images">Image Upload</TabsTrigger>
             <TabsTrigger value="email">Email Testing</TabsTrigger>
             <TabsTrigger value="representatives">Candidatos Afiliado</TabsTrigger>
@@ -716,6 +718,10 @@ export default function Admin() {
           
           <TabsContent value="auth" className="mt-6">
             <AuthUsersBatchPanel />
+          </TabsContent>
+          
+          <TabsContent value="credentials" className="mt-6">
+            <IndividualCredentialsPanel />
           </TabsContent>
           
           <TabsContent value="images" className="mt-6">

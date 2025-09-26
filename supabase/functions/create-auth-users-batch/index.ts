@@ -110,12 +110,12 @@ const handler = async (req: Request): Promise<Response> => {
                 }
               });
 
-              results.push({
-                user_id: user.id,
-                email: user.email,
-                status: 'recovery_sent',
-                message: 'Usuário já existia - link de recuperação enviado'
-              });
+        results.push({
+          user_id: user.id,
+          email: user.email,
+          status: 'recovery_sent',
+          message: 'Usuário já existia - link de recuperação enviado'
+        });
             } catch (recoveryError) {
               console.error(`Error sending recovery for ${user.email}:`, recoveryError);
               results.push({
@@ -147,13 +147,13 @@ const handler = async (req: Request): Promise<Response> => {
             }
           });
 
-          results.push({
-            user_id: user.id,
-            email: user.email,
-            auth_id: authUser.user?.id,
-            status: 'created',
-            message: 'Conta criada e credenciais enviadas por email'
-          });
+        results.push({
+          user_id: user.id,
+          email: user.email,
+          auth_id: authUser.user?.id,
+          status: 'created',
+          message: 'Conta criada e credenciais enviadas por email'
+        });
         } catch (emailError) {
           console.error(`Error sending email to ${user.email}:`, emailError);
           results.push({
