@@ -282,9 +282,34 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
 
         const { totalValue, totalCommission } = calculateTotals;
 
-        // 1. Create opportunity
-        const autoTitle = formData.title.trim() || 
-          `Proposta ${selectedClient?.company_name} - ${new Date().toLocaleDateString('pt-BR')}`;
+        // 1. Create opportunity - Generate intelligent title based on context
+        const currentDate = new Date();
+        const month = currentDate.getMonth() + 1;
+        const year = currentDate.getFullYear();
+        
+        // Determine season/period
+        let period = '';
+        if (month >= 10 || month <= 3) {
+          period = `Safra ${month >= 10 ? year : year-1}/${month >= 10 ? year+1 : year}`;
+        } else {
+          period = `${currentDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}`;
+        }
+        
+        // Generate title based on products or default
+        let autoTitle = '';
+        if (selectedProducts.length === 1) {
+          autoTitle = `${selectedProducts[0].name} - ${period}`;
+        } else if (selectedProducts.length > 1) {
+          const categories = [...new Set(selectedProducts.map(p => 
+            p.name.includes('HERBICIDA') ? 'Herbicidas' :
+            p.name.includes('FUNGICIDA') ? 'Fungicidas' :
+            p.name.includes('INSETICIDA') ? 'Inseticidas' :
+            'Insumos'
+          ))];
+          autoTitle = `${categories.join(' + ')} - ${period}`;
+        } else {
+          autoTitle = `Proposta - ${period}`;
+        }
           
         const opportunityData = {
           representative_id: representative.id,
@@ -408,16 +433,6 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
 
   const renderBasicStep = () => (
     <div className="space-y-4">
-      <div>
-        <Label htmlFor="title">Título da Oportunidade (opcional)</Label>
-        <Input
-          id="title"
-          value={formData.title}
-          onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-          placeholder="Se não informado, será gerado automaticamente"
-        />
-      </div>
-
       <div>
         <Label htmlFor="client">Cliente</Label>
         <Select value={formData.client_id} onValueChange={handleClientChange}>

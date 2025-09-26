@@ -53,11 +53,10 @@ function OpportunityCard({ opportunity, onAdvanceStage, onCreateProposal, onMark
       <CardContent className="p-4">
         <div className="flex items-start justify-between mb-3">
           <div className="flex-1">
-            <h4 className="font-semibold text-sm mb-1">{opportunity.title}</h4>
+            <h4 className="font-semibold text-base mb-1">{opportunity.client?.company_name}</h4>
             <div className="space-y-1">
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <Building className="h-3 w-3" />
-                <span>{opportunity.client?.company_name}</span>
+              <div className="text-xs text-muted-foreground font-medium">
+                {opportunity.title}
               </div>
               {opportunity.client?.cnpj_cpf && (
                 <div className="text-xs text-muted-foreground">
@@ -331,9 +330,9 @@ export default function OpportunityKanban() {
               <Card key={opportunity.id} className="p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
-                    <h4 className="font-medium">{opportunity.title}</h4>
+                    <h4 className="font-medium">{opportunity.client?.company_name}</h4>
                     <p className="text-sm text-muted-foreground">
-                      {opportunity.client?.company_name} • {formatCurrency(opportunity.estimated_value)}
+                      {opportunity.title} • {formatCurrency(opportunity.estimated_value)}
                     </p>
                   </div>
                   <Badge className={STAGE_COLORS[opportunity.stage]}>
