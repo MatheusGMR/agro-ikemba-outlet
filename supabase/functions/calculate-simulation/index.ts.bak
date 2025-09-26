@@ -128,25 +128,25 @@ serve(async (req) => {
     console.log('Preço da commodity encontrado:', commodityPriceValue);
 
     // 4. Processar preços de mercado por fonte
-    const regionalPrices = marketPrices.filter(p => p.source === 'regional');
-    const quotationPrices = marketPrices.filter(p => p.source === 'quotation');
-    const internationalPrices = marketPrices.filter(p => p.source === 'international');
+    const regionalPrices = marketPrices.filter((p: any) => p.source === 'regional');
+    const quotationPrices = marketPrices.filter((p: any) => p.source === 'quotation');
+    const internationalPrices = marketPrices.filter((p: any) => p.source === 'international');
     
     const regionalPrice = regionalPrices.length > 0 
-      ? regionalPrices.reduce((acc, p) => acc + p.price, 0) / regionalPrices.length
+      ? regionalPrices.reduce((acc: number, p: any) => acc + p.price, 0) / regionalPrices.length
       : 0;
 
     const quotationPrice = quotationPrices.length > 0 
-      ? quotationPrices.reduce((acc, p) => acc + p.price, 0) / quotationPrices.length
+      ? quotationPrices.reduce((acc: number, p: any) => acc + p.price, 0) / quotationPrices.length
       : 0;
 
     const internationalPrice = internationalPrices.length > 0 
-      ? internationalPrices.reduce((acc, p) => acc + p.price, 0) / internationalPrices.length
+      ? internationalPrices.reduce((acc: number, p: any) => acc + p.price, 0) / internationalPrices.length
       : 0;
 
     // Calcular preço histórico médio
     const historicalPrice = marketPrices.length > 0 
-      ? marketPrices.reduce((acc, p) => acc + p.price, 0) / marketPrices.length
+      ? marketPrices.reduce((acc: number, p: any) => acc + p.price, 0) / marketPrices.length
       : 0;
 
     console.log('=== PREÇOS ENCONTRADOS ===');
@@ -279,7 +279,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('=== ERRO NA SIMULAÇÃO ===', error);
     return new Response(JSON.stringify({ 
-      error: error.message,
+      error: error instanceof Error ? error.message : 'Erro desconhecido na simulação',
       success: false
     }), {
       status: 500,

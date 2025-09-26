@@ -1,32 +1,4 @@
-
 project_id = "jhkxcplfempenoczcoep"
-
-[functions.enhanced-email-service]
-verify_jwt = false
-
-[functions.send-order-confirmation]
-verify_jwt = false
-
-[functions.create-boleto]
-verify_jwt = false
-
-[functions.asaas-webhook]
-verify_jwt = false
-
-[functions.process-order]
-verify_jwt = false
-
-[functions.send-registration]
-verify_jwt = false
-
-[functions.send-pre-registration]
-verify_jwt = false
-
-[functions.calculate-simulation]
-verify_jwt = false
-
-[functions.fetch-market-data]
-verify_jwt = false
 
 [functions.send-auth-email]
 verify_jwt = false
@@ -34,32 +6,5 @@ verify_jwt = false
 [functions.create-auth-user]
 verify_jwt = false
 
-[functions.calculate-potential-commission]
-verify_jwt = false
-
-[functions.approve-proposal]
-verify_jwt = false
-
-[functions.reject-proposal]
-verify_jwt = false
-
-[functions.send-proposal-link]
-verify_jwt = false
-
-[functions.whatsapp-webhook]
-verify_jwt = false
-
-[functions.whatsapp-chatbot]
-verify_jwt = false
-
-[functions.request-missing-contact]
-verify_jwt = false
-
 [functions.create-auth-users-batch]
-verify_jwt = false
-
-[functions.submit-representative-application]
-verify_jwt = false
-
-[functions.send-representative-notification]
 verify_jwt = false

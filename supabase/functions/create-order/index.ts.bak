@@ -117,12 +117,11 @@ serve(async (req) => {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
-    // Use EdgeRuntime.waitUntil for all background tasks
-    EdgeRuntime.waitUntil(
-      (async () => {
-        try {
-          // Parallel execution of background tasks
-          const backgroundTasks = [
+    // Background tasks without EdgeRuntime
+    (async () => {
+      try {
+        // Parallel execution of background tasks
+        const backgroundTasks = [
             // Send order confirmation email
             (async () => {
               try {
@@ -147,8 +146,8 @@ serve(async (req) => {
                     orderData: {
                       order_number: orderData.order_number,
                       total_amount: orderData.total_amount,
-                      payment_method: orderData.payment_method,
-                      logistics_option: orderData.logistics_option,
+                      payment_method: requestData.payment_method,
+                      logistics_option: requestData.logistics_option,
                       items: requestData.items
                     },
                     userData: safeUser
@@ -201,8 +200,7 @@ serve(async (req) => {
         } catch (backgroundError) {
           console.error('❌ Error in background tasks:', backgroundError);
         }
-      })()
-    );
+      })();
 
     console.timeEnd('create-order-total');
     return response;

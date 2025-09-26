@@ -98,7 +98,7 @@ serve(async (req) => {
         results.push({
           fileName: image.fileName,
           success: false,
-          error: error.message
+          error: error instanceof Error ? error.message : 'Upload error'
         })
       }
     }
@@ -120,7 +120,7 @@ serve(async (req) => {
     console.error('Error in upload-product-images function:', error)
     return new Response(JSON.stringify({
       success: false,
-      error: error.message
+      error: error instanceof Error ? error.message : 'Upload failed'
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500

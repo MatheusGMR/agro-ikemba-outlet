@@ -122,7 +122,7 @@ const handler = async (req: Request): Promise<Response> => {
               });
 
               // Get contact info
-              const contact = contacts.find(c => c.wa_id === phoneNumber);
+              const contact = contacts.find((c: any) => c.wa_id === phoneNumber);
               const contactName = contact?.profile?.name || 'Usuário';
 
               // Process different message types

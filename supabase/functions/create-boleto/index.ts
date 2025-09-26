@@ -194,8 +194,8 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in create-boleto function:', error);
     return new Response(JSON.stringify({ 
-      error: error.message,
-      details: error.stack 
+      error: error instanceof Error ? error.message : 'Erro ao criar boleto',
+      details: error instanceof Error ? error.stack : undefined 
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500,
