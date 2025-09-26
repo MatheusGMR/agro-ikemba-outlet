@@ -16,7 +16,7 @@ import { PDFGenerator } from '@/utils/pdfGenerator';
 import { RepresentativeService } from '@/services/representativeService';
 import type { RepClient } from '@/types/representative';
 import type { GroupedProduct } from '@/types/inventory';
-import { MapPin, Package, DollarSign, FileText, Plus, Minus, Info, CheckCircle, Copy, Loader2 } from 'lucide-react';
+import { MapPin, Package, DollarSign, FileText, Plus, Minus, Info, CheckCircle, Copy, Loader2, User } from 'lucide-react';
 
 interface CreateOpportunityDialogProps {
   onClose: () => void;
@@ -61,6 +61,9 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
     phone: ''
   });
 
+  const [contactMode, setContactMode] = useState<'existing' | 'new'>('existing');
+  const [updateClientContact, setUpdateClientContact] = useState(false);
+
   const [selectedClient, setSelectedClient] = useState<RepClient | null>(null);
   const [selectedProducts, setSelectedProducts] = useState<OpportunityProduct[]>([]);
   const [currentStep, setCurrentStep] = useState<'basic' | 'products' | 'conditions' | 'responsible' | 'review'>('basic');
@@ -82,6 +85,31 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
     // Recalculate product proximities when client changes
     if (client && selectedProducts.length > 0) {
       updateProductProximities(client);
+    }
+
+    // Reset responsible data and contact mode when client changes
+    if (client) {
+      populateFromClientContact(client);
+    } else {
+      setResponsibleData({ name: '', cpf: '', position: '', email: '', phone: '' });
+      setContactMode('new');
+    }
+  };
+
+  const populateFromClientContact = (client: RepClient) => {
+    const hasContact = client.contact_name && (client.email || client.phone);
+    
+    if (hasContact) {
+      setResponsibleData({
+        name: client.contact_name || '',
+        cpf: '',
+        position: client.contact_function || '',
+        email: client.email || '',
+        phone: client.phone || client.whatsapp || ''
+      });
+      setContactMode('existing');
+    } else {
+      setContactMode('new');
     }
   };
 
@@ -361,7 +389,22 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
         const proposal = await RepresentativeService.createProposal(proposalData);
         console.log('Proposta criada:', proposal.id);
 
-        // 4. Send proposal link
+        // 4. Atualizar contato do cliente se necessário
+        if (contactMode === 'new' && updateClientContact && selectedClient) {
+          try {
+            await RepresentativeService.updateClientContact(selectedClient.id, {
+              contact_name: responsibleData.name,
+              contact_function: responsibleData.position,
+              email: responsibleData.email,
+              phone: responsibleData.phone,
+              whatsapp: responsibleData.phone
+            });
+          } catch (error) {
+            console.warn('Erro ao atualizar contato do cliente:', error);
+          }
+        }
+
+        // 5. Send proposal link
         const sendData = {
           proposal_id: proposal.id,
           responsible_name: responsibleData.name,
@@ -395,6 +438,9 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
           });
           setSelectedProducts([]);
           setSelectedClient(null);
+          setResponsibleData({ name: '', cpf: '', position: '', email: '', phone: '' });
+          setContactMode('existing');
+          setUpdateClientContact(false);
         } else {
           throw new Error('Erro ao enviar proposta: ' + result.error);
         }
@@ -613,89 +659,175 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
     </div>
   );
 
-  const renderResponsibleStep = () => (
-    <div className="space-y-4">
-      <div>
-        <h3 className="text-lg font-semibold mb-4">Dados do Responsável pela Aprovação</h3>
-        <p className="text-sm text-muted-foreground mb-6">
-          Informe os dados da pessoa responsável por aprovar esta proposta na empresa cliente.
-        </p>
-      </div>
+  const renderResponsibleStep = () => {
+    const hasExistingContact = selectedClient && selectedClient.contact_name && (selectedClient.email || selectedClient.phone);
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    return (
+      <div className="space-y-4">
         <div>
-          <Label htmlFor="responsible_name">Nome Completo *</Label>
-          <Input
-            id="responsible_name"
-            value={responsibleData.name}
-            onChange={(e) => setResponsibleData(prev => ({ ...prev, name: e.target.value }))}
-            placeholder="Nome completo do responsável"
-            required
-          />
+          <h3 className="text-lg font-semibold mb-4">Dados do Responsável pela Aprovação</h3>
+          <p className="text-sm text-muted-foreground mb-6">
+            Informe os dados da pessoa responsável por aprovar esta proposta na empresa cliente.
+          </p>
         </div>
 
-        <div>
-          <Label htmlFor="responsible_cpf">CPF *</Label>
-          <Input
-            id="responsible_cpf"
-            value={responsibleData.cpf}
-            onChange={(e) => setResponsibleData(prev => ({ ...prev, cpf: e.target.value }))}
-            placeholder="000.000.000-00"
-            required
-          />
-        </div>
+        {hasExistingContact && (
+          <Card className="bg-green-50 border-green-200">
+            <CardContent className="pt-4">
+              <div className="flex items-start gap-3">
+                <User className="h-5 w-5 text-green-600 mt-0.5" />
+                <div className="flex-1">
+                  <p className="font-medium text-green-900 mb-2">Contato Principal Cadastrado</p>
+                  <div className="text-sm text-green-700 space-y-1">
+                    <p><strong>Nome:</strong> {selectedClient.contact_name}</p>
+                    <p><strong>Função:</strong> {selectedClient.contact_function || 'Não informado'}</p>
+                    <p><strong>Email:</strong> {selectedClient.email || 'Não informado'}</p>
+                    <p><strong>Telefone:</strong> {selectedClient.phone || selectedClient.whatsapp || 'Não informado'}</p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
-        <div>
-          <Label htmlFor="responsible_position">Cargo/Função *</Label>
-          <Input
-            id="responsible_position"
-            value={responsibleData.position}
-            onChange={(e) => setResponsibleData(prev => ({ ...prev, position: e.target.value }))}
-            placeholder="Ex: Gerente, Diretor, Proprietário"
-            required
-          />
-        </div>
-
-        <div>
-          <Label htmlFor="responsible_email">Email</Label>
-          <Input
-            id="responsible_email"
-            type="email"
-            value={responsibleData.email}
-            onChange={(e) => setResponsibleData(prev => ({ ...prev, email: e.target.value }))}
-            placeholder="email@empresa.com"
-          />
-        </div>
-
-        <div>
-          <Label htmlFor="responsible_phone">Telefone/WhatsApp</Label>
-          <Input
-            id="responsible_phone"
-            value={responsibleData.phone}
-            onChange={(e) => setResponsibleData(prev => ({ ...prev, phone: e.target.value }))}
-            placeholder="(11) 99999-9999"
-          />
-        </div>
-      </div>
-
-      <Card className="bg-blue-50 border-blue-200">
-        <CardContent className="pt-4">
-          <div className="flex items-start gap-3">
-            <Info className="h-5 w-5 text-blue-600 mt-0.5" />
-            <div className="text-sm">
-              <p className="font-medium text-blue-900 mb-1">Como funciona o processo de aprovação:</p>
-              <ul className="text-blue-700 space-y-1">
-                <li>• Um link único será enviado para o responsável</li>
-                <li>• Ele poderá revisar todos os detalhes da proposta</li>
-                <li>• A aprovação será feita de forma digital e segura</li>
-                <li>• Você será notificado sobre o status da proposta</li>
-              </ul>
+        <div className="space-y-4">
+          <div>
+            <Label>Selecione uma opção:</Label>
+            <div className="space-y-2 mt-2">
+              {hasExistingContact && (
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="radio"
+                    id="existing"
+                    name="contactMode"
+                    value="existing"
+                    checked={contactMode === 'existing'}
+                    onChange={() => {
+                      setContactMode('existing');
+                      populateFromClientContact(selectedClient!);
+                    }}
+                    className="h-4 w-4"
+                  />
+                  <Label htmlFor="existing" className="text-sm font-normal cursor-pointer">
+                    Usar contato principal cadastrado
+                  </Label>
+                </div>
+              )}
+              <div className="flex items-center space-x-2">
+                <input
+                  type="radio"
+                  id="new"
+                  name="contactMode"
+                  value="new"
+                  checked={contactMode === 'new'}
+                  onChange={() => {
+                    setContactMode('new');
+                    setResponsibleData({ name: '', cpf: '', position: '', email: '', phone: '' });
+                  }}
+                  className="h-4 w-4"
+                />
+                <Label htmlFor="new" className="text-sm font-normal cursor-pointer">
+                  {hasExistingContact ? 'Informar outro responsável/aprovador' : 'Informar responsável/aprovador'}
+                </Label>
+              </div>
             </div>
           </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
+
+          {contactMode === 'new' && hasExistingContact && (
+            <div className="flex items-center space-x-2 bg-yellow-50 p-3 rounded-md border border-yellow-200">
+              <input
+                type="checkbox"
+                id="updateClient"
+                checked={updateClientContact}
+                onChange={(e) => setUpdateClientContact(e.target.checked)}
+                className="h-4 w-4"
+              />
+              <Label htmlFor="updateClient" className="text-sm font-normal cursor-pointer text-yellow-800">
+                Atualizar dados do cliente com este novo contato
+              </Label>
+            </div>
+          )}
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="responsible_name">Nome Completo *</Label>
+            <Input
+              id="responsible_name"
+              value={responsibleData.name}
+              onChange={(e) => setResponsibleData(prev => ({ ...prev, name: e.target.value }))}
+              placeholder="Nome completo do responsável"
+              disabled={Boolean(contactMode === 'existing' && hasExistingContact)}
+              required
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="responsible_cpf">CPF *</Label>
+            <Input
+              id="responsible_cpf"
+              value={responsibleData.cpf}
+              onChange={(e) => setResponsibleData(prev => ({ ...prev, cpf: e.target.value }))}
+              placeholder="000.000.000-00"
+              required
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="responsible_position">Cargo/Função *</Label>
+            <Input
+              id="responsible_position"
+              value={responsibleData.position}
+              onChange={(e) => setResponsibleData(prev => ({ ...prev, position: e.target.value }))}
+              placeholder="Ex: Gerente, Diretor, Proprietário"
+              disabled={Boolean(contactMode === 'existing' && hasExistingContact && !!selectedClient?.contact_function)}
+              required
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="responsible_email">Email</Label>
+            <Input
+              id="responsible_email"
+              type="email"
+              value={responsibleData.email}
+              onChange={(e) => setResponsibleData(prev => ({ ...prev, email: e.target.value }))}
+              placeholder="email@empresa.com"
+              disabled={Boolean(contactMode === 'existing' && hasExistingContact)}
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="responsible_phone">Telefone/WhatsApp</Label>
+            <Input
+              id="responsible_phone"
+              value={responsibleData.phone}
+              onChange={(e) => setResponsibleData(prev => ({ ...prev, phone: e.target.value }))}
+              placeholder="(11) 99999-9999"
+              disabled={Boolean(contactMode === 'existing' && hasExistingContact)}
+            />
+          </div>
+        </div>
+
+        <Card className="bg-blue-50 border-blue-200">
+          <CardContent className="pt-4">
+            <div className="flex items-start gap-3">
+              <Info className="h-5 w-5 text-blue-600 mt-0.5" />
+              <div className="text-sm">
+                <p className="font-medium text-blue-900 mb-1">Como funciona o processo de aprovação:</p>
+                <ul className="text-blue-700 space-y-1">
+                  <li>• Um link único será enviado para o responsável</li>
+                  <li>• Ele poderá revisar todos os detalhes da proposta</li>
+                  <li>• A aprovação será feita de forma digital e segura</li>
+                  <li>• Você será notificado sobre o status da proposta</li>
+                </ul>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  };
 
   const renderReviewStep = () => (
     <div className="space-y-4">

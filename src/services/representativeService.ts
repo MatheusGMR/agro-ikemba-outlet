@@ -102,8 +102,36 @@ export class RepresentativeService {
   static async updateClient(id: string, updates: Partial<RepClient>): Promise<RepClient> {
     const { data, error } = await supabase
       .from('rep_clients')
-      .update(updates)
+      .update({
+        ...updates,
+        updated_at: new Date().toISOString()
+      })
       .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
+
+  static async updateClientContact(clientId: string, contactData: {
+    contact_name: string;
+    contact_function: string;
+    email: string;
+    phone: string;
+    whatsapp?: string;
+  }): Promise<RepClient> {
+    const { data, error } = await supabase
+      .from('rep_clients')
+      .update({
+        contact_name: contactData.contact_name,
+        contact_function: contactData.contact_function,
+        email: contactData.email,
+        phone: contactData.phone,
+        whatsapp: contactData.whatsapp || contactData.phone,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', clientId)
       .select()
       .single();
 
