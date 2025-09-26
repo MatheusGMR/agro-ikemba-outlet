@@ -1,4 +1,5 @@
 import { Helmet } from 'react-helmet-async';
+import RepresentativeHeader from '@/components/representative/RepresentativeHeader';
 import ProgressiveLoadingDashboard from '@/components/representative/ProgressiveLoadingDashboard';
 
 export default function Representative() {
@@ -13,6 +14,7 @@ export default function Representative() {
       </Helmet>
 
       <div className="min-h-screen bg-background">
+        <RepresentativeHeader />
         <div className="container mx-auto p-6">
           <ProgressiveLoadingDashboard />
         </div>
