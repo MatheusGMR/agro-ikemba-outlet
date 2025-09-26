@@ -34,6 +34,7 @@ import PendingApproval from '@/pages/PendingApproval';
 import VideoBoasVindas from '@/pages/VideoBoasVindas';
 import ResetPassword from '@/pages/ResetPassword';
 import GlobalWhatsAppButton from '@/components/ui/GlobalWhatsAppButton';
+import IaroRegistration from '@/pages/IaroRegistration';
 
 const queryClient = new QueryClient();
 
@@ -82,10 +83,11 @@ function App() {
                   <Route path="/representante-afiliado" element={<RepresentativeAffiliate />} />
                   <Route path="/simulador" element={<Simulador />} />
                   <Route path="/landing" element={<LandingPage />} />
-                  <Route path="/video/boas-vindas" element={<VideoBoasVindas />} />
-                  <Route path="/proposta/:publicLink" element={<ProposalView />} />
-                  
-                  <Route path="*" element={<NotFound />} />
+                   <Route path="/video/boas-vindas" element={<VideoBoasVindas />} />
+                   <Route path="/proposta/:publicLink" element={<ProposalView />} />
+                   <Route path="/cliente/iaro-registration" element={<IaroRegistration />} />
+                   
+                   <Route path="*" element={<NotFound />} />
                 </Routes>  
               </AuthProvider>
               <GlobalWhatsAppButton />
