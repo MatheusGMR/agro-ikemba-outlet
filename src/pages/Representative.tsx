@@ -1,8 +1,12 @@
 import { Helmet } from 'react-helmet-async';
 import RepresentativeHeader from '@/components/representative/RepresentativeHeader';
 import ProgressiveLoadingDashboard from '@/components/representative/ProgressiveLoadingDashboard';
+import { SessionTimeoutModal } from '@/components/representative/SessionTimeoutModal';
+import { useSessionTimeout } from '@/hooks/useSessionTimeout';
 
 export default function Representative() {
+  const { isWarningOpen, timeRemaining, extendSession, closeWarning } = useSessionTimeout();
+
   return (
     <>
       <Helmet>
@@ -18,6 +22,13 @@ export default function Representative() {
         <div className="container mx-auto p-6">
           <ProgressiveLoadingDashboard />
         </div>
+        
+        <SessionTimeoutModal
+          isOpen={isWarningOpen}
+          timeRemaining={timeRemaining}
+          onExtendSession={extendSession}
+          onClose={closeWarning}
+        />
       </div>
     </>
   );

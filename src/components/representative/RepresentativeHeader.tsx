@@ -1,14 +1,17 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Menu, X, Plus, Package, Users } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Menu, X, Plus, Package, Users, User, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import InventoryConsultation from './InventoryConsultation';
 import CreateOpportunityDialog from './CreateOpportunityDialog';
 import { ClientRegistrationDialog } from './ClientRegistrationDialog';
 import { useCurrentRepresentative } from '@/hooks/useRepresentative';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function RepresentativeHeader() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -16,6 +19,8 @@ export default function RepresentativeHeader() {
   const [showCreateOpportunity, setShowCreateOpportunity] = useState(false);
   const [showClientRegistration, setShowClientRegistration] = useState(false);
   const { data: representative } = useCurrentRepresentative();
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
 
   // Get the public URL for the logo from Supabase Storage
   const getLogoUrl = () => {
@@ -29,6 +34,11 @@ export default function RepresentativeHeader() {
 
   const handleLogoError = () => {
     setLogoError(true);
+  };
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate('/representative-login');
   };
 
   const actionButtons = [
@@ -82,31 +92,66 @@ export default function RepresentativeHeader() {
           </div>
 
           {/* Desktop Actions */}
-          <div className="hidden md:flex items-center gap-2">
-            {actionButtons.map((action, index) => {
-              if (action.component) {
-                const Component = action.component;
-                return (
-                  <Component key={index}>
-                    <Button variant={action.variant}>
-                      <action.icon className="h-4 w-4 mr-2" />
-                      {action.label}
-                    </Button>
-                  </Component>
-                );
-              }
+          <div className="hidden md:flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              {actionButtons.map((action, index) => {
+                if (action.component) {
+                  const Component = action.component;
+                  return (
+                    <Component key={index}>
+                      <Button variant={action.variant}>
+                        <action.icon className="h-4 w-4 mr-2" />
+                        {action.label}
+                      </Button>
+                    </Component>
+                  );
+                }
 
-              return (
-                <Button
-                  key={index}
-                  variant={action.variant}
-                  onClick={action.onClick}
-                >
-                  <action.icon className="h-4 w-4 mr-2" />
-                  {action.label}
+                return (
+                  <Button
+                    key={index}
+                    variant={action.variant}
+                    onClick={action.onClick}
+                  >
+                    <action.icon className="h-4 w-4 mr-2" />
+                    {action.label}
+                  </Button>
+                );
+              })}
+            </div>
+
+            {/* User Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                  <Avatar className="h-8 w-8">
+                    <AvatarFallback>
+                      {representative?.name?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
                 </Button>
-              );
-            })}
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56" align="end" forceMount>
+                <div className="flex items-center justify-start gap-2 p-2">
+                  <div className="flex flex-col space-y-1 leading-none">
+                    <p className="font-medium">{representative?.name || 'Representante'}</p>
+                    <p className="w-[200px] truncate text-sm text-muted-foreground">
+                      {user?.email}
+                    </p>
+                  </div>
+                </div>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>
+                  <User className="mr-2 h-4 w-4" />
+                  <span>Perfil</span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogout}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Sair</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
           {/* Mobile menu button */}
