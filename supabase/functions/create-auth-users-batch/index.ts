@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from 'jsr:@supabase/supabase-js@2';
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -110,12 +110,12 @@ const handler = async (req: Request): Promise<Response> => {
                 }
               });
 
-        results.push({
-          user_id: user.id,
-          email: user.email,
-          status: 'recovery_sent',
-          message: 'Usuário já existia - link de recuperação enviado'
-        });
+              results.push({
+                user_id: user.id,
+                email: user.email,
+                status: 'recovery_sent',
+                message: 'Usuário já existia - link de recuperação enviado'
+              });
             } catch (recoveryError) {
               console.error(`Error sending recovery for ${user.email}:`, recoveryError);
               results.push({
@@ -147,13 +147,14 @@ const handler = async (req: Request): Promise<Response> => {
             }
           });
 
-        results.push({
-          user_id: user.id,
-          email: user.email,
-          auth_id: authUser.user?.id,
-          status: 'created',
-          message: 'Conta criada e credenciais enviadas por email'
-        });
+          results.push({
+            user_id: user.id,
+            email: user.email,
+            auth_id: authUser.user?.id,
+            status: 'created',
+            message: 'Conta criada e credenciais enviadas por email',
+            temp_password: tempPassword
+          });
         } catch (emailError) {
           console.error(`Error sending email to ${user.email}:`, emailError);
           results.push({
