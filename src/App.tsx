@@ -32,6 +32,7 @@ import ScrollToTop from '@/components/layout/ScrollToTop';
 import ApprovedProtectedRoute from '@/components/auth/ApprovedProtectedRoute';
 import PendingApproval from '@/pages/PendingApproval';
 import VideoBoasVindas from '@/pages/VideoBoasVindas';
+import Revenda from '@/pages/Revenda';
 import ResetPassword from '@/pages/ResetPassword';
 import GlobalWhatsAppButton from '@/components/ui/GlobalWhatsAppButton';
 import IaroRegistration from '@/pages/IaroRegistration';
@@ -88,6 +89,7 @@ function App() {
                    <Route path="/proposta/:publicLink" element={<ProposalView />} />
                    <Route path="/cliente/iaro-registration" element={<IaroRegistration />} />
                    <Route path="/cliente/maria-valentina-registration" element={<MariaValentinaRegistration />} />
+                   <Route path="/revenda" element={<Revenda />} />
                    
                    <Route path="*" element={<NotFound />} />
                 </Routes>  

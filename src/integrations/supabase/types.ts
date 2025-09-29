@@ -579,6 +579,68 @@ export type Database = {
           },
         ]
       }
+      ofertas_compra: {
+        Row: {
+          cidade_entrega: string
+          created_at: string
+          estado_entrega: string
+          id: string
+          observacoes: string | null
+          prazo_entrega_desejado: number | null
+          preco_ofertado: number
+          produto_nome: string
+          produto_sku: string
+          resposta_fornecedor: string | null
+          revenda_id: string
+          status: string
+          updated_at: string
+          validade_oferta: string
+          volume_desejado: number
+        }
+        Insert: {
+          cidade_entrega: string
+          created_at?: string
+          estado_entrega: string
+          id?: string
+          observacoes?: string | null
+          prazo_entrega_desejado?: number | null
+          preco_ofertado: number
+          produto_nome: string
+          produto_sku: string
+          resposta_fornecedor?: string | null
+          revenda_id: string
+          status?: string
+          updated_at?: string
+          validade_oferta: string
+          volume_desejado: number
+        }
+        Update: {
+          cidade_entrega?: string
+          created_at?: string
+          estado_entrega?: string
+          id?: string
+          observacoes?: string | null
+          prazo_entrega_desejado?: number | null
+          preco_ofertado?: number
+          produto_nome?: string
+          produto_sku?: string
+          resposta_fornecedor?: string | null
+          revenda_id?: string
+          status?: string
+          updated_at?: string
+          validade_oferta?: string
+          volume_desejado?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ofertas_compra_revenda_id_fkey"
+            columns: ["revenda_id"]
+            isOneToOne: false
+            referencedRelation: "revendas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       opportunities: {
         Row: {
           client_id: string
@@ -1454,6 +1516,155 @@ export type Database = {
           status?: string | null
           updated_at?: string
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      revenda_produtos: {
+        Row: {
+          categoria: string
+          cidade_origem: string
+          condicoes_armazenamento: string | null
+          created_at: string
+          data_validade: string
+          estado_origem: string
+          fabricante: string
+          id: string
+          ingrediente_ativo: string | null
+          prazo_entrega_dias: number | null
+          preco_minimo: number | null
+          preco_unitario: number
+          produto_nome: string
+          produto_sku: string
+          revenda_id: string
+          status: string
+          unidade: string
+          updated_at: string
+          volume_disponivel: number
+        }
+        Insert: {
+          categoria: string
+          cidade_origem: string
+          condicoes_armazenamento?: string | null
+          created_at?: string
+          data_validade: string
+          estado_origem: string
+          fabricante: string
+          id?: string
+          ingrediente_ativo?: string | null
+          prazo_entrega_dias?: number | null
+          preco_minimo?: number | null
+          preco_unitario: number
+          produto_nome: string
+          produto_sku: string
+          revenda_id: string
+          status?: string
+          unidade?: string
+          updated_at?: string
+          volume_disponivel?: number
+        }
+        Update: {
+          categoria?: string
+          cidade_origem?: string
+          condicoes_armazenamento?: string | null
+          created_at?: string
+          data_validade?: string
+          estado_origem?: string
+          fabricante?: string
+          id?: string
+          ingrediente_ativo?: string | null
+          prazo_entrega_dias?: number | null
+          preco_minimo?: number | null
+          preco_unitario?: number
+          produto_nome?: string
+          produto_sku?: string
+          revenda_id?: string
+          status?: string
+          unidade?: string
+          updated_at?: string
+          volume_disponivel?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "revenda_produtos_revenda_id_fkey"
+            columns: ["revenda_id"]
+            isOneToOne: false
+            referencedRelation: "revendas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      revendas: {
+        Row: {
+          agencia: string | null
+          banco: string | null
+          cep: string
+          chave_pix: string | null
+          cidade: string
+          cnpj: string
+          conta: string | null
+          created_at: string
+          email_comercial: string | null
+          endereco_completo: string
+          estado: string
+          id: string
+          razao_social: string
+          regioes_atuacao: string[] | null
+          status: string
+          telefone_comercial: string | null
+          tipo_conta: string | null
+          tipos_produto_interesse: string[] | null
+          updated_at: string
+          user_id: string
+          volume_minimo_compra: number | null
+          website: string | null
+        }
+        Insert: {
+          agencia?: string | null
+          banco?: string | null
+          cep: string
+          chave_pix?: string | null
+          cidade: string
+          cnpj: string
+          conta?: string | null
+          created_at?: string
+          email_comercial?: string | null
+          endereco_completo: string
+          estado: string
+          id?: string
+          razao_social: string
+          regioes_atuacao?: string[] | null
+          status?: string
+          telefone_comercial?: string | null
+          tipo_conta?: string | null
+          tipos_produto_interesse?: string[] | null
+          updated_at?: string
+          user_id: string
+          volume_minimo_compra?: number | null
+          website?: string | null
+        }
+        Update: {
+          agencia?: string | null
+          banco?: string | null
+          cep?: string
+          chave_pix?: string | null
+          cidade?: string
+          cnpj?: string
+          conta?: string | null
+          created_at?: string
+          email_comercial?: string | null
+          endereco_completo?: string
+          estado?: string
+          id?: string
+          razao_social?: string
+          regioes_atuacao?: string[] | null
+          status?: string
+          telefone_comercial?: string | null
+          tipo_conta?: string | null
+          tipos_produto_interesse?: string[] | null
+          updated_at?: string
+          user_id?: string
+          volume_minimo_compra?: number | null
+          website?: string | null
         }
         Relationships: []
       }

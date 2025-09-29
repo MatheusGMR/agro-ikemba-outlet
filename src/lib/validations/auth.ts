@@ -9,7 +9,9 @@ export const formSchema = z.object({
   email: z.string().email('Email inválido'),
   phone: z.string().min(11, 'Telefone deve ter pelo menos 11 dígitos').regex(phoneRegex, 'Formato: (XX) XXXXX-XXXX'),
   company: z.string().min(1, 'Empresa é obrigatória'),
-  tipo: z.string().min(1, 'Selecione uma opção'),
+  tipo: z.enum(['Pessoa Física', 'Pessoa Jurídica', 'Revenda'], {
+    required_error: 'Selecione uma opção'
+  }),
   conheceu: z.string().optional(),
   cnpj: z.string().optional().refine((cnpj) => {
     // If CNPJ is provided, it must match the format
