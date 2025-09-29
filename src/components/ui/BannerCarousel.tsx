@@ -16,7 +16,7 @@ const BANNERS: Banner[] = [
     id: 1,
     title: "Defensivos Genéricos",
     subtitle: "Economize até 25% com produtos de alta qualidade",
-    imageUrl: "https://images.unsplash.com/photo-1464226184884-fa280b87c399?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1920&q=80",
+    imageUrl: "/lovable-uploads/banner-plantacao-soja.jpg",
     ctaText: "Ver Ofertas",
     ctaLink: "#"
   },
