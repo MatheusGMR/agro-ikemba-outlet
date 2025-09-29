@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 
 export interface HoneypotData {
@@ -17,10 +17,37 @@ export const useBotProtection = () => {
   const { executeRecaptcha } = useGoogleReCaptcha();
   const [honeypotData, setHoneypotData] = useState<HoneypotData>({});
   const [formStartTime] = useState(Date.now());
+  const [recaptchaStatus, setRecaptchaStatus] = useState<'loading' | 'ready' | 'error' | 'timeout'>('loading');
+  const [recaptchaError, setRecaptchaError] = useState<string>();
 
   const updateHoneypot = useCallback((field: keyof HoneypotData, value: any) => {
     setHoneypotData(prev => ({ ...prev, [field]: value }));
   }, []);
+
+  // Monitor reCAPTCHA readiness with timeout
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+
+    if (executeRecaptcha) {
+      setRecaptchaStatus('ready');
+      setRecaptchaError(undefined);
+    } else {
+      setRecaptchaStatus('loading');
+      
+      // Set 10-second timeout for reCAPTCHA loading
+      timeoutId = setTimeout(() => {
+        if (!executeRecaptcha) {
+          console.error('⏱️ reCAPTCHA timeout: Failed to load after 10 seconds');
+          setRecaptchaStatus('timeout');
+          setRecaptchaError('Sistema de segurança não carregou. Verifique sua conexão ou bloqueadores de anúncios.');
+        }
+      }, 10000);
+    }
+
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [executeRecaptcha]);
 
   // Test function to verify reCAPTCHA is working
   const testReCaptcha = useCallback(async (): Promise<{ working: boolean; error?: string; score?: number }> => {
@@ -78,11 +105,21 @@ export const useBotProtection = () => {
       return { isBot: true, reason: 'too_fast' };
     }
 
-    // 3. Execute reCAPTCHA v3
+    // 3. Check reCAPTCHA status
+    if (recaptchaStatus === 'timeout') {
+      console.error('🛡️ reCAPTCHA timeout - cannot proceed with submission');
+      return { isBot: true, reason: 'recaptcha_timeout' };
+    }
+
+    if (recaptchaStatus === 'error') {
+      console.error('🛡️ reCAPTCHA error - cannot proceed with submission');
+      return { isBot: true, reason: 'recaptcha_error' };
+    }
+
+    // 4. Execute reCAPTCHA v3
     if (!executeRecaptcha) {
-      console.warn('⚠️ reCAPTCHA not available - this is a security risk!');
-      // In production, you might want to block submission if reCAPTCHA is not available
-      return { isBot: false, reason: 'recaptcha_unavailable' };
+      console.warn('⚠️ reCAPTCHA not available - blocking submission for security');
+      return { isBot: true, reason: 'recaptcha_unavailable' };
     }
 
     try {
@@ -139,7 +176,7 @@ export const useBotProtection = () => {
       // In production, you might want to be more strict here
       return { isBot: true, reason: 'recaptcha_error' };
     }
-  }, [executeRecaptcha, honeypotData, formStartTime]);
+  }, [executeRecaptcha, honeypotData, formStartTime, recaptchaStatus]);
 
   return {
     honeypotData,
@@ -147,6 +184,8 @@ export const useBotProtection = () => {
     validateBotProtection,
     testReCaptcha,
     formStartTime,
-    isReCaptchaReady: !!executeRecaptcha
+    isReCaptchaReady: !!executeRecaptcha,
+    recaptchaStatus,
+    recaptchaError
   };
 };
