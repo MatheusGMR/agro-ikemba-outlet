@@ -11,6 +11,8 @@ import { TermsDialog } from './TermsDialog';
 import { useRepresentativeApplication } from '@/hooks/useRepresentativeApplication';
 import { toast } from 'sonner';
 import { validateCNPJ, validatePhone, validateUF, validateEmail, formatCNPJ, formatPhone } from '@/utils/validators';
+import { useBotProtection } from '@/hooks/useBotProtection';
+import { HoneypotFields } from '@/components/auth/HoneypotFields';
 
 interface FormData {
   // Identificação
@@ -74,6 +76,15 @@ export function RepresentativeApplicationForm() {
   const [showTermsDialog, setShowTermsDialog] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { submitApplication } = useRepresentativeApplication();
+  
+  // Bot protection
+  const {
+    honeypotData,
+    updateHoneypot,
+    validateBotProtection,
+    isReCaptchaReady,
+    recaptchaError
+  } = useBotProtection();
 
   const updateFormData = (field: keyof FormData, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -160,6 +171,15 @@ export function RepresentativeApplicationForm() {
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
+      // Validate bot protection
+      const botValidation = await validateBotProtection();
+      
+      if (botValidation.isBot) {
+        toast.error(botValidation.reason || 'Falha na verificação de segurança. Tente novamente.');
+        setIsSubmitting(false);
+        return;
+      }
+
       await submitApplication({
         ...formData,
         produtos_lista: '', // Campo vazio para compatibilidade
@@ -184,6 +204,9 @@ export function RepresentativeApplicationForm() {
       description: 'Informações pessoais básicas',
       component: (
         <div className="space-y-6">
+          {/* Honeypot fields for bot protection */}
+          <HoneypotFields data={honeypotData} onChange={updateHoneypot} />
+          
           <div className="grid md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="nome">Nome Completo *</Label>

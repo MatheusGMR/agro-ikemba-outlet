@@ -6,6 +6,8 @@ import { ButtonGrid } from '@/components/ui/button-grid';
 import { Building, User, Users, Phone, Mail } from 'lucide-react';
 import { useCreateClient } from '@/hooks/useRepresentative';
 import { toast } from 'sonner';
+import { useBotProtection } from '@/hooks/useBotProtection';
+import { HoneypotFields } from '@/components/auth/HoneypotFields';
 
 interface ProgressiveClientRegistrationDialogProps {
   open: boolean;
@@ -65,6 +67,15 @@ export default function ProgressiveClientRegistrationDialog({
   });
 
   const createClientMutation = useCreateClient();
+  
+  // Bot protection
+  const {
+    honeypotData,
+    updateHoneypot,
+    validateBotProtection,
+    isReCaptchaReady,
+    recaptchaError
+  } = useBotProtection();
 
   const updateFormData = (field: keyof ClientFormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -96,6 +107,15 @@ export default function ProgressiveClientRegistrationDialog({
     setIsSubmitting(true);
     
     try {
+      // Validate bot protection
+      const botValidation = await validateBotProtection();
+      
+      if (botValidation.isBot) {
+        toast.error(botValidation.reason || 'Falha na verificação de segurança. Tente novamente.');
+        setIsSubmitting(false);
+        return;
+      }
+
       await createClientMutation.mutateAsync({
         representative_id: representativeId,
         company_name: formData.company_name.trim(),
@@ -135,17 +155,22 @@ export default function ProgressiveClientRegistrationDialog({
       title: 'Nome da empresa',
       description: 'Qual é o nome da empresa do cliente?',
       component: (
-        <ProgressiveInput
-          label="Nome da Empresa"
-          placeholder="Digite o nome da empresa"
-          value={formData.company_name}
-          onChange={(value) => updateFormData('company_name', value)}
-          onEnter={() => setCurrentStep(2)}
-          icon={Building}
-          required
-          autoFocus
-          error={validateStep(1) !== true ? String(validateStep(1)) : undefined}
-        />
+        <div className="space-y-4">
+          {/* Honeypot fields for bot protection */}
+          <HoneypotFields data={honeypotData} onChange={updateHoneypot} />
+          
+          <ProgressiveInput
+            label="Nome da Empresa"
+            placeholder="Digite o nome da empresa"
+            value={formData.company_name}
+            onChange={(value) => updateFormData('company_name', value)}
+            onEnter={() => setCurrentStep(2)}
+            icon={Building}
+            required
+            autoFocus
+            error={validateStep(1) !== true ? String(validateStep(1)) : undefined}
+          />
+        </div>
       ),
       validate: () => validateStep(1),
     },

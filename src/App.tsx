@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from 'react-helmet-async';
+import { GoogleReCaptchaProvider } from 'react-google-recaptcha-v3';
 import Index from "./pages/Index";
 import About from "./pages/About";
 import Dashboard from "./pages/Dashboard";
@@ -41,14 +42,17 @@ import MariaValentinaRegistration from '@/pages/MariaValentinaRegistration';
 const queryClient = new QueryClient();
 
 function App() {
+  const recaptchaSiteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY || '';
+
   return (
     <QueryClientProvider client={queryClient}>
-      <CartProvider>
-        <HelmetProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
+      <GoogleReCaptchaProvider reCaptchaKey={recaptchaSiteKey}>
+        <CartProvider>
+          <HelmetProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
               <ScrollToTop />
             <AuthProvider>
                 <Routes>
@@ -99,6 +103,7 @@ function App() {
           </TooltipProvider>
         </HelmetProvider>
       </CartProvider>
+      </GoogleReCaptchaProvider>
     </QueryClientProvider>
   );
 }
