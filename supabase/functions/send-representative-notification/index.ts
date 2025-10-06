@@ -24,13 +24,18 @@ const handler = async (req: Request): Promise<Response> => {
     
     console.log('Processing notification:', { type, applicationId: application.id });
 
+    // Check if this is an interest-only submission
+    const isInterestOnly = application.motivo_status?.includes('Manifestação de interesse');
+
     // Preparar dados para o email
     const status = application.status || 'aguardando';
     const cnpjInfo = application.possui_pj && application.cnpj 
       ? application.cnpj 
       : 'Sem CNPJ';
     
-    const subject = `[Recrutamento] ${status} — ${application.nome} — ${application.cidade}/${application.uf} — ${cnpjInfo}`;
+    const subject = isInterestOnly 
+      ? `[Interesse] Manifestação — ${application.nome} — ${application.cidade}/${application.uf}`
+      : `[Recrutamento] ${status} — ${application.nome} — ${application.cidade}/${application.uf} — ${cnpjInfo}`;
     
     // Formatear dados da aplicação em JSON legível
     const applicationData = {
@@ -78,10 +83,50 @@ const handler = async (req: Request): Promise<Response> => {
       termos_aceitos: application.termos_aceitos
     };
 
-    // Template do email baseado no status
+    // Template do email baseado no tipo de submissão
     let emailContent = '';
     
-    if (status === 'reprovado') {
+    if (isInterestOnly) {
+      emailContent = `
+        <h2>📝 Nova Manifestação de Interesse - Representante Técnico Afiliado</h2>
+        
+        <div style="background: #fff3cd; padding: 15px; border-left: 4px solid #f59e0b; margin: 20px 0;">
+          <p style="margin: 0;"><strong>⚠️ Atenção:</strong> Esta é uma <strong>manifestação de interesse</strong>. O programa está temporariamente inativo.</p>
+        </div>
+        
+        <p><strong>Candidato:</strong> ${application.nome}</p>
+        <p><strong>Email:</strong> ${application.email}</p>
+        <p><strong>WhatsApp:</strong> ${application.whatsapp}</p>
+        <p><strong>Localização:</strong> ${application.cidade}/${application.uf}</p>
+        
+        <h3>🏢 Pessoa Jurídica</h3>
+        <p><strong>Possui PJ:</strong> ${application.possui_pj ? 'Sim' : 'Não'}</p>
+        ${application.possui_pj ? `
+        <p><strong>CNPJ:</strong> ${application.cnpj}</p>
+        <p><strong>Razão Social:</strong> ${application.razao_social}</p>
+        ` : ''}
+        
+        <h3>💼 Experiência</h3>
+        <p><strong>Tempo no Agronegócio:</strong> ${application.experiencia_anos}</p>
+        <p><strong>Segmentos:</strong> ${Array.isArray(application.segmentos) ? application.segmentos.join(', ') : application.segmentos}</p>
+        <p><strong>Canais Atendidos:</strong> ${Array.isArray(application.canais) ? application.canais.join(', ') : application.canais}</p>
+        
+        <h3>📍 Atuação</h3>
+        <p><strong>Regiões:</strong> ${Array.isArray(application.regioes) ? application.regioes.join(', ') : application.regioes}</p>
+        
+        <hr>
+        <h3>📋 Dados Completos (JSON)</h3>
+        <details>
+          <summary>Clique para ver os dados completos</summary>
+          <pre style="background: #f5f5f5; padding: 15px; border-radius: 5px; font-family: monospace; font-size: 12px; max-height: 400px; overflow-y: auto;">${JSON.stringify(applicationData, null, 2)}</pre>
+        </details>
+        
+        <hr>
+        <p style="color: #666; font-size: 12px;">
+          💡 <strong>Nota:</strong> Este cadastro será contatado quando o programa for reativado.
+        </p>
+      `;
+    } else if (status === 'reprovado') {
       emailContent = `
         <h2>🚫 Nova Inscrição REPROVADA - Representante Técnico Afiliado</h2>
         
@@ -158,20 +203,144 @@ const handler = async (req: Request): Promise<Response> => {
       `;
     }
 
-    // Enviar email
-    const emailResponse = await resend.emails.send({
+    // Send notification email to admin
+    const adminEmailResponse = await resend.emails.send({
       from: "AgroIkemba Recrutamento <noreply@agroikemba.com.br>",
       to: ["matheus@agroikemba.com.br"],
       subject: subject,
       html: emailContent,
     });
 
-    console.log('Email enviado com sucesso:', emailResponse);
+    console.log('Admin email sent:', adminEmailResponse);
+
+    // Send confirmation email to applicant
+    const fromDomain = Deno.env.get("RESEND_FROM") || "noreply@agroikemba.com.br";
+    const applicantSubject = isInterestOnly 
+      ? "✅ Recebemos sua manifestação de interesse - AgroIkemba"
+      : "✅ Candidatura Recebida - Programa de Afiliados AgroIkemba";
+
+    const applicantEmailHtml = isInterestOnly ? `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background: linear-gradient(135deg, #f59e0b, #d97706); padding: 30px; text-align: center; border-radius: 10px;">
+          <h1 style="color: white; margin: 0; font-size: 24px;">⚠️ Manifestação de Interesse Recebida</h1>
+          <p style="color: #fef3c7; margin: 10px 0 0 0;">Programa de Representantes AgroIkemba</p>
+        </div>
+        
+        <div style="padding: 30px 0;">
+          <p style="font-size: 18px; color: #1a202c; margin-bottom: 20px;">
+            Olá <strong>${application.nome}</strong>,
+          </p>
+          
+          <p style="color: #4a5568; line-height: 1.8; margin-bottom: 20px;">
+            Recebemos sua manifestação de interesse em fazer parte do time de representantes AgroIkemba!
+          </p>
+
+          <div style="background: #fff3cd; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #f59e0b;">
+            <p style="margin: 0; font-weight: bold; color: #d97706;">⚠️ Informação Importante:</p>
+            <p style="margin: 10px 0 0 0; color: #2d3748;">
+              O programa de representantes técnicos afiliados está <strong>temporariamente inativo</strong>. 
+              No momento, não há processos seletivos em andamento.
+            </p>
+          </div>
+
+          <div style="background: #f7fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <p style="margin: 0; font-weight: bold; color: #22c55e;">🎯 O que acontece agora?</p>
+            <ul style="margin: 10px 0 0 0; padding-left: 20px; color: #2d3748;">
+              <li style="margin: 8px 0;">Seu cadastro foi registrado em nossa base de dados</li>
+              <li style="margin: 8px 0;">Você demonstrou interesse no programa</li>
+              <li style="margin: 8px 0;">Entraremos em contato quando o programa for reativado</li>
+            </ul>
+          </div>
+
+          <div style="background: #fef2f2; padding: 15px; border-radius: 8px; border-left: 4px solid #ef4444;">
+            <p style="margin: 0; color: #991b1b; font-size: 14px;">
+              <strong>Observação:</strong> Não há previsão definida para reabertura do programa. 
+              Seu cadastro não garante participação em processos futuros.
+            </p>
+          </div>
+
+          <p style="color: #4a5568; line-height: 1.8; margin-top: 30px;">
+            Enquanto isso, fique à vontade para:
+          </p>
+          <ul style="color: #4a5568; line-height: 1.8;">
+            <li>Conhecer mais sobre nossos produtos no site</li>
+            <li>Nos seguir nas redes sociais</li>
+            <li>Enviar dúvidas via WhatsApp</li>
+          </ul>
+
+          <p style="color: #4a5568; line-height: 1.8; margin-top: 30px;">
+            Agradecemos o interesse e aguardamos futuras oportunidades!
+          </p>
+
+          <p style="color: #4a5568; margin-top: 30px;">
+            Atenciosamente,<br>
+            <strong>Equipe AgroIkemba</strong>
+          </p>
+        </div>
+        
+        <div style="text-align: center; padding: 20px; border-top: 1px solid #e2e8f0; color: #718096; font-size: 12px;">
+          AgroIkemba - Outlet do Agro<br>
+          Este é um email automático, por favor não responda.
+        </div>
+      </div>
+    ` : `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background: linear-gradient(135deg, #22c55e, #16a34a); padding: 30px; text-align: center; border-radius: 10px;">
+          <h1 style="color: white; margin: 0; font-size: 24px;">✅ Candidatura Recebida</h1>
+          <p style="color: #f0fdf4; margin: 10px 0 0 0;">Programa de Representantes AgroIkemba</p>
+        </div>
+        
+        <div style="padding: 30px 0;">
+          <p style="font-size: 18px; color: #1a202c; margin-bottom: 20px;">
+            Olá <strong>${application.nome}</strong>,
+          </p>
+          
+          <p style="color: #4a5568; line-height: 1.8; margin-bottom: 20px;">
+            Recebemos sua candidatura para se tornar um Representante Técnico Afiliado da AgroIkemba!
+          </p>
+
+          <div style="background: #f0fdf4; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #22c55e;">
+            <p style="margin: 0; font-weight: bold; color: #22c55e;">Próximos Passos:</p>
+            <ul style="margin: 10px 0 0 0; padding-left: 20px; color: #2d3748;">
+              <li style="margin: 8px 0;">Nossa equipe analisará seu perfil</li>
+              <li style="margin: 8px 0;">Você receberá retorno em até 5 dias úteis</li>
+              <li style="margin: 8px 0;">Caso aprovado, entraremos em contato para próximas etapas</li>
+            </ul>
+          </div>
+
+          <p style="color: #4a5568; line-height: 1.8; margin-top: 30px;">
+            Enquanto aguarda, fique à vontade para conhecer mais sobre nossa empresa e produtos.
+          </p>
+
+          <p style="color: #4a5568; margin-top: 30px;">
+            Atenciosamente,<br>
+            <strong>Equipe AgroIkemba</strong>
+          </p>
+        </div>
+        
+        <div style="text-align: center; padding: 20px; border-top: 1px solid #e2e8f0; color: #718096; font-size: 12px;">
+          AgroIkemba - Outlet do Agro<br>
+          Este é um email automático, por favor não responda.
+        </div>
+      </div>
+    `;
+
+    // Send applicant email
+    const applicantEmailResponse = await resend.emails.send({
+      from: fromDomain,
+      to: [application.email],
+      subject: applicantSubject,
+      html: applicantEmailHtml,
+    });
+
+    console.log('Applicant email sent:', applicantEmailResponse);
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        emailId: emailResponse.data?.id,
+        adminEmailId: adminEmailResponse.data?.id,
+        applicantEmailId: applicantEmailResponse.data?.id,
+        isInterestOnly,
         status: application.status 
       }), 
       {

@@ -2,8 +2,10 @@ import { Helmet } from 'react-helmet-async';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { RepresentativeApplicationForm } from '@/components/representative/RepresentativeApplicationForm';
+import { InactiveProgramBanner } from '@/components/representative/InactiveProgramBanner';
+import { InactiveProgramModal } from '@/components/representative/InactiveProgramModal';
 import { Card } from '@/components/ui/card';
-import { CheckCircle, Users, TrendingUp, Handshake, FileCheck, Award, Users2 } from 'lucide-react';
+import { AlertCircle, Users, TrendingUp, Handshake, FileCheck, Award, Users2, CheckCircle } from 'lucide-react';
 import { useScrollAnimation } from '@/hooks/useScrollAnimation';
 
 export default function RepresentativeAffiliate() {
@@ -69,6 +71,7 @@ export default function RepresentativeAffiliate() {
       </Helmet>
 
       <Navbar />
+      <InactiveProgramModal />
 
       <main className="min-h-screen bg-gradient-to-br from-background to-muted">
         {/* Hero Section */}
@@ -99,14 +102,19 @@ export default function RepresentativeAffiliate() {
             </p>
 
             <div className="flex justify-center">
-              <Card className="p-6 bg-card/50 backdrop-blur-sm border-primary/20 animate-pulse">
-                <div className="flex items-center gap-2 text-primary font-medium">
-                  <CheckCircle className="w-5 h-5" />
-                  Programa de Recrutamento Ativo
+              <Card className="p-6 bg-warning/10 backdrop-blur-sm border-warning/20">
+                <div className="flex items-center gap-2 text-warning font-medium">
+                  <AlertCircle className="w-5 h-5" />
+                  Programa Temporariamente Inativo - Cadastro de Interesse Aberto
                 </div>
               </Card>
             </div>
           </div>
+        </section>
+
+        {/* Inactive Program Banner */}
+        <section className="container mx-auto px-4 py-8">
+          <InactiveProgramBanner />
         </section>
 
         {/* Benefits Section */}
@@ -283,10 +291,11 @@ export default function RepresentativeAffiliate() {
           >
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                Candidate-se Agora
+                Manifeste seu Interesse
               </h2>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Preencha o formulário abaixo e nossa equipe entrará em contato em até 5 dias úteis
+                O programa está temporariamente inativo, mas você pode preencher o formulário para 
+                manifestar interesse. Entraremos em contato quando o programa for reativado.
               </p>
             </div>
 

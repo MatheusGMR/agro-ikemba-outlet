@@ -23,6 +23,7 @@ serve(async (req) => {
     console.log('Received application data:', applicationData)
 
     // Prepare data for insertion
+    // IMPORTANT: Mark all new submissions as interest-only since program is inactive
     const insertData = {
       nome: applicationData.nome,
       email: applicationData.email,
@@ -48,8 +49,9 @@ serve(async (req) => {
       docs_ok: false, // Documents collected later
       doc_urls: [], // Empty array for compatibility
       termos_aceitos: applicationData.termos_aceitos,
-      status: applicationData.status || 'aguardando',
-      motivo_status: applicationData.motivo_status || 'Aguardando análise'
+      status: 'aguardando',
+      // Flag to identify this is an interest manifestation (program inactive)
+      motivo_status: 'Manifestação de interesse - Programa temporariamente inativo'
     }
 
     // Insert into database using service role (bypasses RLS)
