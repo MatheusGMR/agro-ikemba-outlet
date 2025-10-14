@@ -127,8 +127,8 @@ export default function RevendaCatalogo() {
                   <p className="font-semibold">{produto.total_volume.toLocaleString()} L</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Preço Unitário</p>
-                  <p className="font-semibold">R$ {produto.main_item.preco_unitario?.toFixed(2) || 'N/A'}</p>
+                  <p className="text-sm text-muted-foreground">Preço Base</p>
+                  <p className="font-semibold">R$ {produto.main_item.base_price?.toFixed(2) || 'N/A'}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Localização Principal</p>
@@ -155,7 +155,7 @@ export default function RevendaCatalogo() {
                       <Badge key={index} variant="outline">
                         {item.preco_banda_menor && item.preco_banda_maior ? 
                           `R$ ${item.preco_banda_menor.toFixed(2)} - R$ ${item.preco_banda_maior.toFixed(2)}` :
-                          `R$ ${item.preco_unitario?.toFixed(2) || 'N/A'}`
+                          `R$ ${item.base_price?.toFixed(2) || 'N/A'}`
                         }
                       </Badge>
                     ))}

@@ -107,8 +107,8 @@ const ProductDetail = () => {
     
     if (!selectedItem || !productInfo) return;
     
-    // Use currentPrice from DynamicPriceCard if available, otherwise use preco_unitario
-    const itemPrice = selectedItem.currentPrice || selectedItem.preco_unitario;
+    // Use currentPrice from DynamicPriceCard if available, otherwise use base_price
+    const itemPrice = selectedItem.currentPrice || selectedItem.base_price;
     const itemVolume = selectedItem.volume || 1000;
     
     const cartItem = {
@@ -140,7 +140,7 @@ const ProductDetail = () => {
     navigate('/checkout');
   };
   
-  const totalPrice = selectedItem ? (selectedItem.currentPrice || selectedItem.preco_unitario) * quantity : 0;
+  const totalPrice = selectedItem ? (selectedItem.currentPrice || selectedItem.base_price) * quantity : 0;
   
   // Loading state - include approval loading
   if (inventoryLoading || approvalLoading) {
@@ -341,7 +341,7 @@ const ProductDetail = () => {
                   <div>
                     <p className="text-sm text-muted-foreground mb-1">Preço por litro</p>
                     <p className="text-3xl font-bold">
-                      R$ {selectedItem ? (selectedItem.currentPrice || selectedItem.preco_unitario).toFixed(2) : '0.00'}
+                      R$ {selectedItem ? (selectedItem.currentPrice || selectedItem.base_price).toFixed(2) : '0.00'}
                     </p>
                     <p className="text-xs text-muted-foreground">Local: {selectedItem ? `${selectedItem.city}/${selectedItem.state}` : 'Selecione'}</p>
                   </div>

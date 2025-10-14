@@ -28,7 +28,7 @@ export function ProductDistributionDialog({ product, open, onOpenChange }: Produ
   // Agrupar por tier de preço - não é mais necessário já que temos os 3 preços em cada item
   const firstItem = product.main_item;
   
-  const unitaryPrice = firstItem.preco_unitario;
+  const unitaryPrice = firstItem.base_price;
   const minorBandPrice = firstItem.preco_banda_menor;
   const majorBandPrice = firstItem.preco_banda_maior;
 
@@ -167,7 +167,7 @@ export function ProductDistributionDialog({ product, open, onOpenChange }: Produ
                               </Badge>
                             </div>
                             <span className="font-medium">
-                              {formatCurrency(item.preco_unitario)}
+                              {formatCurrency(item.base_price)}
                             </span>
                           </div>
                         ))}

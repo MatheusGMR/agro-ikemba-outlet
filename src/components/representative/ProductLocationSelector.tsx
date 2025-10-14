@@ -192,7 +192,7 @@ export default function ProductLocationSelector({
                         
                         <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground mb-3">
                           <div>Volume disponível: {locationGroup.totalVolume.toLocaleString()} {locationGroup.mainItem.unit}</div>
-                          <div>Preço unitário: R$ {locationGroup.mainItem.preco_unitario.toFixed(2)}</div>
+                          <div>Preço base: R$ {locationGroup.mainItem.base_price.toFixed(2)}</div>
                         </div>
 
                         <div className="flex items-center gap-2">

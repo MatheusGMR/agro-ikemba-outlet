@@ -12,14 +12,13 @@ export interface InventoryItem {
   city: string;
   expiry_date: string;
   base_price: number;
-  preco_unitario: number;
   preco_banda_menor: number;
   preco_banda_maior: number;
-  commission_unit: number;
-  net_commission: number;
-  commission_percentage: number;
-  rep_percentage: number;
-  supplier_net: number;
+  commission_unit?: number;
+  net_commission?: number;
+  commission_percentage?: number;
+  rep_percentage?: number;
+  supplier_net?: number;
   created_at: string;
   updated_at: string;
 }

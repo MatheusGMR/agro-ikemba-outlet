@@ -310,23 +310,22 @@ export type Database = {
           active_ingredient: string | null
           base_price: number
           city: string
-          commission_percentage: number
-          commission_unit: number
+          commission_percentage: number | null
+          commission_unit: number | null
           created_at: string
           expiry_date: string
           id: string
           manufacturer: string
           mapa_number: string | null
-          net_commission: number
+          net_commission: number | null
           packaging: string
           preco_banda_maior: number | null
           preco_banda_menor: number | null
-          preco_unitario: number | null
           product_name: string
           product_sku: string
-          rep_percentage: number
+          rep_percentage: number | null
           state: string
-          supplier_net: number
+          supplier_net: number | null
           unit: string
           updated_at: string
           volume_available: number
@@ -335,23 +334,22 @@ export type Database = {
           active_ingredient?: string | null
           base_price: number
           city: string
-          commission_percentage: number
-          commission_unit: number
+          commission_percentage?: number | null
+          commission_unit?: number | null
           created_at?: string
           expiry_date: string
           id?: string
           manufacturer: string
           mapa_number?: string | null
-          net_commission: number
+          net_commission?: number | null
           packaging?: string
           preco_banda_maior?: number | null
           preco_banda_menor?: number | null
-          preco_unitario?: number | null
           product_name: string
           product_sku: string
-          rep_percentage: number
+          rep_percentage?: number | null
           state: string
-          supplier_net: number
+          supplier_net?: number | null
           unit?: string
           updated_at?: string
           volume_available: number
@@ -360,23 +358,22 @@ export type Database = {
           active_ingredient?: string | null
           base_price?: number
           city?: string
-          commission_percentage?: number
-          commission_unit?: number
+          commission_percentage?: number | null
+          commission_unit?: number | null
           created_at?: string
           expiry_date?: string
           id?: string
           manufacturer?: string
           mapa_number?: string | null
-          net_commission?: number
+          net_commission?: number | null
           packaging?: string
           preco_banda_maior?: number | null
           preco_banda_menor?: number | null
-          preco_unitario?: number | null
           product_name?: string
           product_sku?: string
-          rep_percentage?: number
+          rep_percentage?: number | null
           state?: string
-          supplier_net?: number
+          supplier_net?: number | null
           unit?: string
           updated_at?: string
           volume_available?: number
@@ -468,116 +465,6 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
-      }
-      medical_records: {
-        Row: {
-          apetite_peso: string | null
-          comportamento_psicomotor: string | null
-          consultant_type: string | null
-          consultation_date: string
-          created_at: string
-          estado_humor_afeto: string | null
-          eventos_vida_relevantes: string | null
-          evolucao_quadro_clinico: string | null
-          exame_estado_mental: string | null
-          funcionamento_cognitivo: string | null
-          funcionamento_social_ocupacional: string | null
-          historia_medica_psiquiatrica: string | null
-          historia_molestia_atual: string | null
-          historia_pessoal_social_familiar: string | null
-          id: string
-          identificacao_paciente: string | null
-          insight_critica_doenca: string | null
-          medicacao_aderencia: string | null
-          observacoes_estado_mental: string | null
-          padrao_pensamento: string | null
-          patient_id: string | null
-          patient_name: string
-          plano_terapeutico_proximos_passos: string | null
-          qualidade_sono: string | null
-          queixa_principal: string | null
-          resumo_sessao_intervencoes: string | null
-          risco_impulsividade: string | null
-          sintomas_fisicos: string | null
-          template_type: string | null
-          transcription: string | null
-          updated_at: string
-        }
-        Insert: {
-          apetite_peso?: string | null
-          comportamento_psicomotor?: string | null
-          consultant_type?: string | null
-          consultation_date?: string
-          created_at?: string
-          estado_humor_afeto?: string | null
-          eventos_vida_relevantes?: string | null
-          evolucao_quadro_clinico?: string | null
-          exame_estado_mental?: string | null
-          funcionamento_cognitivo?: string | null
-          funcionamento_social_ocupacional?: string | null
-          historia_medica_psiquiatrica?: string | null
-          historia_molestia_atual?: string | null
-          historia_pessoal_social_familiar?: string | null
-          id?: string
-          identificacao_paciente?: string | null
-          insight_critica_doenca?: string | null
-          medicacao_aderencia?: string | null
-          observacoes_estado_mental?: string | null
-          padrao_pensamento?: string | null
-          patient_id?: string | null
-          patient_name: string
-          plano_terapeutico_proximos_passos?: string | null
-          qualidade_sono?: string | null
-          queixa_principal?: string | null
-          resumo_sessao_intervencoes?: string | null
-          risco_impulsividade?: string | null
-          sintomas_fisicos?: string | null
-          template_type?: string | null
-          transcription?: string | null
-          updated_at?: string
-        }
-        Update: {
-          apetite_peso?: string | null
-          comportamento_psicomotor?: string | null
-          consultant_type?: string | null
-          consultation_date?: string
-          created_at?: string
-          estado_humor_afeto?: string | null
-          eventos_vida_relevantes?: string | null
-          evolucao_quadro_clinico?: string | null
-          exame_estado_mental?: string | null
-          funcionamento_cognitivo?: string | null
-          funcionamento_social_ocupacional?: string | null
-          historia_medica_psiquiatrica?: string | null
-          historia_molestia_atual?: string | null
-          historia_pessoal_social_familiar?: string | null
-          id?: string
-          identificacao_paciente?: string | null
-          insight_critica_doenca?: string | null
-          medicacao_aderencia?: string | null
-          observacoes_estado_mental?: string | null
-          padrao_pensamento?: string | null
-          patient_id?: string | null
-          patient_name?: string
-          plano_terapeutico_proximos_passos?: string | null
-          qualidade_sono?: string | null
-          queixa_principal?: string | null
-          resumo_sessao_intervencoes?: string | null
-          risco_impulsividade?: string | null
-          sintomas_fisicos?: string | null
-          template_type?: string | null
-          transcription?: string | null
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "medical_records_patient_id_fkey"
-            columns: ["patient_id"]
-            isOneToOne: false
-            referencedRelation: "patients"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       ofertas_compra: {
         Row: {

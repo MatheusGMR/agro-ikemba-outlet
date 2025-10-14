@@ -199,8 +199,8 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
       const newProduct: OpportunityProduct = {
         sku: product.sku,
         name: product.name,
-        preco_unitario: product.main_item.preco_unitario,
-        commission_unit: product.main_item.commission_unit,
+        preco_unitario: product.main_item.base_price,
+        commission_unit: product.main_item.commission_unit ?? 0,
         available_locations: availableLocations,
         selectedLocations: locations.map(loc => ({
           city: loc.city,
@@ -615,7 +615,7 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
                     {product.manufacturer} • {product.total_volume.toFixed(0)}L disponível
                   </div>
                   <div className="text-xs text-green-600">
-                    R$ {product.main_item.preco_unitario.toFixed(2)} • {product.locations_count} local(is)
+                    R$ {product.main_item.base_price.toFixed(2)} • {product.locations_count} local(is)
                   </div>
                 </div>
                 <Plus className="h-4 w-4 text-muted-foreground" />

@@ -46,7 +46,7 @@ export default function DynamicPriceCard({
     
     const firstItem = inventoryItems[0];
     const prices = [
-      firstItem.preco_unitario,
+      firstItem.base_price,
       firstItem.preco_banda_menor,
       firstItem.preco_banda_maior
     ];

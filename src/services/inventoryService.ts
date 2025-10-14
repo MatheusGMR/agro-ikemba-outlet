@@ -90,7 +90,7 @@ export class InventoryService {
             total_volume: 0,
             locations: [],
             price_tiers: [
-              { tier: 'Preço Unitário', price: item.preco_unitario },
+              { tier: 'Preço Unitário', price: item.base_price },
               { tier: 'Preço Banda menor', price: item.preco_banda_menor },
               { tier: 'Preço Banda maior', price: item.preco_banda_maior }
             ],
@@ -177,21 +177,21 @@ export class InventoryService {
     const benefits: PriceTierBenefit[] = [
       {
         tier: 'Preço Unitário',
-        price: firstItem.preco_unitario,
+        price: firstItem.base_price,
         savings: 0,
         savings_percentage: 0
       },
       {
         tier: 'Preço Banda menor',
         price: firstItem.preco_banda_menor,
-        savings: firstItem.preco_unitario - firstItem.preco_banda_menor,
-        savings_percentage: ((firstItem.preco_unitario - firstItem.preco_banda_menor) / firstItem.preco_unitario) * 100
+        savings: firstItem.base_price - firstItem.preco_banda_menor,
+        savings_percentage: ((firstItem.base_price - firstItem.preco_banda_menor) / firstItem.base_price) * 100
       },
       {
         tier: 'Preço Banda maior',
         price: firstItem.preco_banda_maior,
-        savings: firstItem.preco_unitario - firstItem.preco_banda_maior,
-        savings_percentage: ((firstItem.preco_unitario - firstItem.preco_banda_maior) / firstItem.preco_unitario) * 100
+        savings: firstItem.base_price - firstItem.preco_banda_maior,
+        savings_percentage: ((firstItem.base_price - firstItem.preco_banda_maior) / firstItem.base_price) * 100
       }
     ];
 

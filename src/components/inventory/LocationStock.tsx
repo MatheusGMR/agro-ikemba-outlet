@@ -67,7 +67,7 @@ export function LocationStock({ inventory }: LocationStockProps) {
                 
                 <div className="flex gap-1 flex-wrap">
                   <Badge variant="secondary" className="text-xs">
-                    Unitário: R$ {firstItem.preco_unitario.toFixed(2)}
+                    Base: R$ {firstItem.base_price.toFixed(2)}
                   </Badge>
                   <Badge variant="secondary" className="text-xs">
                     Banda Menor: R$ {firstItem.preco_banda_menor.toFixed(2)}
