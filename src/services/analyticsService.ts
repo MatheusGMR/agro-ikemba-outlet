@@ -254,11 +254,9 @@ class AnalyticsService {
 
   // Checkout funnel helpers
   trackCheckoutStep(step: CheckoutFunnelLog['checkout_step'], action: CheckoutFunnelLog['action_type'], data?: any) {
-    // Only track checkout steps for authenticated users
-    if (!this.currentUser?.id) {
-      console.log('[Analytics] Skipping checkout step tracking - user not authenticated');
-      return;
-    }
+    // Track checkout steps for all users (authenticated or anonymous)
+    // Anonymous tracking helps understand drop-off points in the funnel
+    console.log('[Analytics] Tracking checkout step:', step, 'action:', action, 'user:', this.currentUser?.id || 'anonymous');
     
     this.logCheckoutFunnel({
       checkout_step: step,

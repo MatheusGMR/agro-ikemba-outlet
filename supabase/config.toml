@@ -8,3 +8,9 @@ verify_jwt = false
 
 [functions.create-auth-users-batch]
 verify_jwt = false
+
+[functions.create-order]
+verify_jwt = true
+
+[functions.calculate-simulation]
+verify_jwt = true
