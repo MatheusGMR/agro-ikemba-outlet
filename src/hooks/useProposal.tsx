@@ -70,6 +70,8 @@ export function useProposalPublic(publicLink: string) {
             total_price: number;
           }>;
         };
+        reservation_status?: string;
+        reservation_expires_at?: string;
       };
     },
     enabled: !!publicLink,
