@@ -380,6 +380,72 @@ export type Database = {
         }
         Relationships: []
       }
+      inventory_reservations: {
+        Row: {
+          city: string
+          consumed_at: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          inventory_item_id: string | null
+          notes: string | null
+          opportunity_id: string | null
+          product_sku: string
+          proposal_id: string | null
+          reserved_volume: number
+          state: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          city: string
+          consumed_at?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          inventory_item_id?: string | null
+          notes?: string | null
+          opportunity_id?: string | null
+          product_sku: string
+          proposal_id?: string | null
+          reserved_volume: number
+          state: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          city?: string
+          consumed_at?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          inventory_item_id?: string | null
+          notes?: string | null
+          opportunity_id?: string | null
+          product_sku?: string
+          proposal_id?: string | null
+          reserved_volume?: number
+          state?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_reservations_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "opportunities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_reservations_proposal_id_fkey"
+            columns: ["proposal_id"]
+            isOneToOne: false
+            referencedRelation: "proposals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       market_prices: {
         Row: {
           created_at: string
@@ -958,6 +1024,8 @@ export type Database = {
           payment_terms: string | null
           proposal_number: string
           public_link: string | null
+          reservation_expires_at: string | null
+          reservation_status: string | null
           responsible_cpf: string | null
           responsible_email: string | null
           responsible_name: string | null
@@ -981,6 +1049,8 @@ export type Database = {
           payment_terms?: string | null
           proposal_number: string
           public_link?: string | null
+          reservation_expires_at?: string | null
+          reservation_status?: string | null
           responsible_cpf?: string | null
           responsible_email?: string | null
           responsible_name?: string | null
@@ -1004,6 +1074,8 @@ export type Database = {
           payment_terms?: string | null
           proposal_number?: string
           public_link?: string | null
+          reservation_expires_at?: string | null
+          reservation_status?: string | null
           responsible_cpf?: string | null
           responsible_email?: string | null
           responsible_name?: string | null
@@ -1792,6 +1864,101 @@ export type Database = {
       }
     }
     Views: {
+      inventory_available: {
+        Row: {
+          active_ingredient: string | null
+          available_volume: number | null
+          base_price: number | null
+          city: string | null
+          commission_percentage: number | null
+          commission_unit: number | null
+          created_at: string | null
+          expiry_date: string | null
+          id: string | null
+          manufacturer: string | null
+          mapa_number: string | null
+          net_commission: number | null
+          packaging: string | null
+          preco_banda_maior: number | null
+          preco_banda_menor: number | null
+          product_name: string | null
+          product_sku: string | null
+          rep_percentage: number | null
+          reserved_volume: number | null
+          state: string | null
+          supplier_net: number | null
+          total_volume: number | null
+          unit: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          active_ingredient?: string | null
+          available_volume?: never
+          base_price?: number | null
+          city?: string | null
+          commission_percentage?: number | null
+          commission_unit?: number | null
+          created_at?: string | null
+          expiry_date?: string | null
+          id?: string | null
+          manufacturer?: string | null
+          mapa_number?: string | null
+          net_commission?: number | null
+          packaging?: string | null
+          preco_banda_maior?: number | null
+          preco_banda_menor?: number | null
+          product_name?: string | null
+          product_sku?: string | null
+          rep_percentage?: number | null
+          reserved_volume?: never
+          state?: string | null
+          supplier_net?: number | null
+          total_volume?: number | null
+          unit?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          active_ingredient?: string | null
+          available_volume?: never
+          base_price?: number | null
+          city?: string | null
+          commission_percentage?: number | null
+          commission_unit?: number | null
+          created_at?: string | null
+          expiry_date?: string | null
+          id?: string | null
+          manufacturer?: string | null
+          mapa_number?: string | null
+          net_commission?: number | null
+          packaging?: string | null
+          preco_banda_maior?: number | null
+          preco_banda_menor?: number | null
+          product_name?: string | null
+          product_sku?: string | null
+          rep_percentage?: number | null
+          reserved_volume?: never
+          state?: string | null
+          supplier_net?: number | null
+          total_volume?: number | null
+          unit?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      inventory_reservations_report: {
+        Row: {
+          active_reservations: number | null
+          available_volume: number | null
+          city: string | null
+          next_expiry: string | null
+          product_name: string | null
+          product_sku: string | null
+          reserved_volume: number | null
+          state: string | null
+          total_volume: number | null
+        }
+        Relationships: []
+      }
       orders_with_user_info: {
         Row: {
           created_at: string | null
@@ -1814,9 +1981,32 @@ export type Database = {
       }
     }
     Functions: {
+      cancel_inventory_reservation: {
+        Args: { p_proposal_id: string }
+        Returns: boolean
+      }
       check_admin_access: {
         Args: Record<PropertyKey, never>
         Returns: boolean
+      }
+      confirm_inventory_reservation: {
+        Args: { p_proposal_id: string }
+        Returns: boolean
+      }
+      create_inventory_reservation: {
+        Args: {
+          p_city: string
+          p_opportunity_id: string
+          p_product_sku: string
+          p_proposal_id: string
+          p_state: string
+          p_volume: number
+        }
+        Returns: string
+      }
+      expire_inventory_reservations: {
+        Args: Record<PropertyKey, never>
+        Returns: number
       }
       find_representative_by_identifier: {
         Args: { identifier_value: string }
