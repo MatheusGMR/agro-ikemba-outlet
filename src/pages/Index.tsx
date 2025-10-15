@@ -1,6 +1,7 @@
-
-import { Suspense } from 'react';
+import { Suspense, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
+import { useNavigate } from 'react-router-dom';
+import { Capacitor } from '@capacitor/core';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import Hero from '@/components/home/Hero';
@@ -12,9 +13,13 @@ import PreRegistration from '@/components/home/PreRegistration';
 import { LoadingFallback } from '@/components/ui/LoadingFallback';
 import { logger } from '@/utils/logger';
 import { usePageAnalytics } from '@/hooks/useAnalytics';
+import { useAuth } from '@/hooks/useAuth';
 
 const Index = () => {
   logger.log('Index page rendering');
+  
+  const navigate = useNavigate();
+  const { user, isRepresentative } = useAuth();
   
   // Track landing page analytics
   usePageAnalytics({
@@ -22,6 +27,17 @@ const Index = () => {
     pageTitle: 'Home - AgroIkemba',
     enableTimeTracking: true
   });
+
+  // Redirecionamento inteligente para app mobile
+  useEffect(() => {
+    if (Capacitor.isNativePlatform()) {
+      if (user && isRepresentative) {
+        navigate('/representative', { replace: true });
+      } else {
+        navigate('/representative/login', { replace: true });
+      }
+    }
+  }, [user, isRepresentative, navigate]);
   
   const structuredData = {
     "@context": "https://schema.org",
