@@ -1,7 +1,8 @@
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useDashboardStats, useCurrentRepresentative } from '@/hooks/useRepresentative';
-import { Users, Plus, Package } from 'lucide-react';
+import { useReservationStats } from '@/hooks/useInventoryReservations';
+import { Users, Plus, Package, Lock, AlertTriangle } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useAuth } from '@/hooks/useAuth';
 import { useState } from 'react';
@@ -11,12 +12,15 @@ import OpportunityKanban from './OpportunityKanban';
 import InventoryConsultation from './InventoryConsultation';
 import CreateOpportunityDialog from './CreateOpportunityDialog';
 import { ClientRegistrationDialog } from './ClientRegistrationDialog';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 
 
 export default function RepDashboard() {
   const auth = useAuth();
   const { data: representative, isLoading: repLoading } = useCurrentRepresentative();
   const { data: stats, isLoading: statsLoading, error } = useDashboardStats(representative?.id || '');
+  const { data: reservationStats } = useReservationStats(representative?.id);
   const isMobile = useIsMobile();
   const [showCreateOpportunity, setShowCreateOpportunity] = useState(false);
   const [showClientRegistration, setShowClientRegistration] = useState(false);
@@ -82,6 +86,60 @@ export default function RepDashboard() {
           <p className="text-sm text-yellow-800">
             ⚠️ Alguns dados podem não estar atualizados. Verifique sua conexão e tente novamente.
           </p>
+        </div>
+      )}
+
+      {/* Reservation Stats */}
+      {reservationStats && reservationStats.activeCount > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Reservas Ativas</CardTitle>
+              <Lock className="h-4 w-4 text-orange-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{reservationStats.activeCount}</div>
+              <p className="text-xs text-muted-foreground">
+                {reservationStats.totalReservedVolume.toLocaleString('pt-BR')} L reservados
+              </p>
+              {reservationStats.expiringIn24hCount > 0 && (
+                <Badge variant="destructive" className="mt-2">
+                  <AlertTriangle className="h-3 w-3 mr-1" />
+                  {reservationStats.expiringIn24hCount} expirando em 24h!
+                </Badge>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Taxa de Conversão</CardTitle>
+              <Package className="h-4 w-4 text-green-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-600">
+                {reservationStats.conversionRate}%
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {reservationStats.confirmedCount} confirmadas / {reservationStats.expiredCount} expiradas
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Volume Médio</CardTitle>
+              <Package className="h-4 w-4 text-blue-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {Math.round(reservationStats.totalReservedVolume / reservationStats.activeCount).toLocaleString('pt-BR')}L
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Por proposta ativa
+              </p>
+            </CardContent>
+          </Card>
         </div>
       )}
 

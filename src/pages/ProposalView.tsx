@@ -9,7 +9,9 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useProposalPublic, useApproveProposal, useRejectProposal } from '@/hooks/useProposal';
 import { toast } from '@/hooks/use-toast';
-import { CheckCircle, XCircle, FileText, Building, User, Phone, Mail, Calendar, DollarSign, Loader2 } from 'lucide-react';
+import { CheckCircle, XCircle, FileText, Building, User, Phone, Mail, Calendar, DollarSign, Loader2, AlertTriangle } from 'lucide-react';
+import { ReservationExpiryAlert } from '@/components/representative/ReservationExpiryAlert';
+import { RepresentativeService } from '@/services/representativeService';
 
 export default function ProposalView() {
   const { publicLink } = useParams<{ publicLink: string }>();
@@ -33,6 +35,16 @@ export default function ProposalView() {
   const handleApprove = async () => {
     if (!proposal) return;
 
+    // Check if reservation has expired
+    if (proposal.reservation_status === 'expired') {
+      toast({
+        title: "Reserva Expirada",
+        description: "Esta proposta perdeu a reserva de estoque. Entre em contato com o representante.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     if (!approvalData.client_name || !approvalData.client_position) {
       toast({
         title: "Campos obrigatórios",
@@ -43,6 +55,10 @@ export default function ProposalView() {
     }
 
     try {
+      // Use RepresentativeService to approve and confirm reservation
+      await RepresentativeService.approveProposal(proposal.id);
+
+      // Also send approval data
       await approveProposal.mutateAsync({
         proposalId: proposal.id,
         approvalData
@@ -50,12 +66,12 @@ export default function ProposalView() {
 
       toast({
         title: "Proposta Aprovada!",
-        description: "A proposta foi aprovada com sucesso. O representante será notificado.",
+        description: "A proposta foi aprovada e o estoque foi reservado. O representante será notificado.",
       });
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Erro",
-        description: "Erro ao aprovar proposta. Tente novamente.",
+        description: error.message || "Erro ao aprovar proposta. Tente novamente.",
         variant: "destructive"
       });
     }
@@ -114,7 +130,8 @@ export default function ProposalView() {
   }
 
   const isExpired = new Date(proposal.validity_date) < new Date();
-  const canInteract = !['approved', 'rejected'].includes(proposal.status) && !isExpired;
+  const isReservationExpired = proposal.reservation_status === 'expired';
+  const canInteract = !['approved', 'rejected'].includes(proposal.status) && !isExpired && !isReservationExpired;
 
   return (
     <div className="min-h-screen bg-background">
@@ -136,6 +153,14 @@ export default function ProposalView() {
             {isExpired && 'Expirada'}
           </Badge>
         </div>
+
+        {/* Reservation Alert */}
+        {proposal.reservation_expires_at && (
+          <ReservationExpiryAlert 
+            expiresAt={proposal.reservation_expires_at}
+            reservationStatus={proposal.reservation_status}
+          />
+        )}
 
         {/* Proposal Details */}
         <div className="grid gap-6">

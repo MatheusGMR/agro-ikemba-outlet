@@ -425,9 +425,24 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
           }
         }
 
-        // 3. Create proposal
+        // 3. Create proposal with inventory reservations
         const validityDate = new Date();
         validityDate.setDate(validityDate.getDate() + 30); // 30 days validity
+
+        // Flatten products with locations into items
+        const items = selectedProducts.flatMap(product =>
+          product.selectedLocations.map(loc => ({
+            product_sku: product.sku,
+            product_name: product.name,
+            quantity: loc.quantity,
+            city: loc.city,
+            state: loc.state,
+            unit_price: product.preco_unitario,
+            total_price: loc.quantity * product.preco_unitario,
+            commission_unit: product.commission_unit,
+            total_commission: loc.quantity * product.commission_unit
+          }))
+        );
 
         const proposalData = {
           opportunity_id: opportunity.id,
@@ -441,8 +456,12 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
           status: 'draft' as const
         };
 
-        const proposal = await RepresentativeService.createProposal(proposalData);
-        console.log('Proposta criada:', proposal.id);
+        // Create proposal with automatic inventory reservations
+        const proposal = await RepresentativeService.createProposalWithReservation(
+          proposalData,
+          items
+        );
+        console.log('Proposta criada com reservas:', proposal.id);
 
         // 4. Atualizar contato do cliente se necessário
         if (contactMode === 'new' && updateClientContact && selectedClient) {
