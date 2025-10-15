@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useDashboardStats, useCurrentRepresentative } from '@/hooks/useRepresentative';
 import { useReservationStats } from '@/hooks/useInventoryReservations';
-import { Users, Plus, Package, Lock, AlertTriangle } from 'lucide-react';
+import { Users, Plus, Package, Lock, AlertTriangle, Upload } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useAuth } from '@/hooks/useAuth';
 import { useState } from 'react';
@@ -12,6 +12,7 @@ import OpportunityKanban from './OpportunityKanban';
 import InventoryConsultation from './InventoryConsultation';
 import CreateOpportunityDialog from './CreateOpportunityDialog';
 import { ClientRegistrationDialog } from './ClientRegistrationDialog';
+import BulkClientImport from './BulkClientImport';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 
@@ -24,6 +25,7 @@ export default function RepDashboard() {
   const isMobile = useIsMobile();
   const [showCreateOpportunity, setShowCreateOpportunity] = useState(false);
   const [showClientRegistration, setShowClientRegistration] = useState(false);
+  const [showBulkImport, setShowBulkImport] = useState(false);
 
   const overallLoading = auth.isLoading || repLoading || (representative?.id ? statsLoading : false);
   console.info('🏠 RepDashboard', { userId: auth.user?.id ?? null, repId: representative?.id ?? null, overallLoading, statsLoading, repLoading, hasStats: !!stats, error });
@@ -76,6 +78,10 @@ export default function RepDashboard() {
           <Button variant="outline" onClick={() => setShowClientRegistration(true)}>
             <Users className="h-4 w-4 mr-2" />
             Cadastrar Cliente
+          </Button>
+          <Button variant="outline" onClick={() => setShowBulkImport(true)}>
+            <Upload className="h-4 w-4 mr-2" />
+            Importar Clientes
           </Button>
         </div>
       </div>
@@ -202,6 +208,19 @@ export default function RepDashboard() {
         onOpenChange={setShowClientRegistration}
         representativeId={representative?.id || ''}
       />
+
+      {/* Bulk Import Dialog */}
+      <Dialog open={showBulkImport} onOpenChange={setShowBulkImport}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Importação em Massa de Clientes</DialogTitle>
+          </DialogHeader>
+          <BulkClientImport 
+            representativeId={representative?.id || ''}
+            onClose={() => setShowBulkImport(false)}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

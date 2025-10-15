@@ -89,14 +89,17 @@ export default function ProgressiveClientRegistrationDialog({
         return formData.contact_name.length >= 2 || "Nome do contato deve ter pelo menos 2 caracteres";
       case 3: // Contact Function
         return !!formData.contact_function || "Selecione a função do contato";
-      case 4: // CNPJ (optional)
+      case 4: // CNPJ (now required)
+        if (!formData.cnpj_cpf || formData.cnpj_cpf.length < 18) {
+          return "CNPJ é obrigatório (formato: XX.XXX.XXX/XXXX-XX)";
+        }
         return true;
-      case 5: // Phone and Email
-        const phoneValid = !formData.phone || formData.phone.length >= 11;
+      case 5: // Phone and Email (phone now required)
+        if (!formData.phone || formData.phone.length < 14) {
+          return "Telefone é obrigatório (formato: (XX) XXXXX-XXXX)";
+        }
         const emailValid = !formData.email || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email);
-        if (!phoneValid) return "Telefone deve ter pelo menos 11 dígitos";
-        if (!emailValid) return "Email inválido";
-        if (!formData.phone && !formData.email) return "Informe pelo menos telefone ou email";
+        if (!emailValid) return "Email inválido (opcional)";
         return true;
       default:
         return true;
@@ -210,7 +213,7 @@ export default function ProgressiveClientRegistrationDialog({
     {
       id: 'cnpj',
       title: 'CNPJ da empresa',
-      description: 'Se souber o CNPJ, isso ajuda na identificação',
+      description: 'Informe o CNPJ da empresa',
       component: (
         <div className="space-y-4">
           <ProgressiveInput
@@ -221,20 +224,18 @@ export default function ProgressiveClientRegistrationDialog({
             onEnter={() => setCurrentStep(5)}
             icon={Building}
             formatter={formatCNPJ}
+            required
             autoFocus
+            error={validateStep(4) !== true ? String(validateStep(4)) : undefined}
           />
-          <div className="text-sm text-muted-foreground bg-secondary/50 p-3 rounded-md text-center">
-            <p>💡 O CNPJ é opcional, mas facilita a identificação da empresa</p>
-          </div>
         </div>
       ),
-      optional: true,
       validate: () => validateStep(4),
     },
     {
       id: 'contact-info',
       title: 'Informações de contato',
-      description: 'Como podemos entrar em contato? (pelo menos um campo)',
+      description: 'Telefone obrigatório, email opcional',
       component: (
         <div className="space-y-6">
           <ProgressiveInput
@@ -245,19 +246,18 @@ export default function ProgressiveClientRegistrationDialog({
             type="tel"
             icon={Phone}
             formatter={formatPhone}
+            required
             autoFocus
+            error={validateStep(5) !== true ? String(validateStep(5)) : undefined}
           />
           <ProgressiveInput
-            label="Email"
+            label="Email (opcional)"
             placeholder="contato@empresa.com"
             value={formData.email}
             onChange={(value) => updateFormData('email', value)}
             type="email"
             icon={Mail}
           />
-          {validateStep(5) !== true && (
-            <p className="text-sm text-destructive">{String(validateStep(5))}</p>
-          )}
         </div>
       ),
       validate: () => validateStep(5),

@@ -92,6 +92,13 @@ export const useBotProtection = () => {
   const validateBotProtection = useCallback(async (): Promise<BotProtectionResult> => {
     console.log('🛡️ Starting bot protection validation...');
     
+    // Verify reCAPTCHA site key is configured
+    const siteKey = (import.meta as any).env?.VITE_RECAPTCHA_SITE_KEY;
+    if (!siteKey) {
+      console.error('❌ VITE_RECAPTCHA_SITE_KEY não está configurado!');
+      return { isBot: true, reason: 'recaptcha_not_configured' };
+    }
+    
     // 1. Check honeypot fields - if any are filled, it's likely a bot
     if (honeypotData.businessEmail || honeypotData.companyWebsite || honeypotData.marketingConsent) {
       console.log('🛡️ Bot detected: Honeypot field filled', honeypotData);

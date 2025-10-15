@@ -60,6 +60,32 @@ export function useUpdateClient() {
   });
 }
 
+export function useBulkCreateClients() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async ({ representativeId, clients }: { 
+      representativeId: string; 
+      clients: Array<Omit<RepClient, 'id' | 'created_at' | 'updated_at' | 'representative_id'> & { representative_id: string }>
+    }) => {
+      const results = await Promise.allSettled(
+        clients.map(client => 
+          RepresentativeService.createClient(client)
+        )
+      );
+      return results;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ 
+        queryKey: ['rep-clients', variables.representativeId] 
+      });
+      queryClient.invalidateQueries({ 
+        queryKey: ['dashboard-stats', variables.representativeId] 
+      });
+    }
+  });
+}
+
 // Opportunity hooks
 export function useOpportunities(representativeId: string) {
   return useQuery({
