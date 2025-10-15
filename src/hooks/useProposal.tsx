@@ -47,7 +47,7 @@ export function useProposalPublic(publicLink: string) {
         .single();
 
       if (error) throw error;
-      return data as Proposal & {
+      return data as Omit<Proposal, 'opportunity'> & {
         opportunity: {
           id: string;
           title: string;
