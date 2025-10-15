@@ -27,7 +27,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { PendingUser, AdminStats } from '@/types/admin';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
-import { Check, X, Eye, Users, UserCheck, UserX, Clock, LogOut, RefreshCw, Search, Phone, PhoneOff, Mail } from 'lucide-react';
+import { Check, X, Eye, Users, UserCheck, UserX, Clock, LogOut, RefreshCw, Search, Phone, PhoneOff, Mail, Package } from 'lucide-react';
 import { userService } from '@/services/userService';
 import { ImageUploader } from '@/components/admin/ImageUploader';
 import EmailTestingPanel from '@/components/admin/EmailTestingPanel';
@@ -314,6 +314,13 @@ export default function Admin() {
             <p className="text-gray-600">Gerencie os acessos à plataforma Agro Ikemba</p>
           </div>
           <div className="flex gap-2">
+            <Button 
+              onClick={() => navigate('/admin/inventory')}
+              variant="outline"
+            >
+              <Package className="w-4 h-4 mr-2" />
+              Gestão de Estoque
+            </Button>
             <Button 
               onClick={() => createAuthUsers()}
               disabled={loading}

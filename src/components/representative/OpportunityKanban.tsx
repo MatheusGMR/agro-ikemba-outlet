@@ -12,12 +12,17 @@ import {
   Kanban,
   ChevronRight,
   XCircle,
-  CheckCircle
+  CheckCircle,
+  Clock,
+  AlertTriangle
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { toast } from '@/hooks/use-toast';
 import LossReasonDialog from './LossReasonDialog';
+import { ReservationExpiryAlert } from './ReservationExpiryAlert';
+import { supabase } from '@/integrations/supabase/client';
+import { useQuery } from '@tanstack/react-query';
 
 const STAGE_LABELS = {
   com_oportunidade: 'Com Oportunidade',
@@ -41,16 +46,39 @@ interface OpportunityCardProps {
   onCreateProposal: (opportunity: Opportunity) => void;
   onMarkAsLost: (opportunity: Opportunity) => void;
   onMarkAsWon: (opportunityId: string) => void;
+  proposal?: {
+    id: string;
+    reservation_status?: string;
+    reservation_expires_at?: string;
+  };
 }
 
-function OpportunityCard({ opportunity, onAdvanceStage, onCreateProposal, onMarkAsLost, onMarkAsWon }: OpportunityCardProps) {
+function OpportunityCard({ opportunity, onAdvanceStage, onCreateProposal, onMarkAsLost, onMarkAsWon, proposal }: OpportunityCardProps) {
   const stageKeys = Object.keys(STAGE_LABELS) as Array<keyof typeof STAGE_LABELS>;
   const currentStageIndex = stageKeys.indexOf(opportunity.stage);
   const nextStage = currentStageIndex < stageKeys.length - 1 ? stageKeys[currentStageIndex + 1] : null;
 
+  // Calcular horas restantes para expiração
+  const hoursLeft = proposal?.reservation_expires_at 
+    ? (new Date(proposal.reservation_expires_at).getTime() - new Date().getTime()) / (1000 * 60 * 60)
+    : null;
+
+  const isExpiringSoon = hoursLeft !== null && hoursLeft > 0 && hoursLeft <= 24;
+  const isExpired = hoursLeft !== null && hoursLeft <= 0;
+
   return (
     <Card className="mb-3 hover:shadow-md transition-shadow">
       <CardContent className="p-4">
+        {/* Alerta de reserva */}
+        {proposal?.reservation_expires_at && (
+          <div className="mb-3">
+            <ReservationExpiryAlert 
+              expiresAt={proposal.reservation_expires_at}
+              reservationStatus={proposal.reservation_status}
+            />
+          </div>
+        )}
+
         <div className="flex items-start justify-between mb-3">
           <div className="flex-1">
             <h4 className="font-semibold text-base mb-1">{opportunity.client?.company_name}</h4>
@@ -76,12 +104,27 @@ function OpportunityCard({ opportunity, onAdvanceStage, onCreateProposal, onMark
               )}
             </div>
           </div>
-          <Badge 
-            variant="outline" 
-            className={`text-xs ${STAGE_COLORS[opportunity.stage]}`}
-          >
-            {opportunity.probability}%
-          </Badge>
+          <div className="flex flex-col gap-1 items-end">
+            <Badge 
+              variant="outline" 
+              className={`text-xs ${STAGE_COLORS[opportunity.stage]}`}
+            >
+              {opportunity.probability}%
+            </Badge>
+            {/* Badge de urgência para reservas expirando */}
+            {isExpiringSoon && (
+              <Badge variant="outline" className="text-xs bg-orange-50 text-orange-700 border-orange-200">
+                <Clock className="h-3 w-3 mr-1" />
+                Expira em {Math.floor(hoursLeft!)}h
+              </Badge>
+            )}
+            {isExpired && (
+              <Badge variant="outline" className="text-xs bg-red-50 text-red-700 border-red-200">
+                <AlertTriangle className="h-3 w-3 mr-1" />
+                Expirada
+              </Badge>
+            )}
+          </div>
         </div>
         
         <div className="mb-3">
@@ -155,6 +198,24 @@ export default function OpportunityKanban() {
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
   const [lossDialogOpen, setLossDialogOpen] = useState(false);
   const [selectedOpportunityForLoss, setSelectedOpportunityForLoss] = useState<Opportunity | null>(null);
+
+  // Buscar propostas com reservas para cada oportunidade
+  const { data: proposalsWithReservations = [] } = useQuery({
+    queryKey: ['proposals-with-reservations', representative?.id],
+    queryFn: async () => {
+      if (!representative?.id) return [];
+      
+      const { data, error } = await supabase
+        .from('proposals')
+        .select('id, opportunity_id, reservation_status, reservation_expires_at')
+        .in('opportunity_id', opportunities.map(o => o.id))
+        .eq('reservation_status', 'active');
+      
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!representative?.id && opportunities.length > 0,
+  });
 
   console.info('🎯 OpportunityKanban - representative:', representative?.id, 'opportunities:', opportunities.length, 'loading:', isLoading, 'error:', error);
 
@@ -380,16 +441,21 @@ export default function OpportunityKanban() {
               </div>
               
               <div className="space-y-2 min-h-[200px]">
-                {opportunitiesByStage[stage]?.map(opportunity => (
-                  <OpportunityCard
-                    key={opportunity.id}
-                    opportunity={opportunity}
-                    onAdvanceStage={handleAdvanceStage}
-                    onCreateProposal={handleCreateProposal}
-                    onMarkAsLost={handleMarkAsLost}
-                    onMarkAsWon={handleMarkAsWon}
-                  />
-                ))}
+                {opportunitiesByStage[stage]?.map(opportunity => {
+                  const proposal = proposalsWithReservations.find(p => p.opportunity_id === opportunity.id);
+                  
+                  return (
+                    <OpportunityCard
+                      key={opportunity.id}
+                      opportunity={opportunity}
+                      onAdvanceStage={handleAdvanceStage}
+                      onCreateProposal={handleCreateProposal}
+                      onMarkAsLost={handleMarkAsLost}
+                      onMarkAsWon={handleMarkAsWon}
+                      proposal={proposal}
+                    />
+                  );
+                })}
                 
                 {(!opportunitiesByStage[stage] || opportunitiesByStage[stage].length === 0) && (
                   <div className="text-center py-8 text-muted-foreground text-sm">
