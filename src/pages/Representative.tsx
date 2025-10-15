@@ -2,6 +2,7 @@ import { Helmet } from 'react-helmet-async';
 import RepresentativeHeader from '@/components/representative/RepresentativeHeader';
 import ProgressiveLoadingDashboard from '@/components/representative/ProgressiveLoadingDashboard';
 import { SessionTimeoutModal } from '@/components/representative/SessionTimeoutModal';
+import { OfflineIndicator } from '@/components/mobile/OfflineIndicator';
 import { useSessionTimeout } from '@/hooks/useSessionTimeout';
 
 export default function Representative() {
@@ -19,6 +20,7 @@ export default function Representative() {
 
       <div className="min-h-screen bg-background">
         <RepresentativeHeader />
+        <OfflineIndicator />
         <div className="container mx-auto p-6">
           <ProgressiveLoadingDashboard />
         </div>

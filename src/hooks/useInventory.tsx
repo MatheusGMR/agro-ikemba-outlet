@@ -1,5 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { InventoryService } from '@/services/inventoryService';
+import { offlineStorage } from '@/utils/offlineStorage';
+import { useNetworkStatus } from './useNetworkStatus';
+import type { GroupedProduct } from '@/types/inventory';
 
 export function useInventoryBySku(sku: string) {
   return useQuery({
@@ -44,9 +47,31 @@ export function useTotalVolumeAvailable() {
 }
 
 export function useGroupedProductsForSales() {
-  return useQuery({
+  const { isOnline } = useNetworkStatus();
+
+  return useQuery<GroupedProduct[]>({
     queryKey: ['products', 'grouped-for-sales'],
-    queryFn: () => InventoryService.getGroupedProductsForSales(),
-    staleTime: 5 * 60 * 1000 // 5 minutes
+    queryFn: async (): Promise<GroupedProduct[]> => {
+      const CACHE_KEY = 'grouped-products-for-sales';
+      
+      try {
+        const data = await InventoryService.getGroupedProductsForSales();
+        // Save to offline cache
+        await offlineStorage.set(CACHE_KEY, data, 5 * 60 * 1000);
+        return data;
+      } catch (error) {
+        // If offline, try to get from cache
+        if (!isOnline) {
+          const cached = await offlineStorage.getStale<GroupedProduct[]>(CACHE_KEY);
+          if (cached) {
+            console.log('[useGroupedProductsForSales] Using offline cache');
+            return cached;
+          }
+        }
+        throw error;
+      }
+    },
+    staleTime: 5 * 60 * 1000,
+    retry: isOnline ? 3 : 0,
   });
 }

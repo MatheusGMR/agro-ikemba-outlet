@@ -11,12 +11,14 @@ import { toast } from '@/hooks/use-toast';
 import { useCurrentRepresentative } from '@/hooks/useRepresentative';
 import { useRepClients } from '@/hooks/useRepresentative';
 import { useGroupedProductsForSales } from '@/hooks/useInventory';
+import { useNetworkStatus } from '@/hooks/useNetworkStatus';
+import { operationQueue } from '@/utils/offlineStorage';
 import ProductLocationSelector from './ProductLocationSelector';
 import { PDFGenerator } from '@/utils/pdfGenerator';
 import { RepresentativeService } from '@/services/representativeService';
 import type { RepClient } from '@/types/representative';
 import type { GroupedProduct } from '@/types/inventory';
-import { MapPin, Package, DollarSign, FileText, Plus, Minus, Info, CheckCircle, Copy, Loader2, User } from 'lucide-react';
+import { MapPin, Package, DollarSign, FileText, Plus, Minus, Info, CheckCircle, Copy, Loader2, User, WifiOff } from 'lucide-react';
 
 interface CreateOpportunityDialogProps {
   onClose: () => void;
@@ -42,7 +44,8 @@ interface OpportunityProduct {
 export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDialogProps) {
   const { data: representative } = useCurrentRepresentative();
   const { data: clients = [] } = useRepClients(representative?.id || '');
-  const { data: products = [] } = useGroupedProductsForSales();
+  const { data: products = [], isLoading: loadingProducts } = useGroupedProductsForSales();
+  const { isOnline } = useNetworkStatus();
   
   const [formData, setFormData] = useState({
     title: '',
@@ -310,12 +313,11 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
 
         const { totalValue, totalCommission } = calculateTotals;
 
-        // 1. Create opportunity - Generate intelligent title based on context
+        // Generate intelligent title based on context
         const currentDate = new Date();
         const month = currentDate.getMonth() + 1;
         const year = currentDate.getFullYear();
         
-        // Determine season/period
         let period = '';
         if (month >= 10 || month <= 3) {
           period = `Safra ${month >= 10 ? year : year-1}/${month >= 10 ? year+1 : year}`;
@@ -323,7 +325,6 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
           period = `${currentDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}`;
         }
         
-        // Generate title based on products or default
         let autoTitle = '';
         if (selectedProducts.length === 1) {
           autoTitle = `${selectedProducts[0].name} - ${period}`;
@@ -338,7 +339,61 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
         } else {
           autoTitle = `Proposta - ${period}`;
         }
+
+        // If offline, save to queue
+        if (!isOnline) {
+          const items = selectedProducts.flatMap(product =>
+            product.selectedLocations.map(location => ({
+              product_sku: product.sku,
+              product_name: product.name,
+              quantity: location.quantity,
+              unit_price: product.preco_unitario,
+              total_price: location.quantity * product.preco_unitario,
+              commission_unit: product.commission_unit,
+              total_commission: location.quantity * product.commission_unit
+            }))
+          );
+
+          await operationQueue.add({
+            type: 'opportunity',
+            data: {
+              representative_id: representative.id,
+              client_id: formData.client_id,
+              title: autoTitle,
+              description: formData.description,
+              stage: 'proposta_apresentada',
+              estimated_value: totalValue,
+              estimated_commission: totalCommission,
+              items
+            }
+          });
+
+          toast({
+            title: "Salvo para envio posterior",
+            description: "A oportunidade será enviada automaticamente quando você estiver online.",
+          });
+
+          // Reset form
+          setCurrentStep('basic');
+          setFormData({
+            title: '',
+            description: '',
+            client_id: '',
+            probability: '50',
+            payment_method: '',
+            delivery_method: ''
+          });
+          setSelectedProducts([]);
+          setSelectedClient(null);
+          setResponsibleData({ name: '', cpf: '', position: '', email: '', phone: '' });
+          setContactMode('existing');
+          setUpdateClientContact(false);
+          setIsSubmitting(false);
+          onClose();
+          return;
+        }
           
+        // Online flow - create opportunity
         const opportunityData = {
           representative_id: representative.id,
           client_id: formData.client_id,
@@ -899,6 +954,16 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Offline indicator */}
+      {!isOnline && (
+        <div className="flex items-center gap-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <WifiOff className="h-4 w-4 text-yellow-600" />
+          <span className="text-sm text-yellow-800">
+            Modo offline: As oportunidades serão enviadas automaticamente quando você estiver online
+          </span>
+        </div>
+      )}
+
       {/* Progress Steps */}
       <div className="flex items-center justify-between text-sm">
         {['Básico', 'Produtos', 'Condições', 'Responsável', 'Resumo'].map((step, index) => {

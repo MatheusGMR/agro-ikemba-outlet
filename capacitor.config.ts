@@ -1,13 +1,9 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'app.lovable.c3fd88f5deed4c49874fa30ae9501862',
-  appName: 'agro-ikemba-outlet',
+  appId: 'com.agroikemba.representantes',
+  appName: 'AgroIkemba Reps',
   webDir: 'dist',
-  server: {
-    url: 'https://c3fd88f5-deed-4c49-874f-a30ae9501862.lovableproject.com?forceHideBadge=true',
-    cleartext: true
-  },
   plugins: {
     SplashScreen: {
       launchShowDuration: 3000,
