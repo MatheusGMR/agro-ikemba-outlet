@@ -599,4 +599,148 @@ export class RepresentativeService {
 
     return result;
   }
+
+  // === SISTEMA DE RESERVAS DE ESTOQUE ===
+
+  // Criar proposta com reserva de estoque
+  static async createProposalWithReservation(
+    proposalData: Omit<Proposal, 'id' | 'created_at' | 'updated_at' | 'proposal_number'>,
+    items: Array<{
+      product_sku: string;
+      product_name: string;
+      quantity: number;
+      city: string;
+      state: string;
+      unit_price: number;
+      total_price: number;
+      commission_unit: number;
+      total_commission: number;
+    }>
+  ): Promise<Proposal> {
+    try {
+      console.log('📦 Criando proposta com reserva de estoque...');
+      
+      // 1. Gerar número da proposta
+      const { data: proposalNumber, error: numberError } = await supabase.rpc('generate_proposal_number');
+      if (numberError) throw numberError;
+
+      // 2. Criar proposta com status de reserva ativo
+      const { data: proposal, error: proposalError } = await supabase
+        .from('proposals')
+        .insert({
+          ...proposalData,
+          proposal_number: proposalNumber,
+          reservation_status: 'active',
+          reservation_expires_at: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString()
+        })
+        .select(`
+          *,
+          opportunity:opportunities(
+            *,
+            client:rep_clients(*)
+          )
+        `)
+        .single();
+
+      if (proposalError) throw proposalError;
+
+      console.log('✅ Proposta criada:', proposal.id);
+
+      // 3. Criar reservas para cada item
+      const reservationPromises = items.map(async (item) => {
+        try {
+          const { error: reservationError } = await supabase.rpc('create_inventory_reservation', {
+            p_opportunity_id: proposalData.opportunity_id,
+            p_proposal_id: proposal.id,
+            p_product_sku: item.product_sku,
+            p_city: item.city,
+            p_state: item.state,
+            p_volume: item.quantity
+          });
+
+          if (reservationError) {
+            console.error('❌ Erro ao criar reserva:', item.product_name, reservationError);
+            throw new Error(`Estoque insuficiente para ${item.product_name} em ${item.city}, ${item.state}`);
+          }
+
+          console.log('✅ Reserva criada:', item.product_name, item.quantity, item.city);
+        } catch (error) {
+          console.error('❌ Falha ao reservar:', item.product_name, error);
+          throw error;
+        }
+      });
+
+      try {
+        await Promise.all(reservationPromises);
+        console.log('✅ Todas as reservas criadas com sucesso');
+      } catch (error) {
+        // Rollback: cancelar proposta se alguma reserva falhar
+        console.error('❌ Rollback: Cancelando proposta devido a falha nas reservas');
+        await this.cancelProposal(proposal.id);
+        throw error;
+      }
+
+      // 4. Adicionar items da oportunidade
+      const itemsPromises = items.map(item => 
+        supabase.from('opportunity_items').insert({
+          opportunity_id: proposalData.opportunity_id,
+          ...item
+        })
+      );
+
+      await Promise.all(itemsPromises);
+
+      return proposal as Proposal;
+    } catch (error) {
+      console.error('❌ Erro ao criar proposta com reserva:', error);
+      throw error;
+    }
+  }
+
+  // Aprovar proposta (confirmar reserva)
+  static async approveProposal(proposalId: string): Promise<void> {
+    console.log('✅ Aprovando proposta e confirmando reserva:', proposalId);
+    
+    const { error } = await supabase.rpc('confirm_inventory_reservation', {
+      p_proposal_id: proposalId
+    });
+
+    if (error) {
+      console.error('❌ Erro ao confirmar reserva:', error);
+      throw error;
+    }
+
+    // Atualizar status da proposta
+    await supabase
+      .from('proposals')
+      .update({ 
+        status: 'approved',
+        client_approved_at: new Date().toISOString()
+      })
+      .eq('id', proposalId);
+
+    console.log('✅ Proposta aprovada e reserva confirmada');
+  }
+
+  // Cancelar proposta (liberar reserva)
+  static async cancelProposal(proposalId: string): Promise<void> {
+    console.log('🚫 Cancelando proposta e liberando reserva:', proposalId);
+    
+    const { error } = await supabase.rpc('cancel_inventory_reservation', {
+      p_proposal_id: proposalId
+    });
+
+    if (error) {
+      console.error('❌ Erro ao cancelar reserva:', error);
+      throw error;
+    }
+
+    // Atualizar status da proposta
+    await supabase
+      .from('proposals')
+      .update({ status: 'cancelled' })
+      .eq('id', proposalId);
+
+    console.log('✅ Proposta cancelada e reserva liberada');
+  }
 }

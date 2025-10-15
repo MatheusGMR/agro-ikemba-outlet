@@ -21,6 +21,10 @@ export interface InventoryItem {
   supplier_net?: number;
   created_at: string;
   updated_at: string;
+  // Campos adicionados pela view inventory_available
+  total_volume?: number;
+  reserved_volume?: number;
+  available_volume?: number;
 }
 
 export interface ProductDocument {

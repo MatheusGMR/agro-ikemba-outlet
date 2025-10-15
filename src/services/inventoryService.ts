@@ -31,6 +31,22 @@ export class InventoryService {
     return (data || []) as InventoryItem[];
   }
 
+  // Nova função para buscar inventário com volume disponível real
+  static async getAvailableInventory(): Promise<InventoryItem[]> {
+    const { data, error } = await supabase
+      .from('inventory_available')
+      .select('*')
+      .gt('available_volume', 0)
+      .order('product_name', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching available inventory:', error);
+      throw error;
+    }
+
+    return (data || []) as InventoryItem[];
+  }
+
   static async getProductDocuments(sku: string): Promise<ProductDocument[]> {
     const { data, error } = await supabase
       .from('product_documents')
@@ -129,7 +145,8 @@ export class InventoryService {
 
   // Nova função para agrupar produtos mostrando apenas preço unitário
   static async getGroupedProductsForSales(): Promise<GroupedProduct[]> {
-    const inventory = await this.getAllInventory();
+    // Usar inventory_available ao invés de inventory para ver volumes reais disponíveis
+    const inventory = await this.getAvailableInventory();
     const productMap = new Map<string, GroupedProduct>();
 
     for (const item of inventory) {
@@ -149,24 +166,28 @@ export class InventoryService {
       }
     }
 
-    // Calculate total volume and unique locations count
+    // Calculate AVAILABLE volumes (not total)
     for (const product of productMap.values()) {
       const uniqueLocationVolumes = new Map<string, number>();
       
-      // Group by unique physical location and sum volumes
+      // Group by unique physical location and sum AVAILABLE volumes
       for (const item of product.all_items) {
         const locationKey = `${item.city}-${item.state}`;
+        // Usar available_volume ao invés de volume_available
+        const availableVol = item.available_volume || item.volume_available;
+        
         if (!uniqueLocationVolumes.has(locationKey)) {
-          uniqueLocationVolumes.set(locationKey, item.volume_available);
+          uniqueLocationVolumes.set(locationKey, availableVol);
         }
       }
       
-      // Sum unique volumes by location
+      // Sum unique available volumes by location
       product.total_volume = Array.from(uniqueLocationVolumes.values()).reduce((sum, vol) => sum + vol, 0);
       product.locations_count = uniqueLocationVolumes.size;
     }
 
-    return Array.from(productMap.values());
+    // Filtrar produtos que ainda têm volume disponível
+    return Array.from(productMap.values()).filter(p => p.total_volume > 0);
   }
 
   static calculatePriceBenefits(inventory: InventoryItem[]): PriceTierBenefit[] {
