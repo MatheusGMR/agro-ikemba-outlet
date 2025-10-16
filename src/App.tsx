@@ -44,10 +44,22 @@ const queryClient = new QueryClient();
 
 function App() {
   const recaptchaSiteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY || '';
+  
+  // Warn if reCAPTCHA is not configured
+  if (!recaptchaSiteKey) {
+    console.warn('⚠️ VITE_RECAPTCHA_SITE_KEY não está configurado. reCAPTCHA não funcionará.');
+  }
 
   return (
     <QueryClientProvider client={queryClient}>
-      <GoogleReCaptchaProvider reCaptchaKey={recaptchaSiteKey}>
+      <GoogleReCaptchaProvider 
+        reCaptchaKey={recaptchaSiteKey}
+        scriptProps={{
+          async: true,
+          defer: true,
+          appendTo: 'head'
+        }}
+      >
         <CartProvider>
           <HelmetProvider>
             <TooltipProvider>

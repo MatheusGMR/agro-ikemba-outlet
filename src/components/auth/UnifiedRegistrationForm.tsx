@@ -663,14 +663,7 @@ function UnifiedRegistrationFormInner({
   );
 }
 
-// Main component with reCAPTCHA provider
+// Main component without reCAPTCHA provider (using global provider from App.tsx)
 export function UnifiedRegistrationForm(props: UnifiedRegistrationFormProps) {
-  // Get reCAPTCHA site key from environment or use development key
-  const recaptchaSiteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY || '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI'; // Google test key
-
-  return (
-    <GoogleReCaptchaProvider reCaptchaKey={recaptchaSiteKey}>
-      <UnifiedRegistrationFormInner {...props} />
-    </GoogleReCaptchaProvider>
-  );
+  return <UnifiedRegistrationFormInner {...props} />;
 }
