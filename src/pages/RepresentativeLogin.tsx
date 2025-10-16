@@ -13,6 +13,7 @@ import Footer from '@/components/layout/Footer';
 import { useAuth } from '@/hooks/useAuth';
 import { useCurrentRepresentative } from '@/hooks/useRepresentative';
 import { supabase } from '@/integrations/supabase/client';
+import { Capacitor } from '@capacitor/core';
 
 export default function RepresentativeLogin() {
   const [email, setEmail] = useState('');
@@ -24,9 +25,11 @@ export default function RepresentativeLogin() {
   const { data: representative, isFetched } = useCurrentRepresentative();
 
   // Redirect if already logged in as representative
+  // Só redirecionar automaticamente se estiver na web
+  // No mobile, deixar o usuário navegar manualmente após login
   useEffect(() => {
-    if (user && isFetched && representative) {
-      console.log('Already logged in as representative, redirecting...');
+    if (user && isFetched && representative && !Capacitor.isNativePlatform()) {
+      console.log('[RepLogin] Already logged in as representative, redirecting...');
       navigate('/representative');
     }
   }, [user, representative, isFetched, navigate]);

@@ -43,13 +43,20 @@ export default function AuthGate({ children }: AuthGateProps) {
   });
 
   useEffect(() => {
+    const isNative = typeof window !== 'undefined' && navigator?.userAgent?.includes('Capacitor');
+    console.log('[AuthGate] Setting up auth listener, isNative:', isNative);
+    
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
       
       if (session?.user) {
         setIsOpen(false);
-        // Let the Login page handle smart redirects instead of forcing /products
+        // Não forçar redirecionamento em plataforma nativa
+        // Deixar Index.tsx lidar com isso para evitar conflitos
+        if (!isNative) {
+          console.log('[AuthGate] Web platform - letting page handle redirect');
+        }
       }
     });
 
@@ -59,7 +66,9 @@ export default function AuthGate({ children }: AuthGateProps) {
       
       if (session?.user) {
         setIsOpen(false);
-        // Let the Login page handle smart redirects instead of forcing /products
+        if (!isNative) {
+          console.log('[AuthGate] Web platform - letting page handle redirect');
+        }
       }
     });
 

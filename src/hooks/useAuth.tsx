@@ -25,10 +25,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
 
   useEffect(() => {
+    console.log('[Auth] Setting up auth state listener, isNativePlatform:', typeof window !== 'undefined' && navigator?.userAgent?.includes('Capacitor'));
+    
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        console.debug('[Auth] onAuthStateChange', { event, hasSession: !!session, userId: session?.user?.id });
+        console.debug('[Auth] onAuthStateChange', { 
+          event, 
+          hasSession: !!session, 
+          userId: session?.user?.id,
+          isNative: typeof window !== 'undefined' && navigator?.userAgent?.includes('Capacitor')
+        });
         setSession(session);
         setUser(session?.user ?? null);
         // Invalidate representative cache on any auth change

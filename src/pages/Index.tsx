@@ -19,7 +19,7 @@ const Index = () => {
   logger.log('Index page rendering');
   
   const navigate = useNavigate();
-  const { user, isRepresentative } = useAuth();
+  const { user, isRepresentative, isLoading } = useAuth();
   
   // Track landing page analytics
   usePageAnalytics({
@@ -30,14 +30,22 @@ const Index = () => {
 
   // Redirecionamento inteligente para app mobile
   useEffect(() => {
-    if (Capacitor.isNativePlatform()) {
+    // Aguardar carregamento da sessão antes de redirecionar
+    if (Capacitor.isNativePlatform() && !isLoading) {
+      console.log('[Index] Mobile redirect decision:', { user: !!user, isRepresentative, isLoading });
+      
       if (user && isRepresentative) {
+        console.log('[Index] Redirecting to /representative');
         navigate('/representative', { replace: true });
+      } else if (user && !isRepresentative) {
+        console.log('[Index] User authenticated but not representative, redirecting to /products');
+        navigate('/products', { replace: true });
       } else {
+        console.log('[Index] User not authenticated, redirecting to /representative/login');
         navigate('/representative/login', { replace: true });
       }
     }
-  }, [user, isRepresentative, navigate]);
+  }, [user, isRepresentative, isLoading, navigate]);
   
   const structuredData = {
     "@context": "https://schema.org",
