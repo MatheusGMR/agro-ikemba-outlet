@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { GoogleReCaptchaProvider } from 'react-google-recaptcha-v3';
 import { ProgressiveForm, ProgressiveFormStep } from '@/components/ui/progressive-form';
 import { ProgressiveInput } from '@/components/ui/progressive-input';
 import { ButtonGrid } from '@/components/ui/button-grid';

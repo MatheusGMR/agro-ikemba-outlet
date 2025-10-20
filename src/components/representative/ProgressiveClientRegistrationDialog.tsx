@@ -111,13 +111,26 @@ export default function ProgressiveClientRegistrationDialog({
     
     try {
       // Validate bot protection
+      console.log('🛡️ Iniciando validação de proteção anti-bot...');
       const botValidation = await validateBotProtection();
       
+      console.log('🛡️ Resultado da validação:', {
+        isBot: botValidation.isBot,
+        reason: botValidation.reason,
+        score: botValidation.recaptchaScore
+      });
+      
       if (botValidation.isBot) {
-        toast.error(botValidation.reason || 'Falha na verificação de segurança. Tente novamente.');
+        console.error('❌ Validação anti-bot falhou:', {
+          reason: botValidation.reason,
+          score: botValidation.recaptchaScore
+        });
+        toast.error(`Falha na verificação de segurança: ${botValidation.reason || 'Tente novamente'}`);
         setIsSubmitting(false);
         return;
       }
+      
+      console.log('✅ Validação anti-bot aprovada! Prosseguindo com cadastro...');
 
       await createClientMutation.mutateAsync({
         representative_id: representativeId,

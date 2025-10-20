@@ -153,7 +153,20 @@ export const useBotProtection = () => {
 
       if (error) {
         console.error('🛡️ reCAPTCHA verification failed:', error);
-        // Be more strict - if verification fails, consider it suspicious
+        console.error('🛡️ Error details:', {
+          message: error.message,
+          status: error.status,
+          statusText: error.statusText
+        });
+        
+        // Em desenvolvimento, permitir continuar com warning
+        if (import.meta.env.DEV) {
+          console.warn('⚠️ DEV MODE: Permitindo submissão apesar do erro no reCAPTCHA');
+          console.warn('⚠️ Em produção, isso bloquearia o cadastro');
+          return { isBot: false, recaptchaScore: 0, reason: 'dev_mode_bypass' };
+        }
+        
+        // Em produção, bloquear
         return { isBot: true, reason: 'recaptcha_verification_failed' };
       }
 
