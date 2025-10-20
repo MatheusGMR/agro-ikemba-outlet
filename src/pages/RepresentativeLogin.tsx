@@ -14,6 +14,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useCurrentRepresentative } from '@/hooks/useRepresentative';
 import { supabase } from '@/integrations/supabase/client';
 import { Capacitor } from '@capacitor/core';
+import { useBotProtection } from '@/hooks/useBotProtection';
 
 export default function RepresentativeLogin() {
   const [email, setEmail] = useState('');
@@ -23,6 +24,7 @@ export default function RepresentativeLogin() {
   const navigate = useNavigate();
   const { signIn, user } = useAuth();
   const { data: representative, isFetched } = useCurrentRepresentative();
+  const { validateBotProtection, recaptchaStatus, recaptchaError } = useBotProtection();
 
   // Redirect if already logged in as representative
   // Só redirecionar automaticamente se estiver na web
@@ -46,6 +48,20 @@ export default function RepresentativeLogin() {
         setIsLoading(false);
         return;
       }
+
+      // Bot protection validation
+      console.log('🛡️ Validando proteção anti-bot no login do representante...');
+      const botValidation = await validateBotProtection();
+      
+      if (botValidation.isBot) {
+        console.error('❌ Bot detectado no login:', botValidation.reason);
+        setError('Falha na verificação de segurança. Tente novamente.');
+        toast.error('Falha na verificação de segurança');
+        setIsLoading(false);
+        return;
+      }
+      
+      console.log('✅ Validação anti-bot aprovada, prosseguindo com login...');
 
       const { error: authError } = await signIn(email, password);
       
@@ -126,6 +142,20 @@ export default function RepresentativeLogin() {
               <p className="text-muted-foreground">Entre com suas credenciais de representante</p>
             </CardHeader>
             <CardContent>
+              {recaptchaStatus === 'loading' && (
+                <Alert className="mb-4">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>Carregando verificação de segurança...</AlertDescription>
+                </Alert>
+              )}
+              
+              {recaptchaError && (
+                <Alert className="mb-4" variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{recaptchaError}</AlertDescription>
+                </Alert>
+              )}
+              
               {error && (
                 <Alert className="mb-4" variant="destructive">
                   <AlertCircle className="h-4 w-4" />
