@@ -83,12 +83,15 @@ export default function ProgressiveClientRegistrationDialog({
           return "CNPJ é obrigatório (formato: XX.XXX.XXX/XXXX-XX)";
         }
         return true;
-      case 5: // Phone and Email (phone now required)
+      case 5: // Phone and Email (both required)
         if (!formData.phone || formData.phone.length < 14) {
           return "Telefone é obrigatório (formato: (XX) XXXXX-XXXX)";
         }
-        const emailValid = !formData.email || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email);
-        if (!emailValid) return "Email inválido (opcional)";
+        if (!formData.email || !formData.email.trim()) {
+          return "Email é obrigatório";
+        }
+        const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email);
+        if (!emailValid) return "Email inválido";
         return true;
       default:
         return true;
@@ -97,6 +100,13 @@ export default function ProgressiveClientRegistrationDialog({
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
+    
+    // Validação extra antes de enviar
+    if (!formData.email || !formData.email.trim()) {
+      toast.error('Email é obrigatório para cadastro de cliente');
+      setIsSubmitting(false);
+      return;
+    }
     
     try {
       await createClientMutation.mutateAsync({
@@ -210,7 +220,7 @@ export default function ProgressiveClientRegistrationDialog({
     {
       id: 'contact-info',
       title: 'Informações de contato',
-      description: 'Telefone obrigatório, email opcional',
+      description: 'Telefone e email obrigatórios',
       component: (
         <div className="space-y-6">
           <ProgressiveInput
@@ -226,12 +236,13 @@ export default function ProgressiveClientRegistrationDialog({
             error={validateStep(5) !== true ? String(validateStep(5)) : undefined}
           />
           <ProgressiveInput
-            label="Email (opcional)"
+            label="Email"
             placeholder="contato@empresa.com"
             value={formData.email}
             onChange={(value) => updateFormData('email', value)}
             type="email"
             icon={Mail}
+            required
           />
         </div>
       ),
