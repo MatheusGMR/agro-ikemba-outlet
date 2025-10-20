@@ -63,11 +63,7 @@ export const useBotProtection = () => {
         return { working: false, error: 'Failed to generate token' };
       }
 
-      const { createClient } = await import('@supabase/supabase-js');
-      const supabase = createClient(
-        import.meta.env.VITE_SUPABASE_URL!,
-        import.meta.env.VITE_SUPABASE_ANON_KEY!
-      );
+      const { supabase } = await import('@/integrations/supabase/client');
 
       const { data: result, error } = await supabase.functions.invoke('verify-recaptcha', {
         body: { token }
@@ -141,11 +137,7 @@ export const useBotProtection = () => {
       console.log('🛡️ reCAPTCHA token obtained, verifying with server...');
       
       // Verify token using Supabase Edge Function
-      const { createClient } = await import('@supabase/supabase-js');
-      const supabase = createClient(
-        import.meta.env.VITE_SUPABASE_URL!,
-        import.meta.env.VITE_SUPABASE_ANON_KEY!
-      );
+      const { supabase } = await import('@/integrations/supabase/client');
 
       const { data: result, error } = await supabase.functions.invoke('verify-recaptcha', {
         body: { token }
