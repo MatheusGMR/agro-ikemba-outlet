@@ -12,6 +12,7 @@ export interface InventoryItem {
   city: string;
   expiry_date: string;
   base_price: number;
+  preco_afiliado?: number;
   preco_banda_menor: number;
   preco_banda_maior: number;
   commission_unit?: number;

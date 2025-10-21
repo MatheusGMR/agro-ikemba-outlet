@@ -18,7 +18,7 @@ import { PDFGenerator } from '@/utils/pdfGenerator';
 import { RepresentativeService } from '@/services/representativeService';
 import type { RepClient } from '@/types/representative';
 import type { GroupedProduct } from '@/types/inventory';
-import { MapPin, Package, DollarSign, FileText, Plus, Minus, Info, CheckCircle, Copy, Loader2, User, WifiOff } from 'lucide-react';
+import { MapPin, Package, DollarSign, FileText, Plus, Minus, Info, CheckCircle, Copy, Loader2, User, WifiOff, TrendingDown } from 'lucide-react';
 
 interface CreateOpportunityDialogProps {
   onClose: () => void;
@@ -35,6 +35,7 @@ interface OpportunityProduct {
   sku: string;
   name: string;
   preco_unitario: number;
+  preco_base?: number;
   commission_unit: number;
   available_locations: string[];
   selectedLocations: LocationSelection[];
@@ -202,7 +203,8 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
       const newProduct: OpportunityProduct = {
         sku: product.sku,
         name: product.name,
-        preco_unitario: product.main_item.base_price,
+        preco_unitario: product.main_item.preco_afiliado || product.main_item.base_price,
+        preco_base: product.main_item.base_price,
         commission_unit: product.main_item.commission_unit ?? 0,
         available_locations: availableLocations,
         selectedLocations: locations.map(loc => ({
@@ -903,73 +905,129 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
     );
   };
 
-  const renderReviewStep = () => (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-medium">Resumo da Proposta</h3>
-        <Button type="button" variant="outline" size="sm" onClick={generatePDF}>
-          <FileText className="h-4 w-4 mr-2" />
-          Gerar PDF
-        </Button>
-      </div>
+  const renderReviewStep = () => {
+    // Calculate total savings
+    const totalSavings = selectedProducts.reduce((sum, item) => {
+      if (!item.preco_base || item.preco_unitario >= item.preco_base) return sum;
+      const totalQuantity = item.selectedLocations.reduce((qSum, loc) => qSum + loc.quantity, 0);
+      return sum + ((item.preco_base - item.preco_unitario) * totalQuantity);
+    }, 0);
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-sm">Informações Gerais</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2 text-sm">
-          <div><strong>Título:</strong> {formData.title}</div>
-          <div><strong>Cliente:</strong> {selectedClient?.company_name}</div>
-          <div><strong>Responsável:</strong> {responsibleData.name} ({responsibleData.position})</div>
-          <div><strong>Probabilidade:</strong> {formData.probability}%</div>
-          <div><strong>Pagamento:</strong> {formData.payment_method === 'vista' ? 'À Vista' : 'Crédito'}</div>
-          <div><strong>Entrega:</strong> {formData.delivery_method === 'entrega' ? 'Com Entrega' : 'Retirada'}</div>
-        </CardContent>
-      </Card>
+    const hasSavings = totalSavings > 0;
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-sm">Produtos</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {selectedProducts.map(item => {
-            const totalQuantity = item.selectedLocations.reduce((sum, loc) => sum + loc.quantity, 0);
-            const totalPrice = totalQuantity * item.preco_unitario;
-            const totalCommission = totalQuantity * item.commission_unit;
-            
-            return (
-              <div key={item.sku} className="flex justify-between text-sm">
-                <div>
-                  <div className="font-medium">{item.name}</div>
-                  <div className="text-muted-foreground">{totalQuantity.toLocaleString()}L x R$ {item.preco_unitario.toFixed(2)}</div>
-                  {item.selectedLocations.map((loc, idx) => (
-                    <div key={idx} className="text-xs text-muted-foreground">
-                      {loc.city}, {loc.state}: {loc.quantity.toLocaleString()}L
-                    </div>
-                  ))}
-                </div>
-                <div className="text-right">
-                  <div>R$ {totalPrice.toFixed(2)}</div>
-                  <div className="text-xs text-green-600">Com. R$ {totalCommission.toFixed(2)}</div>
-                </div>
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-medium">Resumo da Proposta</h3>
+          <Button type="button" variant="outline" size="sm" onClick={generatePDF}>
+            <FileText className="h-4 w-4 mr-2" />
+            Gerar PDF
+          </Button>
+        </div>
+
+        {/* Savings Card - destacado em verde */}
+        {hasSavings && (
+          <Card className="bg-green-50 border-green-200">
+            <CardHeader>
+              <CardTitle className="text-sm flex items-center gap-2 text-green-700">
+                <TrendingDown className="h-5 w-5" />
+                Economia Total com Preço Afiliado
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-green-600">
+                R$ {totalSavings.toFixed(2)}
               </div>
-            );
-          })}
-          
-          <Separator />
-          
-          <div className="flex justify-between font-medium">
-            <span>Total</span>
-            <span>R$ {calculateTotals.totalValue.toFixed(2)}</span>
-          </div>
-          <div className="flex justify-between text-sm text-green-600">
-            <span>Comissão Total</span>
-            <span>R$ {calculateTotals.totalCommission.toFixed(2)}</span>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
+              <p className="text-sm text-green-700 mt-1">
+                Economize comparado ao preço médio de mercado
+              </p>
+            </CardContent>
+          </Card>
+        )}
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm">Informações Gerais</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2 text-sm">
+            <div><strong>Título:</strong> {formData.title}</div>
+            <div><strong>Cliente:</strong> {selectedClient?.company_name}</div>
+            <div><strong>Responsável:</strong> {responsibleData.name} ({responsibleData.position})</div>
+            <div><strong>Probabilidade:</strong> {formData.probability}%</div>
+            <div><strong>Pagamento:</strong> {formData.payment_method === 'vista' ? 'À Vista' : 'Crédito'}</div>
+            <div><strong>Entrega:</strong> {formData.delivery_method === 'entrega' ? 'Com Entrega' : 'Retirada'}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm">Produtos</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {selectedProducts.map(item => {
+              const totalQuantity = item.selectedLocations.reduce((sum, loc) => sum + loc.quantity, 0);
+              const totalPrice = totalQuantity * item.preco_unitario;
+              const totalCommission = totalQuantity * item.commission_unit;
+              
+              // Calculate savings for this product
+              const itemSavings = item.preco_base && item.preco_unitario < item.preco_base
+                ? (item.preco_base - item.preco_unitario) * totalQuantity
+                : 0;
+              const savingsPercentage = item.preco_base && item.preco_unitario < item.preco_base
+                ? ((item.preco_base - item.preco_unitario) / item.preco_base) * 100
+                : 0;
+              
+              return (
+                <div key={item.sku} className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <div className="flex-1">
+                      <div className="font-medium">{item.name}</div>
+                      <div className="text-muted-foreground">
+                        {totalQuantity.toLocaleString()}L x R$ {item.preco_unitario.toFixed(2)}
+                        {item.preco_base && item.preco_unitario < item.preco_base && (
+                          <span className="text-green-600 ml-2">
+                            ({savingsPercentage.toFixed(0)}% off)
+                          </span>
+                        )}
+                      </div>
+                      {item.selectedLocations.map((loc, idx) => (
+                        <div key={idx} className="text-xs text-muted-foreground">
+                          {loc.city}, {loc.state}: {loc.quantity.toLocaleString()}L
+                        </div>
+                      ))}
+                    </div>
+                    <div className="text-right">
+                      <div>R$ {totalPrice.toFixed(2)}</div>
+                      <div className="text-xs text-green-600">Com. R$ {totalCommission.toFixed(2)}</div>
+                      {itemSavings > 0 && (
+                        <div className="text-xs text-green-600 font-medium">
+                          Economia: R$ {itemSavings.toFixed(2)}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  {item !== selectedProducts[selectedProducts.length - 1] && (
+                    <Separator className="my-2" />
+                  )}
+                </div>
+              );
+            })}
+            
+            <Separator />
+            
+            <div className="flex justify-between font-medium">
+              <span>Total</span>
+              <span>R$ {calculateTotals.totalValue.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between text-sm text-green-600">
+              <span>Comissão Total</span>
+              <span>R$ {calculateTotals.totalCommission.toFixed(2)}</span>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
