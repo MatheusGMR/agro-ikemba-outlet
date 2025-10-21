@@ -74,6 +74,8 @@ export interface OpportunityItem {
   total_price: number;
   commission_unit: number;
   total_commission: number;
+  overprice_percentage?: number;
+  overprice_amount?: number;
   created_at: string;
 }
 

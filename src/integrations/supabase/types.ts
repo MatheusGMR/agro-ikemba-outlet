@@ -319,6 +319,7 @@ export type Database = {
           mapa_number: string | null
           net_commission: number | null
           packaging: string
+          preco_afiliado: number | null
           preco_banda_maior: number | null
           preco_banda_menor: number | null
           product_name: string
@@ -343,6 +344,7 @@ export type Database = {
           mapa_number?: string | null
           net_commission?: number | null
           packaging?: string
+          preco_afiliado?: number | null
           preco_banda_maior?: number | null
           preco_banda_menor?: number | null
           product_name: string
@@ -367,6 +369,7 @@ export type Database = {
           mapa_number?: string | null
           net_commission?: number | null
           packaging?: string
+          preco_afiliado?: number | null
           preco_banda_maior?: number | null
           preco_banda_menor?: number | null
           product_name?: string
@@ -669,6 +672,8 @@ export type Database = {
           created_at: string
           id: string
           opportunity_id: string
+          overprice_amount: number | null
+          overprice_percentage: number | null
           product_name: string
           product_sku: string
           quantity: number
@@ -681,6 +686,8 @@ export type Database = {
           created_at?: string
           id?: string
           opportunity_id: string
+          overprice_amount?: number | null
+          overprice_percentage?: number | null
           product_name: string
           product_sku: string
           quantity: number
@@ -693,6 +700,8 @@ export type Database = {
           created_at?: string
           id?: string
           opportunity_id?: string
+          overprice_amount?: number | null
+          overprice_percentage?: number | null
           product_name?: string
           product_sku?: string
           quantity?: number

@@ -14,11 +14,12 @@ import { useGroupedProductsForSales } from '@/hooks/useInventory';
 import { useNetworkStatus } from '@/hooks/useNetworkStatus';
 import { operationQueue } from '@/utils/offlineStorage';
 import ProductLocationSelector from './ProductLocationSelector';
+import { OverpriceSelector } from './OverpriceSelector';
 import { PDFGenerator } from '@/utils/pdfGenerator';
 import { RepresentativeService } from '@/services/representativeService';
 import type { RepClient } from '@/types/representative';
 import type { GroupedProduct } from '@/types/inventory';
-import { MapPin, Package, DollarSign, FileText, Plus, Minus, Info, CheckCircle, Copy, Loader2, User, WifiOff, TrendingDown } from 'lucide-react';
+import { MapPin, Package, DollarSign, FileText, Plus, Minus, Info, CheckCircle, Copy, Loader2, User, WifiOff, TrendingDown, TrendingUp } from 'lucide-react';
 
 interface CreateOpportunityDialogProps {
   onClose: () => void;
@@ -34,9 +35,14 @@ interface LocationSelection {
 interface OpportunityProduct {
   sku: string;
   name: string;
+  preco_afiliado: number;
   preco_unitario: number;
   preco_base?: number;
+  overprice_percentage: number;
+  overprice_amount: number;
+  preco_final: number;
   commission_unit: number;
+  overprice_commission: number;
   available_locations: string[];
   selectedLocations: LocationSelection[];
   closest_location?: string;
@@ -73,6 +79,11 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
   const [currentStep, setCurrentStep] = useState<'basic' | 'products' | 'conditions' | 'responsible' | 'review'>('basic');
   const [showLocationSelector, setShowLocationSelector] = useState(false);
   const [selectedProductForLocation, setSelectedProductForLocation] = useState<GroupedProduct | null>(null);
+  const [showOverpriceSelector, setShowOverpriceSelector] = useState(false);
+  const [pendingProductData, setPendingProductData] = useState<{
+    product: GroupedProduct;
+    locations: LocationSelection[];
+  } | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [proposalResult, setProposalResult] = useState<{
@@ -158,20 +169,45 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
     if (!selectedProductForLocation) return;
 
     const product = selectedProductForLocation;
+    const totalQuantity = locations.reduce((sum, loc) => sum + loc.quantity, 0);
+    
+    // Store data and open overprice selector
+    setPendingProductData({
+      product,
+      locations: locations.map(loc => ({
+        city: loc.city,
+        state: loc.state,
+        quantity: loc.quantity,
+        available_volume: loc.available_volume
+      }))
+    });
+    
+    setShowLocationSelector(false);
+    setShowOverpriceSelector(true);
+  };
+
+  const handleOverpriceConfirm = (overpriceData: { percentage: number; amount: number }) => {
+    if (!pendingProductData) return;
+
+    const { product, locations } = pendingProductData;
     const existingIndex = selectedProducts.findIndex(p => p.sku === product.sku);
+    
+    const precoAfiliado = product.main_item.preco_afiliado || product.main_item.base_price;
+    const precoFinal = precoAfiliado + overpriceData.amount;
     
     if (existingIndex >= 0) {
       // Update existing product
       setSelectedProducts(prev => prev.map((item, index) => 
         index === existingIndex 
           ? { 
-              ...item, 
-              selectedLocations: locations.map(loc => ({
-                city: loc.city,
-                state: loc.state,
-                quantity: loc.quantity,
-                available_volume: loc.available_volume
-              }))
+              ...item,
+              preco_afiliado: precoAfiliado,
+              preco_unitario: precoAfiliado,
+              preco_final: precoFinal,
+              overprice_percentage: overpriceData.percentage,
+              overprice_amount: overpriceData.amount,
+              overprice_commission: overpriceData.amount,
+              selectedLocations: locations
             }
           : item
       ));
@@ -203,23 +239,25 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
       const newProduct: OpportunityProduct = {
         sku: product.sku,
         name: product.name,
-        preco_unitario: product.main_item.preco_afiliado || product.main_item.base_price,
+        preco_afiliado: precoAfiliado,
+        preco_unitario: precoAfiliado,
         preco_base: product.main_item.base_price,
+        overprice_percentage: overpriceData.percentage,
+        overprice_amount: overpriceData.amount,
+        preco_final: precoFinal,
         commission_unit: product.main_item.commission_unit ?? 0,
+        overprice_commission: overpriceData.amount,
         available_locations: availableLocations,
-        selectedLocations: locations.map(loc => ({
-          city: loc.city,
-          state: loc.state,
-          quantity: loc.quantity,
-          available_volume: loc.available_volume
-        })),
+        selectedLocations: locations,
         closest_location: closestLocation
       };
       
       setSelectedProducts(prev => [...prev, newProduct]);
     }
     
-    setSelectedProductForLocation(null);
+    setShowOverpriceSelector(false);
+    setPendingProductData(null);
+    setShowLocationSelector(false);
   };
 
   const removeProduct = (sku: string) => {
@@ -248,7 +286,7 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
   const calculateTotals = useMemo(() => {
     const totalValue = selectedProducts.reduce((sum, item) => {
       const itemTotal = item.selectedLocations.reduce((itemSum, loc) => 
-        itemSum + (loc.quantity * item.preco_unitario), 0);
+        itemSum + (loc.quantity * item.preco_final), 0);
       return sum + itemTotal;
     }, 0);
     
@@ -258,7 +296,20 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
       return sum + itemCommission;
     }, 0);
     
-    return { totalValue, totalCommission };
+    const totalOverpriceGain = selectedProducts.reduce((sum, item) => {
+      const itemOverprice = item.selectedLocations.reduce((itemSum, loc) => 
+        itemSum + (loc.quantity * item.overprice_amount), 0);
+      return sum + itemOverprice;
+    }, 0);
+    
+    const totalGain = totalCommission + totalOverpriceGain;
+    
+    return { 
+      totalValue, 
+      totalCommission,
+      totalOverpriceGain,
+      totalGain
+    };
   }, [selectedProducts]);
 
   const generatePDF = async () => {
@@ -349,10 +400,12 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
               product_sku: product.sku,
               product_name: product.name,
               quantity: location.quantity,
-              unit_price: product.preco_unitario,
-              total_price: location.quantity * product.preco_unitario,
+              unit_price: product.preco_final,
+              total_price: location.quantity * product.preco_final,
               commission_unit: product.commission_unit,
-              total_commission: location.quantity * product.commission_unit
+              total_commission: location.quantity * product.commission_unit,
+              overprice_percentage: product.overprice_percentage,
+              overprice_amount: product.overprice_amount
             }))
           );
 
@@ -419,10 +472,12 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
               product_sku: product.sku,
               product_name: product.name,
               quantity: location.quantity,
-              unit_price: product.preco_unitario,
-              total_price: location.quantity * product.preco_unitario,
+              unit_price: product.preco_final,
+              total_price: location.quantity * product.preco_final,
               commission_unit: product.commission_unit,
-              total_commission: location.quantity * product.commission_unit
+              total_commission: location.quantity * product.commission_unit,
+              overprice_percentage: product.overprice_percentage,
+              overprice_amount: product.overprice_amount
             });
           }
         }
@@ -439,10 +494,12 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
             quantity: loc.quantity,
             city: loc.city,
             state: loc.state,
-            unit_price: product.preco_unitario,
-            total_price: loc.quantity * product.preco_unitario,
+            unit_price: product.preco_final,
+            total_price: loc.quantity * product.preco_final,
             commission_unit: product.commission_unit,
-            total_commission: loc.quantity * product.commission_unit
+            total_commission: loc.quantity * product.commission_unit,
+            overprice_percentage: product.overprice_percentage,
+            overprice_amount: product.overprice_amount
           }))
         );
 
@@ -966,15 +1023,17 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
           <CardContent className="space-y-3">
             {selectedProducts.map(item => {
               const totalQuantity = item.selectedLocations.reduce((sum, loc) => sum + loc.quantity, 0);
-              const totalPrice = totalQuantity * item.preco_unitario;
+              const totalPrice = totalQuantity * item.preco_final;
               const totalCommission = totalQuantity * item.commission_unit;
+              const itemOverpriceGain = totalQuantity * item.overprice_amount;
+              const itemTotalGain = totalCommission + itemOverpriceGain;
               
               // Calculate savings for this product
-              const itemSavings = item.preco_base && item.preco_unitario < item.preco_base
-                ? (item.preco_base - item.preco_unitario) * totalQuantity
+              const itemSavings = item.preco_base && item.preco_final < item.preco_base
+                ? (item.preco_base - item.preco_final) * totalQuantity
                 : 0;
-              const savingsPercentage = item.preco_base && item.preco_unitario < item.preco_base
-                ? ((item.preco_base - item.preco_unitario) / item.preco_base) * 100
+              const savingsPercentage = item.preco_base && item.preco_final < item.preco_base
+                ? ((item.preco_base - item.preco_final) / item.preco_base) * 100
                 : 0;
               
               return (
@@ -982,28 +1041,33 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
                   <div className="flex justify-between text-sm">
                     <div className="flex-1">
                       <div className="font-medium">{item.name}</div>
-                      <div className="text-muted-foreground">
-                        {totalQuantity.toLocaleString()}L x R$ {item.preco_unitario.toFixed(2)}
-                        {item.preco_base && item.preco_unitario < item.preco_base && (
-                          <span className="text-green-600 ml-2">
-                            ({savingsPercentage.toFixed(0)}% off)
-                          </span>
+                      <div className="text-xs text-muted-foreground space-y-1">
+                        <div>Preço afiliado: R$ {item.preco_afiliado.toFixed(2)}/L</div>
+                        {item.overprice_amount > 0 && (
+                          <div className="text-green-600 font-medium">
+                            + Margem: R$ {item.overprice_amount.toFixed(2)}/L ({item.overprice_percentage.toFixed(1)}%)
+                          </div>
                         )}
+                        <div className="font-medium">= Preço final: R$ {item.preco_final.toFixed(2)}/L</div>
+                        <div>{totalQuantity.toLocaleString()}L</div>
+                        {item.selectedLocations.map((loc, idx) => (
+                          <div key={idx}>
+                            • {loc.city}, {loc.state}: {loc.quantity.toLocaleString()}L
+                          </div>
+                        ))}
                       </div>
-                      {item.selectedLocations.map((loc, idx) => (
-                        <div key={idx} className="text-xs text-muted-foreground">
-                          {loc.city}, {loc.state}: {loc.quantity.toLocaleString()}L
-                        </div>
-                      ))}
                     </div>
                     <div className="text-right">
-                      <div>R$ {totalPrice.toFixed(2)}</div>
-                      <div className="text-xs text-green-600">Com. R$ {totalCommission.toFixed(2)}</div>
-                      {itemSavings > 0 && (
+                      <div className="font-medium">R$ {totalPrice.toFixed(2)}</div>
+                      <div className="text-xs text-muted-foreground">Com: R$ {totalCommission.toFixed(2)}</div>
+                      {itemOverpriceGain > 0 && (
                         <div className="text-xs text-green-600 font-medium">
-                          Economia: R$ {itemSavings.toFixed(2)}
+                          + Margem: R$ {itemOverpriceGain.toFixed(2)}
                         </div>
                       )}
+                      <div className="text-xs text-green-700 font-semibold border-t mt-1 pt-1">
+                        Ganho: R$ {itemTotalGain.toFixed(2)}
+                      </div>
                     </div>
                   </div>
                   {item !== selectedProducts[selectedProducts.length - 1] && (
@@ -1016,12 +1080,37 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
             <Separator />
             
             <div className="flex justify-between font-medium">
-              <span>Total</span>
+              <span>Valor Total</span>
               <span>R$ {calculateTotals.totalValue.toFixed(2)}</span>
             </div>
-            <div className="flex justify-between text-sm text-green-600">
-              <span>Comissão Total</span>
-              <span>R$ {calculateTotals.totalCommission.toFixed(2)}</span>
+          </CardContent>
+        </Card>
+
+        {/* Card de Ganhos */}
+        <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-300">
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2 text-green-800">
+              <TrendingUp className="h-5 w-5" />
+              Seu Ganho Total
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex justify-between text-sm">
+              <span className="text-green-700">Comissão (1,5%):</span>
+              <span className="font-semibold">R$ {calculateTotals.totalCommission.toFixed(2)}</span>
+            </div>
+            {calculateTotals.totalOverpriceGain > 0 && (
+              <div className="flex justify-between text-sm">
+                <span className="text-green-700">Ganho Margem:</span>
+                <span className="font-semibold">R$ {calculateTotals.totalOverpriceGain.toFixed(2)}</span>
+              </div>
+            )}
+            <Separator />
+            <div className="flex justify-between">
+              <span className="text-lg font-bold text-green-800">TOTAL:</span>
+              <span className="text-2xl font-bold text-green-600">
+                R$ {calculateTotals.totalGain.toFixed(2)}
+              </span>
             </div>
           </CardContent>
         </Card>
@@ -1117,6 +1206,22 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
           product={selectedProductForLocation}
           client={selectedClient}
           onConfirm={handleLocationSelection}
+        />
+      )}
+
+      {/* Overprice Selector Dialog */}
+      {pendingProductData && (
+        <OverpriceSelector
+          open={showOverpriceSelector}
+          onClose={() => {
+            setShowOverpriceSelector(false);
+            setPendingProductData(null);
+          }}
+          onConfirm={handleOverpriceConfirm}
+          productName={pendingProductData.product.name}
+          precoAfiliado={pendingProductData.product.main_item.preco_afiliado || pendingProductData.product.main_item.base_price}
+          precoBase={pendingProductData.product.main_item.base_price}
+          estimatedVolume={pendingProductData.locations.reduce((sum, loc) => sum + loc.quantity, 0)}
         />
       )}
 
