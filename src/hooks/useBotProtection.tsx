@@ -51,6 +51,12 @@ export const useBotProtection = () => {
 
   // Test function to verify reCAPTCHA is working
   const testReCaptcha = useCallback(async (): Promise<{ working: boolean; error?: string; score?: number }> => {
+    // Skip test in development mode
+    if (import.meta.env.DEV) {
+      console.log('🧪 reCAPTCHA test skipped in development mode');
+      return { working: true, score: 1.0 };
+    }
+    
     if (!executeRecaptcha) {
       return { working: false, error: 'reCAPTCHA not loaded' };
     }

@@ -115,6 +115,12 @@ function UnifiedRegistrationFormInner({
 
   // Test reCAPTCHA on component mount and show toast on timeout
   useEffect(() => {
+    // Skip automatic test in development mode
+    if (import.meta.env.DEV) {
+      console.log('🧪 reCAPTCHA test disabled in development mode');
+      return;
+    }
+    
     const testCaptcha = async () => {
       if (isReCaptchaReady) {
         console.log('🧪 Component mounted - testing reCAPTCHA...');
