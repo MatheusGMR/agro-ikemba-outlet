@@ -88,6 +88,13 @@ export const useBotProtection = () => {
   const validateBotProtection = useCallback(async (): Promise<BotProtectionResult> => {
     console.log('🛡️ Starting bot protection validation...');
     
+    // 🚨 TEMPORÁRIO: Desabilitar completamente em desenvolvimento
+    if (import.meta.env.DEV) {
+      console.warn('⚠️ MODO DEV: reCAPTCHA DESABILITADO COMPLETAMENTE');
+      console.warn('⚠️ Retornando sucesso sem verificações de segurança');
+      return { isBot: false, recaptchaScore: 1.0, reason: 'dev_mode_disabled' };
+    }
+    
     // Verify reCAPTCHA site key is configured
     const siteKey = (import.meta as any).env?.VITE_RECAPTCHA_SITE_KEY;
     if (!siteKey) {
