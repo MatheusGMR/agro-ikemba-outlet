@@ -50,8 +50,14 @@ function App() {
     console.warn('⚠️ VITE_RECAPTCHA_SITE_KEY não está configurado. reCAPTCHA não funcionará.');
   }
 
-  return (
-    <QueryClientProvider client={queryClient}>
+  const RecaptchaWrapper = ({ children }: { children: React.ReactNode }) => {
+    // Only load reCAPTCHA in production
+    if (import.meta.env.DEV) {
+      console.warn('⚠️ MODO DEV: GoogleReCaptchaProvider desabilitado');
+      return <>{children}</>;
+    }
+    
+    return (
       <GoogleReCaptchaProvider 
         reCaptchaKey={recaptchaSiteKey}
         scriptProps={{
@@ -60,6 +66,14 @@ function App() {
           appendTo: 'head'
         }}
       >
+        {children}
+      </GoogleReCaptchaProvider>
+    );
+  };
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <RecaptchaWrapper>
         <CartProvider>
           <HelmetProvider>
             <TooltipProvider>
@@ -121,7 +135,7 @@ function App() {
           </TooltipProvider>
         </HelmetProvider>
       </CartProvider>
-      </GoogleReCaptchaProvider>
+      </RecaptchaWrapper>
     </QueryClientProvider>
   );
 }
