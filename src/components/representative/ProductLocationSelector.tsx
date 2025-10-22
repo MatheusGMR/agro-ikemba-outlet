@@ -49,7 +49,8 @@ export default function ProductLocationSelector({
 
     return Object.entries(groups).map(([location, items]) => {
       const [city, state] = location.split(', ');
-      const totalVolume = items.reduce((sum, item) => sum + item.volume_available, 0);
+      // Fix: Use available_volume (correct field from inventory_available view)
+      const totalVolume = items.reduce((sum, item) => sum + (item.available_volume || 0), 0);
       
       // Calculate proximity to client
       let proximity = 'distant';

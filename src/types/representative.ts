@@ -167,6 +167,8 @@ export interface RepNotification {
 
 export interface RepDashboardStats {
   potential_commission?: number;
+  potential_overprice?: number; // Ganho total de overprice nas oportunidades ativas
+  potential_total_gain?: number; // Ganho total (comissão + overprice)
   active_opportunities: number;
   pending_proposals: number;
   total_commission_this_month: number;

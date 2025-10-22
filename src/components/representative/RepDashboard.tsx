@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useDashboardStats, useCurrentRepresentative } from '@/hooks/useRepresentative';
 import { useReservationStats } from '@/hooks/useInventoryReservations';
-import { Users, Plus, Package, Lock, AlertTriangle, Upload } from 'lucide-react';
+import { Users, Plus, Package, Lock, AlertTriangle, Upload, TrendingUp } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useAuth } from '@/hooks/useAuth';
 import { useState } from 'react';
@@ -41,6 +41,9 @@ export default function RepDashboard() {
 
   // Criar stats padrão se não houver dados
   const defaultStats = {
+    potential_commission: 0,
+    potential_overprice: 0,
+    potential_total_gain: 0,
     active_opportunities: 0,
     pending_proposals: 0,
     total_commission_this_month: 0,
@@ -93,6 +96,36 @@ export default function RepDashboard() {
             ⚠️ Alguns dados podem não estar atualizados. Verifique sua conexão e tente novamente.
           </p>
         </div>
+      )}
+
+      {/* Potencial de Ganho Total - Destaque */}
+      {dashboardStats.potential_total_gain && dashboardStats.potential_total_gain > 0 && (
+        <Card className="bg-gradient-to-br from-green-500 to-emerald-600 text-white border-green-400">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5" />
+                <span className="text-sm font-medium opacity-90">Potencial de Ganho Total</span>
+              </div>
+              <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
+                Oportunidades Ativas
+              </Badge>
+            </div>
+            <div className="text-4xl font-bold mb-3">
+              R$ {dashboardStats.potential_total_gain.toFixed(2)}
+            </div>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div className="bg-white/10 rounded p-2">
+                <div className="opacity-80 text-xs">Comissão (1,5%)</div>
+                <div className="font-semibold">R$ {(dashboardStats.potential_commission || 0).toFixed(2)}</div>
+              </div>
+              <div className="bg-white/10 rounded p-2">
+                <div className="opacity-80 text-xs">Ganho Margem</div>
+                <div className="font-semibold">R$ {(dashboardStats.potential_overprice || 0).toFixed(2)}</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       {/* Reservation Stats */}

@@ -465,11 +465,27 @@ export class RepresentativeService {
 
       // Calcular comissão potencial (otimizado)
       let potentialCommission = 0;
+      let potentialOverprice = 0;
       
       // Calcular localmente primeiro (mais rápido)
       potentialCommission = opportunities.reduce((sum: number, opp: any) => {
         return sum + (opp.estimated_commission || 0);
       }, 0);
+      
+      // Calcular ganho total de overprice
+      // Precisamos buscar os itens das oportunidades para calcular overprice
+      const { data: opportunityItems } = await supabase
+        .from('opportunity_items')
+        .select('opportunity_id, quantity, overprice_amount')
+        .in('opportunity_id', opportunities.map((opp: any) => opp.id));
+      
+      if (opportunityItems) {
+        potentialOverprice = opportunityItems.reduce((sum: number, item: any) => {
+          return sum + ((item.overprice_amount || 0) * item.quantity);
+        }, 0);
+      }
+      
+      const potentialTotalGain = potentialCommission + potentialOverprice;
       
       // Edge function em background (não bloqueia a UI)
       setTimeout(async () => {
@@ -493,6 +509,8 @@ export class RepresentativeService {
       // Preparar dados finais
       const stats: RepDashboardStats = {
         potential_commission: potentialCommission,
+        potential_overprice: potentialOverprice,
+        potential_total_gain: potentialTotalGain,
         active_opportunities: opportunities.length,
         pending_proposals: proposals.length,
         total_commission_this_month: totalCommissionThisMonth,
@@ -531,6 +549,8 @@ export class RepresentativeService {
       // Retornar stats padrão em caso de erro crítico
       const defaultStats: RepDashboardStats = {
         potential_commission: 0,
+        potential_overprice: 0,
+        potential_total_gain: 0,
         active_opportunities: 0,
         pending_proposals: 0,
         total_commission_this_month: 0,

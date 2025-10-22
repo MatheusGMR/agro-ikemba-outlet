@@ -1037,43 +1037,92 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
                 : 0;
               
               return (
-                <div key={item.sku} className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <div className="flex-1">
-                      <div className="font-medium">{item.name}</div>
-                      <div className="text-xs text-muted-foreground space-y-1">
-                        <div>Preço afiliado: R$ {item.preco_afiliado.toFixed(2)}/L</div>
+                <Card key={item.sku} className="border-2 border-green-100 bg-gradient-to-br from-white to-green-50/30">
+                  <CardContent className="p-4">
+                    <div className="space-y-3">
+                      {/* Nome e Info do Produto */}
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="font-semibold text-base text-primary">{item.name}</div>
+                          <div className="text-xs text-muted-foreground mt-1">
+                            {totalQuantity.toLocaleString()}L • {item.selectedLocations.length} {item.selectedLocations.length > 1 ? 'localidades' : 'localidade'}
+                          </div>
+                        </div>
+                        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                          <TrendingUp className="h-3 w-3 mr-1" />
+                          Seu Ganho
+                        </Badge>
+                      </div>
+
+                      {/* Preços */}
+                      <div className="bg-white/60 p-3 rounded-md border space-y-1.5 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Preço afiliado:</span>
+                          <span className="font-medium">R$ {item.preco_afiliado.toFixed(2)}/L</span>
+                        </div>
                         {item.overprice_amount > 0 && (
-                          <div className="text-green-600 font-medium">
-                            + Margem: R$ {item.overprice_amount.toFixed(2)}/L ({item.overprice_percentage.toFixed(1)}%)
+                          <div className="flex justify-between text-green-600">
+                            <span>+ Margem ({item.overprice_percentage.toFixed(1)}%):</span>
+                            <span className="font-semibold">R$ {item.overprice_amount.toFixed(2)}/L</span>
                           </div>
                         )}
-                        <div className="font-medium">= Preço final: R$ {item.preco_final.toFixed(2)}/L</div>
-                        <div>{totalQuantity.toLocaleString()}L</div>
+                        <Separator />
+                        <div className="flex justify-between font-semibold">
+                          <span>Preço final ao cliente:</span>
+                          <span className="text-primary">R$ {item.preco_final.toFixed(2)}/L</span>
+                        </div>
+                      </div>
+
+                      {/* Localidades */}
+                      <div className="text-xs text-muted-foreground space-y-1">
                         {item.selectedLocations.map((loc, idx) => (
-                          <div key={idx}>
-                            • {loc.city}, {loc.state}: {loc.quantity.toLocaleString()}L
+                          <div key={idx} className="flex items-center gap-1">
+                            <MapPin className="h-3 w-3" />
+                            {loc.city}, {loc.state}: {loc.quantity.toLocaleString()}L
                           </div>
                         ))}
                       </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-medium">R$ {totalPrice.toFixed(2)}</div>
-                      <div className="text-xs text-muted-foreground">Com: R$ {totalCommission.toFixed(2)}</div>
-                      {itemOverpriceGain > 0 && (
-                        <div className="text-xs text-green-600 font-medium">
-                          + Margem: R$ {itemOverpriceGain.toFixed(2)}
+
+                      {/* Ganhos do Representante */}
+                      <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-3 rounded-md border border-green-200 space-y-2">
+                        <div className="text-xs font-semibold text-green-800 mb-2">💰 Seu Ganho neste Produto:</div>
+                        <div className="space-y-1.5 text-sm">
+                          <div className="flex justify-between">
+                            <span className="text-green-700">Comissão (1,5%):</span>
+                            <span className="font-semibold text-green-800">R$ {totalCommission.toFixed(2)}</span>
+                          </div>
+                          {itemOverpriceGain > 0 && (
+                            <div className="flex justify-between">
+                              <span className="text-green-700">Ganho Margem (100%):</span>
+                              <span className="font-semibold text-green-800">R$ {itemOverpriceGain.toFixed(2)}</span>
+                            </div>
+                          )}
+                          <Separator className="bg-green-300" />
+                          <div className="flex justify-between items-center pt-1">
+                            <span className="font-bold text-green-800">GANHO TOTAL:</span>
+                            <span className="text-xl font-bold text-green-600">
+                              R$ {itemTotalGain.toFixed(2)}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Cliente economiza */}
+                      {itemSavings > 0 && (
+                        <div className="text-xs text-blue-700 bg-blue-50 p-2 rounded border border-blue-200">
+                          <Info className="h-3 w-3 inline mr-1" />
+                          Cliente economiza R$ {itemSavings.toFixed(2)} ({savingsPercentage.toFixed(1)}%) vs. mercado
                         </div>
                       )}
-                      <div className="text-xs text-green-700 font-semibold border-t mt-1 pt-1">
-                        Ganho: R$ {itemTotalGain.toFixed(2)}
+
+                      {/* Valor Total do Produto */}
+                      <div className="flex justify-between items-center pt-2 border-t">
+                        <span className="text-sm font-medium text-muted-foreground">Valor Total Produto:</span>
+                        <span className="text-lg font-bold text-primary">R$ {totalPrice.toFixed(2)}</span>
                       </div>
                     </div>
-                  </div>
-                  {item !== selectedProducts[selectedProducts.length - 1] && (
-                    <Separator className="my-2" />
-                  )}
-                </div>
+                  </CardContent>
+                </Card>
               );
             })}
             
@@ -1086,31 +1135,37 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
           </CardContent>
         </Card>
 
-        {/* Card de Ganhos */}
-        <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-300">
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2 text-green-800">
-              <TrendingUp className="h-5 w-5" />
-              Seu Ganho Total
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex justify-between text-sm">
-              <span className="text-green-700">Comissão (1,5%):</span>
-              <span className="font-semibold">R$ {calculateTotals.totalCommission.toFixed(2)}</span>
-            </div>
-            {calculateTotals.totalOverpriceGain > 0 && (
-              <div className="flex justify-between text-sm">
-                <span className="text-green-700">Ganho Margem:</span>
-                <span className="font-semibold">R$ {calculateTotals.totalOverpriceGain.toFixed(2)}</span>
+        {/* Card de Ganhos - Grande Destaque */}
+        <Card className="bg-gradient-to-r from-green-500 to-emerald-600 text-white border-2 border-green-400 shadow-lg">
+          <CardContent className="p-6">
+            <div className="text-center space-y-4">
+              <div className="flex items-center justify-center gap-2">
+                <TrendingUp className="h-6 w-6" />
+                <div className="text-sm font-medium opacity-90 uppercase tracking-wide">
+                  Potencial de Ganho Total
+                </div>
               </div>
-            )}
-            <Separator />
-            <div className="flex justify-between">
-              <span className="text-lg font-bold text-green-800">TOTAL:</span>
-              <span className="text-2xl font-bold text-green-600">
+              
+              <div className="text-5xl font-bold drop-shadow-md">
                 R$ {calculateTotals.totalGain.toFixed(2)}
-              </span>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-3 mt-4">
+                <div className="bg-white/20 backdrop-blur-sm rounded-lg p-3 border border-white/30">
+                  <div className="text-xs opacity-90 mb-1">Comissão Fixa (1,5%)</div>
+                  <div className="text-xl font-bold">R$ {calculateTotals.totalCommission.toFixed(2)}</div>
+                </div>
+                {calculateTotals.totalOverpriceGain > 0 && (
+                  <div className="bg-white/20 backdrop-blur-sm rounded-lg p-3 border border-white/30">
+                    <div className="text-xs opacity-90 mb-1">Ganho Margem (100%)</div>
+                    <div className="text-xl font-bold">R$ {calculateTotals.totalOverpriceGain.toFixed(2)}</div>
+                  </div>
+                )}
+              </div>
+
+              <div className="text-xs opacity-90 pt-2 border-t border-white/30">
+                💡 Você ganha 1,5% de comissão fixa + 100% da margem aplicada
+              </div>
             </div>
           </CardContent>
         </Card>

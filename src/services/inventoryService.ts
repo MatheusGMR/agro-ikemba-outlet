@@ -173,8 +173,8 @@ export class InventoryService {
       // Group by unique physical location and sum AVAILABLE volumes
       for (const item of product.all_items) {
         const locationKey = `${item.city}-${item.state}`;
-        // Usar available_volume ao invés de volume_available
-        const availableVol = item.available_volume || item.volume_available;
+        // Fix: Use only available_volume (the correct field from inventory_available view)
+        const availableVol = item.available_volume || 0;
         
         if (!uniqueLocationVolumes.has(locationKey)) {
           uniqueLocationVolumes.set(locationKey, availableVol);
@@ -184,6 +184,11 @@ export class InventoryService {
       // Sum unique available volumes by location
       product.total_volume = Array.from(uniqueLocationVolumes.values()).reduce((sum, vol) => sum + vol, 0);
       product.locations_count = uniqueLocationVolumes.size;
+      
+      // Debug log
+      if (product.total_volume > 0) {
+        console.log(`[GroupedProducts] ${product.sku}: ${product.total_volume.toLocaleString()}L disponível em ${product.locations_count} localidades`);
+      }
     }
 
     // Filtrar produtos que ainda têm volume disponível
