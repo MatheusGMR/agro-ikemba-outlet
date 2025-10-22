@@ -64,9 +64,9 @@ export default function ProgressiveLoadingDashboard() {
         {/* Header already loaded */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold">Dashboard</h1>
+            <h1 className="text-3xl font-bold">Olá, {representative?.name}!</h1>
             <p className="text-muted-foreground">
-              Olá, {representative?.name}! Carregando seus dados...
+              Aqui está o resumo de suas vendas. (Carregando dados...)
             </p>
           </div>
           
@@ -103,9 +103,9 @@ export default function ProgressiveLoadingDashboard() {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold">Dashboard</h1>
+            <h1 className="text-3xl font-bold">Olá, {representative?.name}!</h1>
             <p className="text-muted-foreground">
-              Olá, {representative?.name}!
+              Aqui está o resumo de suas vendas.
             </p>
           </div>
         </div>
@@ -145,9 +145,9 @@ export default function ProgressiveLoadingDashboard() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Dashboard</h1>
+          <h1 className="text-3xl font-bold">Olá, {representative?.name}!</h1>
           <p className="text-muted-foreground">
-            Olá, {representative?.name}! Aqui está seu resumo de vendas.
+            Aqui está o resumo de suas vendas.
           </p>
         </div>
         
