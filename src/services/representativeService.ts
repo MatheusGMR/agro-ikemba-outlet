@@ -11,6 +11,7 @@ import type {
   RepNotification,
   RepDashboardStats 
 } from '@/types/representative';
+import { calculateRepresentativeGain } from '@/utils/commissionCalculator';
 
 export class RepresentativeService {
   // Representatives
@@ -463,26 +464,26 @@ export class RepresentativeService {
         };
       });
 
-      // Calcular comissão potencial (otimizado)
+      // Calcular comissão e overprice potenciais usando utility
       let potentialCommission = 0;
       let potentialOverprice = 0;
       
-      // Calcular localmente primeiro (mais rápido)
-      potentialCommission = opportunities.reduce((sum: number, opp: any) => {
-        return sum + (opp.estimated_commission || 0);
-      }, 0);
-      
-      // Calcular ganho total de overprice
-      // Precisamos buscar os itens das oportunidades para calcular overprice
+      // Buscar itens das oportunidades
       const { data: opportunityItems } = await supabase
         .from('opportunity_items')
-        .select('opportunity_id, quantity, overprice_amount')
+        .select('opportunity_id, quantity, unit_price, overprice_amount')
         .in('opportunity_id', opportunities.map((opp: any) => opp.id));
       
       if (opportunityItems) {
-        potentialOverprice = opportunityItems.reduce((sum: number, item: any) => {
-          return sum + ((item.overprice_amount || 0) * item.quantity);
-        }, 0);
+        opportunityItems.forEach((item: any) => {
+          const calculation = calculateRepresentativeGain(
+            item.unit_price, // preco_afiliado
+            item.overprice_amount || 0,
+            item.quantity
+          );
+          potentialCommission += calculation.commission_fixed;
+          potentialOverprice += calculation.overprice_gain;
+        });
       }
       
       const potentialTotalGain = potentialCommission + potentialOverprice;

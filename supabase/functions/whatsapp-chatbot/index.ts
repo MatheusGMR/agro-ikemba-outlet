@@ -114,9 +114,10 @@ const updateConversationState = async (phoneNumber: string, state: ConversationS
 
 const searchProducts = async (query: string) => {
   const { data, error } = await supabase
-    .from('inventory')
-    .select('product_sku, product_name, manufacturer, active_ingredient, preco_unitario, state, city')
+    .from('inventory_available')
+    .select('product_sku, product_name, manufacturer, active_ingredient, base_price, preco_afiliado, state, city, available_volume')
     .or(`product_name.ilike.%${query}%, manufacturer.ilike.%${query}%, active_ingredient.ilike.%${query}%`)
+    .gt('available_volume', 0)
     .limit(5);
 
   if (error) {
@@ -129,9 +130,10 @@ const searchProducts = async (query: string) => {
 
 const getProductsByRegion = async (state: string) => {
   const { data, error } = await supabase
-    .from('inventory')
-    .select('product_sku, product_name, manufacturer, state, city, volume_available')
+    .from('inventory_available')
+    .select('product_sku, product_name, manufacturer, state, city, available_volume')
     .eq('state', state.toUpperCase())
+    .gt('available_volume', 0)
     .limit(10);
 
   if (error) {

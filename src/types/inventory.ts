@@ -6,7 +6,6 @@ export interface InventoryItem {
   active_ingredient?: string;
   mapa_number?: string;
   packaging: string;
-  volume_available: number;
   unit: string;
   state: string;
   city: string;
@@ -15,17 +14,20 @@ export interface InventoryItem {
   preco_afiliado?: number;
   preco_banda_menor: number;
   preco_banda_maior: number;
-  commission_unit?: number;
-  net_commission?: number;
-  commission_percentage?: number;
-  rep_percentage?: number;
-  supplier_net?: number;
   created_at: string;
   updated_at: string;
-  // Campos adicionados pela view inventory_available
-  total_volume?: number;
-  reserved_volume?: number;
-  available_volume?: number;
+  
+  // VOLUME FIELDS - Sempre da view inventory_available
+  total_volume: number;        // Volume total em estoque (ex-volume_available)
+  reserved_volume: number;     // Volume reservado em propostas ativas
+  available_volume: number;    // Volume disponível = total - reserved
+  
+  // COMMISSION FIELD - DEPRECATED
+  /**
+   * @deprecated Não usar! Calcular dinamicamente no código.
+   * Manter apenas por compatibilidade com dados antigos.
+   */
+  commission_unit?: number;
 }
 
 export interface ProductDocument {

@@ -12,12 +12,6 @@ export function useInventoryBySku(sku: string) {
   });
 }
 
-export function useAllInventory() {
-  return useQuery({
-    queryKey: ['inventory', 'all'],
-    queryFn: () => InventoryService.getAllInventory()
-  });
-}
 
 export function useProductsWithInventory() {
   return useQuery({

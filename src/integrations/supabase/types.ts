@@ -310,76 +310,64 @@ export type Database = {
           active_ingredient: string | null
           base_price: number
           city: string
-          commission_percentage: number | null
           commission_unit: number | null
           created_at: string
           expiry_date: string
           id: string
           manufacturer: string
           mapa_number: string | null
-          net_commission: number | null
           packaging: string
           preco_afiliado: number | null
           preco_banda_maior: number | null
           preco_banda_menor: number | null
           product_name: string
           product_sku: string
-          rep_percentage: number | null
           state: string
-          supplier_net: number | null
+          total_volume: number
           unit: string
           updated_at: string
-          volume_available: number
         }
         Insert: {
           active_ingredient?: string | null
           base_price: number
           city: string
-          commission_percentage?: number | null
           commission_unit?: number | null
           created_at?: string
           expiry_date: string
           id?: string
           manufacturer: string
           mapa_number?: string | null
-          net_commission?: number | null
           packaging?: string
           preco_afiliado?: number | null
           preco_banda_maior?: number | null
           preco_banda_menor?: number | null
           product_name: string
           product_sku: string
-          rep_percentage?: number | null
           state: string
-          supplier_net?: number | null
+          total_volume: number
           unit?: string
           updated_at?: string
-          volume_available: number
         }
         Update: {
           active_ingredient?: string | null
           base_price?: number
           city?: string
-          commission_percentage?: number | null
           commission_unit?: number | null
           created_at?: string
           expiry_date?: string
           id?: string
           manufacturer?: string
           mapa_number?: string | null
-          net_commission?: number | null
           packaging?: string
           preco_afiliado?: number | null
           preco_banda_maior?: number | null
           preco_banda_menor?: number | null
           product_name?: string
           product_sku?: string
-          rep_percentage?: number | null
           state?: string
-          supplier_net?: number | null
+          total_volume?: number
           unit?: string
           updated_at?: string
-          volume_available?: number
         }
         Relationships: []
       }
@@ -1879,78 +1867,23 @@ export type Database = {
           available_volume: number | null
           base_price: number | null
           city: string | null
-          commission_percentage: number | null
           commission_unit: number | null
           created_at: string | null
           expiry_date: string | null
           id: string | null
           manufacturer: string | null
           mapa_number: string | null
-          net_commission: number | null
           packaging: string | null
+          preco_afiliado: number | null
           preco_banda_maior: number | null
           preco_banda_menor: number | null
           product_name: string | null
           product_sku: string | null
-          rep_percentage: number | null
           reserved_volume: number | null
           state: string | null
-          supplier_net: number | null
           total_volume: number | null
           unit: string | null
           updated_at: string | null
-        }
-        Insert: {
-          active_ingredient?: string | null
-          available_volume?: never
-          base_price?: number | null
-          city?: string | null
-          commission_percentage?: number | null
-          commission_unit?: number | null
-          created_at?: string | null
-          expiry_date?: string | null
-          id?: string | null
-          manufacturer?: string | null
-          mapa_number?: string | null
-          net_commission?: number | null
-          packaging?: string | null
-          preco_banda_maior?: number | null
-          preco_banda_menor?: number | null
-          product_name?: string | null
-          product_sku?: string | null
-          rep_percentage?: number | null
-          reserved_volume?: never
-          state?: string | null
-          supplier_net?: number | null
-          total_volume?: number | null
-          unit?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          active_ingredient?: string | null
-          available_volume?: never
-          base_price?: number | null
-          city?: string | null
-          commission_percentage?: number | null
-          commission_unit?: number | null
-          created_at?: string | null
-          expiry_date?: string | null
-          id?: string | null
-          manufacturer?: string | null
-          mapa_number?: string | null
-          net_commission?: number | null
-          packaging?: string | null
-          preco_banda_maior?: number | null
-          preco_banda_menor?: number | null
-          product_name?: string | null
-          product_sku?: string | null
-          rep_percentage?: number | null
-          reserved_volume?: never
-          state?: string | null
-          supplier_net?: number | null
-          total_volume?: number | null
-          unit?: string | null
-          updated_at?: string | null
         }
         Relationships: []
       }
@@ -1994,10 +1927,7 @@ export type Database = {
         Args: { p_proposal_id: string }
         Returns: boolean
       }
-      check_admin_access: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
+      check_admin_access: { Args: never; Returns: boolean }
       confirm_inventory_reservation: {
         Args: { p_proposal_id: string }
         Returns: boolean
@@ -2013,22 +1943,13 @@ export type Database = {
         }
         Returns: string
       }
-      expire_inventory_reservations: {
-        Args: Record<PropertyKey, never>
-        Returns: number
-      }
+      expire_inventory_reservations: { Args: never; Returns: number }
       find_representative_by_identifier: {
         Args: { identifier_value: string }
         Returns: string
       }
-      generate_order_number: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      generate_proposal_number: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      generate_order_number: { Args: never; Returns: string }
+      generate_proposal_number: { Args: never; Returns: string }
       get_order_details: {
         Args: { order_id: string }
         Returns: {
@@ -2050,10 +1971,7 @@ export type Database = {
           user_type: string
         }[]
       }
-      validate_cnpj: {
-        Args: { cnpj_input: string }
-        Returns: boolean
-      }
+      validate_cnpj: { Args: { cnpj_input: string }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never

@@ -21,7 +21,7 @@ export function ProductDistributionDialog({ product, open, onOpenChange }: Produ
       acc[key] = { items: [], totalVolume: 0 };
     }
     acc[key].items.push(item);
-    acc[key].totalVolume += item.volume_available;
+    acc[key].totalVolume += item.available_volume;
     return acc;
   }, {} as Record<string, { items: typeof product.all_items, totalVolume: number }>);
 
@@ -155,7 +155,7 @@ export function ProductDistributionDialog({ product, open, onOpenChange }: Produ
                         </Badge>
                       </div>
                       
-                      <div className="space-y-2">
+                        <div className="space-y-2">
                         {data.items.map((item, index) => (
                           <div key={index} className="flex items-center justify-between text-sm">
                             <div className="flex items-center gap-2">
@@ -163,7 +163,7 @@ export function ProductDistributionDialog({ product, open, onOpenChange }: Produ
                                 variant="outline" 
                                 className="text-xs"
                               >
-                                {item.volume_available.toLocaleString()}L
+                                {item.available_volume.toLocaleString()}L
                               </Badge>
                             </div>
                             <span className="font-medium">

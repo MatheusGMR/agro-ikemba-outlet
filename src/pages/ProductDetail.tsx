@@ -74,7 +74,7 @@ const ProductDetail = () => {
       acc[key] = { items: [], totalVolume: 0 };
     }
     acc[key].items.push(item);
-    acc[key].totalVolume += item.volume_available;
+    acc[key].totalVolume += item.available_volume;
     return acc;
   }, {} as Record<string, { items: any[], totalVolume: number }>);
   
@@ -267,7 +267,7 @@ const ProductDetail = () => {
                   </div>
                   <div className="flex flex-col">
                     <span className="text-sm text-muted-foreground">Volume Total Disponível</span>
-                    <span className="font-medium">{inventoryItems.reduce((sum, item) => sum + item.volume_available, 0).toLocaleString('pt-BR')} L</span>
+                    <span className="font-medium">{inventoryItems.reduce((sum, item) => sum + item.available_volume, 0).toLocaleString('pt-BR')} L</span>
                   </div>
                   <div className="flex flex-col">
                     <span className="text-sm text-muted-foreground">Locais Disponíveis</span>
@@ -332,7 +332,7 @@ const ProductDetail = () => {
                   
                   <div>
                     <p className="text-sm text-muted-foreground">
-                      {selectedItem ? selectedItem.volume_available.toLocaleString('pt-BR') : 0} L disponíveis neste lote
+                      {selectedItem ? selectedItem.available_volume.toLocaleString('pt-BR') : 0} L disponíveis neste lote
                     </p>
                   </div>
                 </div>

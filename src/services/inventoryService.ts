@@ -4,27 +4,13 @@ import type { InventoryItem, ProductDocument, ProductWithInventory, PriceTierBen
 export class InventoryService {
   static async getInventoryBySku(sku: string): Promise<InventoryItem[]> {
     const { data, error } = await supabase
-      .from('inventory')
+      .from('inventory_available')
       .select('*')
       .eq('product_sku', sku)
       .order('product_name', { ascending: true });
 
     if (error) {
-      console.error('Error fetching inventory:', error);
-      throw error;
-    }
-
-    return (data || []) as InventoryItem[];
-  }
-
-  static async getAllInventory(): Promise<InventoryItem[]> {
-    const { data, error } = await supabase
-      .from('inventory')
-      .select('*')
-      .order('product_name', { ascending: true });
-
-    if (error) {
-      console.error('Error fetching all inventory:', error);
+      console.error('[InventoryService] Error fetching inventory:', error);
       throw error;
     }
 
@@ -63,8 +49,8 @@ export class InventoryService {
 
   static async getProductsWithInventory(): Promise<ProductWithInventory[]> {
     try {
-      // Single query to get all inventory
-      const inventory = await this.getAllInventory();
+      // Single query to get available inventory
+      const inventory = await this.getAvailableInventory();
       
       if (!inventory || inventory.length === 0) {
         return [];
@@ -118,7 +104,7 @@ export class InventoryService {
         const product = productMap.get(item.product_sku)!;
         
         // Add to total volume
-        product.total_volume += item.volume_available;
+        product.total_volume += item.available_volume;
         
         // Add location if not exists
         const locationExists = product.locations.find(
@@ -129,10 +115,10 @@ export class InventoryService {
           product.locations.push({
             state: item.state,
             city: item.city,
-            volume: item.volume_available
+            volume: item.available_volume
           });
         } else {
-          locationExists.volume += item.volume_available;
+          locationExists.volume += item.available_volume;
         }
       }
 
@@ -173,8 +159,7 @@ export class InventoryService {
       // Group by unique physical location and sum AVAILABLE volumes
       for (const item of product.all_items) {
         const locationKey = `${item.city}-${item.state}`;
-        // Fix: Use only available_volume (the correct field from inventory_available view)
-        const availableVol = item.available_volume || 0;
+        const availableVol = item.available_volume;
         
         if (!uniqueLocationVolumes.has(locationKey)) {
           uniqueLocationVolumes.set(locationKey, availableVol);
@@ -224,15 +209,13 @@ export class InventoryService {
     return benefits;
   }
 
-  static getTotalVolumeAvailable(): Promise<number> {
-    return this.getAllInventory().then(inventory => 
-      inventory.reduce((total, item) => total + item.volume_available, 0)
-    );
+  static async getTotalVolumeAvailable(): Promise<number> {
+    const inventory = await this.getAvailableInventory();
+    return inventory.reduce((total, item) => total + item.available_volume, 0);
   }
 
-  static getAvailableProducts(): Promise<string[]> {
-    return this.getAllInventory().then(inventory => 
-      [...new Set(inventory.map(item => item.product_sku))]
-    );
+  static async getAvailableProducts(): Promise<string[]> {
+    const inventory = await this.getAvailableInventory();
+    return [...new Set(inventory.map(item => item.product_sku))];
   }
 }

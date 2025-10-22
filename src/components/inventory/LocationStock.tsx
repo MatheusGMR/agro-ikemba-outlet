@@ -33,7 +33,7 @@ export function LocationStock({ inventory }: LocationStockProps) {
       <CardContent>
         <div className="space-y-4">
           {Object.values(locationGroups).map((location, index) => {
-            const totalVolume = location.items.reduce((sum, item) => sum + item.volume_available, 0);
+            const totalVolume = location.items.reduce((sum, item) => sum + item.available_volume, 0);
             const firstItem = location.items[0];
             const priceRange = {
               min: firstItem.preco_banda_menor,

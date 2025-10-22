@@ -26,7 +26,7 @@ export default function DynamicPriceCard({
   minVolume = 20, 
   initialVolumePercentage = 100 
 }: DynamicPriceCardProps) {
-  const totalAvailable = inventoryItems.reduce((sum, item) => sum + item.volume_available, 0);
+  const totalAvailable = inventoryItems.reduce((sum, item) => sum + item.available_volume, 0);
   const initialVolume = Math.max(minVolume, Math.ceil(totalAvailable * (initialVolumePercentage / 100)));
   const [selectedVolume, setSelectedVolume] = useState(initialVolume);
   const [showConversionModal, setShowConversionModal] = useState(false);

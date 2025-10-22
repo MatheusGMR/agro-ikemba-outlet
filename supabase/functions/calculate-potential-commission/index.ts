@@ -9,13 +9,8 @@ interface InventoryItem {
   id: string;
   product_sku: string;
   product_name: string;
-  volume_available: number;
-  commission_unit: number;
-  net_commission: number;
-  commission_percentage: number;
-  rep_percentage: number;
-  client_price: number;
-  expiry_date: string;
+  available_volume: number;
+  preco_afiliado: number;
   state: string;
   city: string;
 }
@@ -51,23 +46,17 @@ export default async function handler(req: Request) {
     const today = new Date().toISOString().split('T')[0];
     
     const { data: inventoryItems, error: inventoryError } = await supabase
-      .from('inventory')
+      .from('inventory_available')
       .select(`
         id,
         product_sku,
         product_name,
-        volume_available,
-        commission_unit,
-        net_commission,
-        commission_percentage,
-        rep_percentage,
-        client_price,
-        expiry_date,
+        available_volume,
+        preco_afiliado,
         state,
         city
       `)
-      .gte('expiry_date', today)
-      .gt('volume_available', 0);
+      .gt('available_volume', 0);
 
     if (inventoryError) {
       console.error('Error fetching inventory:', inventoryError);
@@ -96,12 +85,14 @@ export default async function handler(req: Request) {
     const productGroups = new Map<string, {
       product_name: string;
       total_volume: number;
-      commission_per_unit: number;
+      preco_afiliado: number;
       locations: Set<string>;
     }>();
 
     let totalPotentialCommission = 0;
     let totalVolumeAvailable = 0;
+
+    const COMMISSION_RATE = 0.015; // 1.5%
 
     for (const item of inventoryItems as InventoryItem[]) {
       const locationKey = `${item.city}, ${item.state}`;
@@ -110,33 +101,36 @@ export default async function handler(req: Request) {
         productGroups.set(item.product_sku, {
           product_name: item.product_name,
           total_volume: 0,
-          commission_per_unit: item.commission_unit,
+          preco_afiliado: item.preco_afiliado,
           locations: new Set()
         });
       }
 
       const group = productGroups.get(item.product_sku)!;
-      group.total_volume += item.volume_available;
+      group.total_volume += item.available_volume;
       group.locations.add(locationKey);
 
-      // Calculate potential commission for this inventory item
-      // Commission = volume_available * commission_unit
-      const itemPotentialCommission = item.volume_available * item.commission_unit;
+      // Calculate potential commission dynamically: 1.5% of preco_afiliado
+      const commission_per_unit = item.preco_afiliado * COMMISSION_RATE;
+      const itemPotentialCommission = item.available_volume * commission_per_unit;
       totalPotentialCommission += itemPotentialCommission;
-      totalVolumeAvailable += item.volume_available;
+      totalVolumeAvailable += item.available_volume;
 
-      console.log(`Product ${item.product_sku}: ${item.volume_available}L × R$${item.commission_unit} = R$${itemPotentialCommission.toFixed(2)}`);
+      console.log(`Product ${item.product_sku}: ${item.available_volume}L × R$${commission_per_unit.toFixed(2)} = R$${itemPotentialCommission.toFixed(2)}`);
     }
 
     // Create breakdown for response
-    const commissionBreakdown = Array.from(productGroups.entries()).map(([sku, group]) => ({
-      product_sku: sku,
-      product_name: group.product_name,
-      volume_available: group.total_volume,
-      commission_per_unit: group.commission_per_unit,
-      total_commission: group.total_volume * group.commission_per_unit,
-      locations: Array.from(group.locations)
-    }));
+    const commissionBreakdown = Array.from(productGroups.entries()).map(([sku, group]) => {
+      const commission_per_unit = group.preco_afiliado * COMMISSION_RATE;
+      return {
+        product_sku: sku,
+        product_name: group.product_name,
+        volume_available: group.total_volume,
+        commission_per_unit,
+        total_commission: group.total_volume * commission_per_unit,
+        locations: Array.from(group.locations)
+      };
+    });
 
     // Sort by total commission descending
     commissionBreakdown.sort((a, b) => b.total_commission - a.total_commission);

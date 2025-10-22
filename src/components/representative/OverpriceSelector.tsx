@@ -9,6 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import { Slider } from '@/components/ui/slider';
 import { DollarSign, TrendingUp, AlertTriangle, Info } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { calculateRepresentativeGain, formatCurrency } from '@/utils/commissionCalculator';
 
 interface OverpriceSelectorProps {
   open: boolean;
@@ -55,15 +56,21 @@ export const OverpriceSelector = ({
   const isOverLimit = calculatedPercentage > maxOverpricePercentage;
   const isAboveMarket = precoBase && precoFinal > precoBase;
 
-  // Cálculos de ganho
-  const comissaoFixa = precoFinal * 0.015; // 1.5%
-  const ganhoOverprice = calculatedAmount; // 100% da margem
-  const ganhoTotal = comissaoFixa + ganhoOverprice;
+  // Cálculos de ganho usando utility centralizada
+  const calculation = calculateRepresentativeGain(
+    precoAfiliado,
+    calculatedAmount,
+    1 // Por litro
+  );
+
+  const comissaoFixa = calculation.commission_fixed;
+  const ganhoOverprice = calculation.overprice_gain;
+  const ganhoTotal = calculation.total_gain;
 
   // Projeção para o volume estimado
-  const ganhoTotalVolume = ganhoTotal * estimatedVolume;
-  const comissaoTotalVolume = comissaoFixa * estimatedVolume;
-  const overpriceGainVolume = ganhoOverprice * estimatedVolume;
+  const ganhoTotalVolume = calculation.total_gain * estimatedVolume;
+  const comissaoTotalVolume = calculation.commission_fixed * estimatedVolume;
+  const overpriceGainVolume = calculation.overprice_gain * estimatedVolume;
 
   const economiaCliente = precoBase ? (precoBase - precoFinal) : 0;
   const percentualEconomia = precoBase ? ((economiaCliente / precoBase) * 100) : 0;
