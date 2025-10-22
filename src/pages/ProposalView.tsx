@@ -54,7 +54,14 @@ export default function ProposalView() {
       return;
     }
 
+    const loadingToast = toast({
+      title: "Processando aprovação...",
+      description: "Aguarde enquanto confirmamos a proposta"
+    });
+
     try {
+      console.log('Starting proposal approval for:', proposal.id);
+
       // Use RepresentativeService to approve and confirm reservation
       await RepresentativeService.approveProposal(proposal.id);
 
@@ -64,13 +71,19 @@ export default function ProposalView() {
         approvalData
       });
 
+      console.log('Proposal approved successfully');
+
       toast({
         title: "Proposta Aprovada!",
         description: "A proposta foi aprovada e o estoque foi reservado. O representante será notificado.",
       });
+
+      // Reload to show updated status
+      setTimeout(() => window.location.reload(), 2000);
     } catch (error: any) {
+      console.error('Error approving proposal:', error);
       toast({
-        title: "Erro",
+        title: "Erro ao Aprovar",
         description: error.message || "Erro ao aprovar proposta. Tente novamente.",
         variant: "destructive"
       });
@@ -80,20 +93,42 @@ export default function ProposalView() {
   const handleReject = async () => {
     if (!proposal) return;
 
+    if (!rejectionComments.trim()) {
+      toast({
+        title: "Motivo obrigatório",
+        description: "Por favor, informe o motivo da rejeição",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const loadingToast = toast({
+      title: "Processando rejeição...",
+      description: "Aguarde enquanto registramos sua resposta"
+    });
+
     try {
+      console.log('Starting proposal rejection for:', proposal.id);
+
       await rejectProposal.mutateAsync({
         proposalId: proposal.id,
         comments: rejectionComments
       });
 
+      console.log('Proposal rejected successfully, reservations auto-cancelled');
+
       toast({
         title: "Proposta Rejeitada",
-        description: "A proposta foi rejeitada. O representante será notificado.",
+        description: "A proposta foi rejeitada e o estoque reservado foi liberado automaticamente. O representante será notificado.",
       });
-    } catch (error) {
+
+      // Reload to show updated status
+      setTimeout(() => window.location.reload(), 2000);
+    } catch (error: any) {
+      console.error('Error rejecting proposal:', error);
       toast({
-        title: "Erro",
-        description: "Erro ao rejeitar proposta. Tente novamente.",
+        title: "Erro ao Rejeitar",
+        description: error.message || "Erro ao rejeitar proposta. Tente novamente.",
         variant: "destructive"
       });
     }
