@@ -9,6 +9,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { MapPin, Package, AlertTriangle } from 'lucide-react';
 import { GroupedProduct, InventoryItem } from '@/types/inventory';
 import { RepClient } from '@/types/representative';
+import { LocationDistanceBadge } from './LocationDistanceBadge';
 
 interface LocationSelection {
   city: string;
@@ -49,18 +50,7 @@ export default function ProductLocationSelector({
 
     return Object.entries(groups).map(([location, items]) => {
       const [city, state] = location.split(', ');
-      // Fix: Use available_volume (correct field from inventory_available view)
       const totalVolume = items.reduce((sum, item) => sum + (item.available_volume || 0), 0);
-      
-      // Calculate proximity to client
-      let proximity = 'distant';
-      if (client?.city && client?.state) {
-        if (city === client.city && state === client.state) {
-          proximity = 'same_city';
-        } else if (state === client.state) {
-          proximity = 'same_state';
-        }
-      }
 
       return {
         city,
@@ -68,22 +58,13 @@ export default function ProductLocationSelector({
         location,
         items,
         totalVolume,
-        proximity,
-        mainItem: items[0] // Since all items now have the same prices, just use the first one
+        mainItem: items[0]
       };
     }).sort((a, b) => {
-      // Sort by proximity first, then by volume
-      const proximityOrder = { same_city: 0, same_state: 1, distant: 2 };
-      const aProximity = proximityOrder[a.proximity as keyof typeof proximityOrder];
-      const bProximity = proximityOrder[b.proximity as keyof typeof proximityOrder];
-      
-      if (aProximity !== bProximity) {
-        return aProximity - bProximity;
-      }
-      
+      // Sort by volume for now (distance will be shown in badge)
       return b.totalVolume - a.totalVolume;
     });
-  }, [product.all_items, client]);
+  }, [product.all_items]);
 
   const handleQuantityChange = (location: string, quantity: number) => {
     const locationGroup = locationGroups.find(g => g.location === location);
@@ -126,21 +107,6 @@ export default function ProductLocationSelector({
     }
   };
 
-  const getProximityLabel = (proximity: string) => {
-    switch (proximity) {
-      case 'same_city': return 'Mesma cidade';
-      case 'same_state': return 'Mesmo estado';
-      default: return 'Distante';
-    }
-  };
-
-  const getProximityColor = (proximity: string) => {
-    switch (proximity) {
-      case 'same_city': return 'bg-green-100 text-green-800';
-      case 'same_state': return 'bg-yellow-100 text-yellow-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -186,9 +152,12 @@ export default function ProductLocationSelector({
                         <div className="flex items-center gap-2 mb-2">
                           <MapPin className="h-4 w-4 text-muted-foreground" />
                           <span className="font-medium">{locationGroup.location}</span>
-                          <Badge className={getProximityColor(locationGroup.proximity)}>
-                            {getProximityLabel(locationGroup.proximity)}
-                          </Badge>
+                          <LocationDistanceBadge
+                            productCity={locationGroup.city}
+                            productState={locationGroup.state}
+                            clientCity={client?.city}
+                            clientState={client?.state}
+                          />
                         </div>
                         
                         <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground mb-3">

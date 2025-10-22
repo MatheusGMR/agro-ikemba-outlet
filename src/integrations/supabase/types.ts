@@ -209,6 +209,33 @@ export type Database = {
         }
         Relationships: []
       }
+      city_coordinates: {
+        Row: {
+          city: string
+          created_at: string | null
+          id: string
+          latitude: number
+          longitude: number
+          state: string
+        }
+        Insert: {
+          city: string
+          created_at?: string | null
+          id?: string
+          latitude: number
+          longitude: number
+          state: string
+        }
+        Update: {
+          city?: string
+          created_at?: string | null
+          id?: string
+          latitude?: number
+          longitude?: number
+          state?: string
+        }
+        Relationships: []
+      }
       commissions: {
         Row: {
           base_value: number
@@ -1923,6 +1950,10 @@ export type Database = {
       }
     }
     Functions: {
+      calculate_distance_km: {
+        Args: { lat1: number; lat2: number; lon1: number; lon2: number }
+        Returns: number
+      }
       cancel_inventory_reservation: {
         Args: { p_proposal_id: string }
         Returns: boolean
