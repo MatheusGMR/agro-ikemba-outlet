@@ -17,6 +17,7 @@ import ProductLocationSelector from './ProductLocationSelector';
 import { OverpriceSelector } from './OverpriceSelector';
 import { PDFGenerator } from '@/utils/pdfGenerator';
 import { RepresentativeService } from '@/services/representativeService';
+import { calculateRepresentativeGain } from '@/utils/commissionCalculator';
 import type { RepClient } from '@/types/representative';
 import type { GroupedProduct } from '@/types/inventory';
 import { MapPin, Package, DollarSign, FileText, Plus, Minus, Info, CheckCircle, Copy, Loader2, User, WifiOff, TrendingDown, TrendingUp } from 'lucide-react';
@@ -41,8 +42,9 @@ interface OpportunityProduct {
   overprice_percentage: number;
   overprice_amount: number;
   preco_final: number;
-  commission_unit: number;
-  overprice_commission: number;
+  commission_fixed: number;       // Comissão fixa (1.5% do preço final)
+  commission_overprice: number;   // Ganho do overprice (100%)
+  commission_total: number;       // Ganho total
   available_locations: string[];
   selectedLocations: LocationSelection[];
   closest_location?: string;
@@ -193,7 +195,9 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
     const existingIndex = selectedProducts.findIndex(p => p.sku === product.sku);
     
     const precoAfiliado = product.main_item.preco_afiliado || product.main_item.base_price;
-    const precoFinal = precoAfiliado + overpriceData.amount;
+    
+    // Calcular comissões usando a utility
+    const commissionCalc = calculateRepresentativeGain(precoAfiliado, overpriceData.amount);
     
     if (existingIndex >= 0) {
       // Update existing product
@@ -203,10 +207,12 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
               ...item,
               preco_afiliado: precoAfiliado,
               preco_unitario: precoAfiliado,
-              preco_final: precoFinal,
+              preco_final: commissionCalc.final_price,
               overprice_percentage: overpriceData.percentage,
               overprice_amount: overpriceData.amount,
-              overprice_commission: overpriceData.amount,
+              commission_fixed: commissionCalc.commission_fixed,
+              commission_overprice: commissionCalc.overprice_gain,
+              commission_total: commissionCalc.total_gain,
               selectedLocations: locations
             }
           : item
@@ -244,9 +250,10 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
         preco_base: product.main_item.base_price,
         overprice_percentage: overpriceData.percentage,
         overprice_amount: overpriceData.amount,
-        preco_final: precoFinal,
-        commission_unit: product.main_item.commission_unit ?? 0,
-        overprice_commission: overpriceData.amount,
+        preco_final: commissionCalc.final_price,
+        commission_fixed: commissionCalc.commission_fixed,
+        commission_overprice: commissionCalc.overprice_gain,
+        commission_total: commissionCalc.total_gain,
         available_locations: availableLocations,
         selectedLocations: locations,
         closest_location: closestLocation
@@ -290,23 +297,23 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
       return sum + itemTotal;
     }, 0);
     
-    const totalCommission = selectedProducts.reduce((sum, item) => {
+    const totalCommissionFixed = selectedProducts.reduce((sum, item) => {
       const itemCommission = item.selectedLocations.reduce((itemSum, loc) => 
-        itemSum + (loc.quantity * item.commission_unit), 0);
+        itemSum + (loc.quantity * item.commission_fixed), 0);
       return sum + itemCommission;
     }, 0);
     
     const totalOverpriceGain = selectedProducts.reduce((sum, item) => {
       const itemOverprice = item.selectedLocations.reduce((itemSum, loc) => 
-        itemSum + (loc.quantity * item.overprice_amount), 0);
+        itemSum + (loc.quantity * item.commission_overprice), 0);
       return sum + itemOverprice;
     }, 0);
     
-    const totalGain = totalCommission + totalOverpriceGain;
+    const totalGain = totalCommissionFixed + totalOverpriceGain;
     
     return { 
       totalValue, 
-      totalCommission,
+      totalCommission: totalCommissionFixed,
       totalOverpriceGain,
       totalGain
     };
@@ -402,8 +409,8 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
               quantity: location.quantity,
               unit_price: product.preco_final,
               total_price: location.quantity * product.preco_final,
-              commission_unit: product.commission_unit,
-              total_commission: location.quantity * product.commission_unit,
+              commission_unit: product.commission_fixed,
+              total_commission: location.quantity * product.commission_total,
               overprice_percentage: product.overprice_percentage,
               overprice_amount: product.overprice_amount
             }))
@@ -474,8 +481,8 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
               quantity: location.quantity,
               unit_price: product.preco_final,
               total_price: location.quantity * product.preco_final,
-              commission_unit: product.commission_unit,
-              total_commission: location.quantity * product.commission_unit,
+              commission_unit: product.commission_fixed,
+              total_commission: location.quantity * product.commission_total,
               overprice_percentage: product.overprice_percentage,
               overprice_amount: product.overprice_amount
             });
@@ -496,8 +503,8 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
             state: loc.state,
             unit_price: product.preco_final,
             total_price: loc.quantity * product.preco_final,
-            commission_unit: product.commission_unit,
-            total_commission: loc.quantity * product.commission_unit,
+            commission_unit: product.commission_fixed,
+            total_commission: loc.quantity * product.commission_total,
             overprice_percentage: product.overprice_percentage,
             overprice_amount: product.overprice_amount
           }))
@@ -716,7 +723,7 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
                     </div>
                   )}
                   <div className="text-xs text-muted-foreground mt-1">
-                    R$ {item.preco_unitario.toFixed(2)} • Comissão: R$ {item.commission_unit.toFixed(2)}
+                    R$ {item.preco_unitario.toFixed(2)} • Comissão: R$ {item.commission_total.toFixed(2)}
                   </div>
                 </div>
                 
@@ -1024,9 +1031,9 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
             {selectedProducts.map(item => {
               const totalQuantity = item.selectedLocations.reduce((sum, loc) => sum + loc.quantity, 0);
               const totalPrice = totalQuantity * item.preco_final;
-              const totalCommission = totalQuantity * item.commission_unit;
-              const itemOverpriceGain = totalQuantity * item.overprice_amount;
-              const itemTotalGain = totalCommission + itemOverpriceGain;
+              const totalCommission = totalQuantity * item.commission_total;
+              const itemOverpriceGain = totalQuantity * item.commission_overprice;
+              const itemTotalGain = totalCommission;
               
               // Calculate savings for this product
               const itemSavings = item.preco_base && item.preco_final < item.preco_base

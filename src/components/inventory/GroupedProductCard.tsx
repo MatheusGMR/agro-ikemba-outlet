@@ -13,7 +13,6 @@ interface GroupedProductCardProps {
 
 export function GroupedProductCard({ product, onViewDistribution, className }: GroupedProductCardProps) {
   const hasMultiplePriceTiers = product.all_items.length > 1;
-  const commission = product.main_item.commission_unit;
   
   return (
     <Card className={`hover:shadow-md transition-shadow ${className}`}>
