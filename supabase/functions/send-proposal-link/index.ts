@@ -85,9 +85,11 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log('Proposta atualizada com sucesso:', proposal.proposal_number);
 
-    // Prepare proposal link - use dynamic domain
-    const currentDomain = new URL(req.url).origin;
-    const proposalUrl = `${currentDomain}/proposta/${publicLink}`;
+    // Prepare proposal link - use APP_URL from environment for correct domain
+    const appUrl = Deno.env.get('APP_URL') || new URL(req.url).origin;
+    const proposalUrl = `${appUrl}/proposta/${publicLink}`;
+    
+    console.log('📧 Gerando URL da proposta:', proposalUrl);
 
     // Send via email if requested
     if ((send_method === 'email' || send_method === 'both') && (client_email || responsible_email)) {
