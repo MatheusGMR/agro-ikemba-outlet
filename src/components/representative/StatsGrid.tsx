@@ -24,11 +24,7 @@ export default function StatsGrid({ stats }: StatsGridProps) {
     {
       title: "Ganho Previsto",
       value: formatCurrency(stats.potential_total_gain || 0),
-      description: "Comissão (1,5%) + Margem das oportunidades ativas",
-      breakdown: {
-        commission: stats.potential_commission || 0,
-        overprice: stats.potential_overprice || 0
-      },
+      description: "Comissões e margens das oportunidades ativas",
       icon: <TrendingUp className="h-6 w-6 text-green-600" />,
       color: "border-green-200 bg-green-50/50"
     },
@@ -57,20 +53,6 @@ export default function StatsGrid({ stats }: StatsGridProps) {
           </div>
           <p className="text-2xl font-bold">{indicator.value}</p>
           <p className="text-sm text-muted-foreground">{indicator.description}</p>
-          
-          {/* Breakdown para Ganho Previsto */}
-          {indicator.breakdown && (
-            <div className="pt-2 mt-2 border-t border-border/30 space-y-1">
-              <div className="flex justify-between text-xs">
-                <span className="text-muted-foreground">Comissão fixa (1,5%)</span>
-                <span className="font-medium">{formatCurrency(indicator.breakdown.commission)}</span>
-              </div>
-              <div className="flex justify-between text-xs">
-                <span className="text-muted-foreground">Ganho margem</span>
-                <span className="font-medium">{formatCurrency(indicator.breakdown.overprice)}</span>
-              </div>
-            </div>
-          )}
         </div>
       ))}
     </div>

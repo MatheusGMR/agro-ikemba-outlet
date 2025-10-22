@@ -2,7 +2,7 @@
  * Utility para cálculo de comissões e ganhos do representante
  * 
  * REGRAS DE NEGÓCIO:
- * - Comissão fixa: 1.5% do preço final (preco_afiliado + overprice)
+ * - Comissão fixa: 1.5% do preço BASE (preco_afiliado SEM overprice)
  * - Ganho overprice: 100% do overprice aplicado
  * - Ganho total: comissão fixa + ganho overprice
  */
@@ -30,7 +30,7 @@ export function calculateRepresentativeGain(
   const COMMISSION_RATE = 0.015; // 1.5%
   
   const final_price = preco_afiliado + overprice_amount;
-  const commission_fixed = final_price * COMMISSION_RATE;
+  const commission_fixed = preco_afiliado * COMMISSION_RATE; // Calcula APENAS sobre preço base
   const overprice_gain = overprice_amount; // 100% do overprice
   const total_gain = commission_fixed + overprice_gain;
   
