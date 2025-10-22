@@ -22,7 +22,7 @@ export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
   const { signIn, user } = useAuth();
-  const { validateBotProtection, recaptchaStatus, recaptchaError } = useBotProtection();
+  const { validateBotProtection } = useBotProtection();
 
   // Get redirect path based on user status and role
   const getRedirectPath = (userStatus: string, isRepresentative: boolean) => {
@@ -136,20 +136,6 @@ export default function Login() {
             </Alert>
           </CardHeader>
           <CardContent>
-            {recaptchaStatus === 'loading' && (
-              <Alert className="mb-4">
-                <Info className="h-4 w-4" />
-                <AlertDescription>Carregando verificação de segurança...</AlertDescription>
-              </Alert>
-            )}
-            
-            {recaptchaError && (
-              <Alert className="mb-4" variant="destructive">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{recaptchaError}</AlertDescription>
-              </Alert>
-            )}
-            
             {error && (
               <Alert className="mb-4" variant="destructive">
                 <AlertCircle className="h-4 w-4" />

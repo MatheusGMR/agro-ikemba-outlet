@@ -82,8 +82,6 @@ export function RepresentativeApplicationForm() {
     honeypotData,
     updateHoneypot,
     validateBotProtection,
-    isReCaptchaReady,
-    recaptchaError
   } = useBotProtection();
 
   const updateFormData = (field: keyof FormData, value: any) => {

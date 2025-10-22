@@ -24,7 +24,7 @@ export default function RepresentativeLogin() {
   const navigate = useNavigate();
   const { signIn, user } = useAuth();
   const { data: representative, isFetched } = useCurrentRepresentative();
-  const { validateBotProtection, recaptchaStatus, recaptchaError } = useBotProtection();
+  const { validateBotProtection } = useBotProtection();
 
   // Redirect if already logged in as representative
   // Só redirecionar automaticamente se estiver na web
@@ -142,20 +142,6 @@ export default function RepresentativeLogin() {
               <p className="text-muted-foreground">Entre com suas credenciais de representante</p>
             </CardHeader>
             <CardContent>
-              {recaptchaStatus === 'loading' && (
-                <Alert className="mb-4">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>Carregando verificação de segurança...</AlertDescription>
-                </Alert>
-              )}
-              
-              {recaptchaError && (
-                <Alert className="mb-4" variant="destructive">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>{recaptchaError}</AlertDescription>
-                </Alert>
-              )}
-              
               {error && (
                 <Alert className="mb-4" variant="destructive">
                   <AlertCircle className="h-4 w-4" />

@@ -106,47 +106,8 @@ function UnifiedRegistrationFormInner({
     honeypotData, 
     updateHoneypot, 
     validateBotProtection, 
-    testReCaptcha, 
     formStartTime, 
-    isReCaptchaReady,
-    recaptchaStatus,
-    recaptchaError
   } = useBotProtection();
-
-  // Test reCAPTCHA on component mount and show toast on timeout
-  useEffect(() => {
-    // Skip automatic test in development mode
-    if (import.meta.env.DEV) {
-      console.log('🧪 reCAPTCHA test disabled in development mode');
-      return;
-    }
-    
-    const testCaptcha = async () => {
-      if (isReCaptchaReady) {
-        console.log('🧪 Component mounted - testing reCAPTCHA...');
-        const test = await testReCaptcha();
-        if (!test.working) {
-          console.warn('⚠️ reCAPTCHA test failed on mount:', test.error);
-        } else {
-          console.log('✅ reCAPTCHA is working properly. Score:', test.score);
-        }
-      }
-    };
-
-    // Wait a bit for reCAPTCHA to initialize
-    const timer = setTimeout(testCaptcha, 3000);
-    return () => clearTimeout(timer);
-  }, [isReCaptchaReady, testReCaptcha]);
-
-  // Show warning toast if reCAPTCHA times out
-  useEffect(() => {
-    if (recaptchaStatus === 'timeout' && recaptchaError) {
-      toast.error(recaptchaError, {
-        duration: 8000,
-        description: 'Tente recarregar a página ou desative bloqueadores de anúncios.'
-      });
-    }
-  }, [recaptchaStatus, recaptchaError]);
 
   const updateFormData = (field: keyof UnifiedRegistrationData, value: string) => {
     // Track form_start on first interaction
@@ -241,7 +202,6 @@ function UnifiedRegistrationFormInner({
         trackFormEvent('bot_detected', {
           ...common,
           bot_reason: botCheck.reason,
-          recaptcha_score: botCheck.recaptchaScore,
           form_time: Date.now() - formStartTime
         });
         
@@ -254,28 +214,18 @@ function UnifiedRegistrationFormInner({
         } else if (botCheck.reason === 'too_fast') {
           errorMessage = 'Por favor, preencha o formulário com mais atenção.';
           errorDescription = 'Dedique alguns segundos para revisar suas informações.';
-        } else if (botCheck.reason === 'recaptcha_timeout') {
-          errorMessage = 'Sistema de segurança não carregou a tempo.';
-          errorDescription = 'Recarregue a página ou desative bloqueadores de anúncios.';
-        } else if (botCheck.reason === 'recaptcha_unavailable') {
-          errorMessage = 'Sistema de segurança não está disponível.';
-          errorDescription = 'Verifique sua conexão e bloqueadores de anúncios.';
-        } else if (botCheck.reason?.includes('recaptcha')) {
-          errorMessage = 'Verificação de segurança falhou.';
-          errorDescription = 'Recarregue a página e tente novamente.';
         }
         
         toast.error(errorMessage, errorDescription ? { description: errorDescription } : undefined);
         return;
       }
 
-      console.log(`[REG][${attemptId}] Bot protection passed. Score: ${botCheck.recaptchaScore}`);
+      console.log(`[REG][${attemptId}] Bot protection passed.`);
       trackFormEvent('form_attempt_start', {
         ...common,
         account_type: formData.tipo,
         has_cnpj: !!formData.cnpj,
         how_found: formData.conheceu || 'not_specified',
-        recaptcha_score: botCheck.recaptchaScore,
         form_time: Date.now() - formStartTime
       });
 
@@ -607,34 +557,13 @@ function UnifiedRegistrationFormInner({
         {/* 🍯 Honeypot fields for bot detection */}
         <HoneypotFields data={honeypotData} onChange={updateHoneypot} />
         
-        {/* reCAPTCHA status indicator */}
-        {recaptchaStatus === 'loading' && (
-          <div className="mb-4 p-3 bg-secondary/50 rounded-md flex items-center gap-2 text-sm">
-            <div className="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full" />
-            <span className="text-muted-foreground">Carregando sistema de segurança...</span>
-          </div>
-        )}
-        
-        {recaptchaStatus === 'timeout' && (
-          <div className="mb-4 p-3 bg-destructive/10 border border-destructive/20 rounded-md text-sm">
-            <p className="text-destructive font-medium">⚠️ Sistema de segurança não carregou</p>
-            <p className="text-destructive/80 text-xs mt-1">Recarregue a página ou desative bloqueadores de anúncios</p>
-          </div>
-        )}
-        
         <ProgressiveForm
           steps={steps}
           currentStep={currentStep}
           onStepChange={setCurrentStep}
           onSubmit={handleSubmit}
-          isSubmitting={isSubmitting || recaptchaStatus === 'loading' || recaptchaStatus === 'timeout'}
-          submitText={
-            recaptchaStatus === 'loading' 
-              ? 'Aguarde...' 
-              : recaptchaStatus === 'timeout'
-              ? 'Sistema indisponível'
-              : contextMessages.submitText
-          }
+          isSubmitting={isSubmitting}
+          submitText={contextMessages.submitText}
         />
       </div>
 

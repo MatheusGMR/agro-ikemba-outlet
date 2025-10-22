@@ -3,7 +3,6 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from 'react-helmet-async';
-import { GoogleReCaptchaProvider } from 'react-google-recaptcha-v3';
 import Index from "./pages/Index";
 import About from "./pages/About";
 import Dashboard from "./pages/Dashboard";
@@ -43,38 +42,9 @@ import MariaValentinaRegistration from '@/pages/MariaValentinaRegistration';
 const queryClient = new QueryClient();
 
 function App() {
-  const recaptchaSiteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY || '';
-  
-  // Warn if reCAPTCHA is not configured
-  if (!recaptchaSiteKey) {
-    console.warn('⚠️ VITE_RECAPTCHA_SITE_KEY não está configurado. reCAPTCHA não funcionará.');
-  }
-
-  const RecaptchaWrapper = ({ children }: { children: React.ReactNode }) => {
-    // Only load reCAPTCHA in production
-    if (import.meta.env.DEV) {
-      console.warn('⚠️ MODO DEV: GoogleReCaptchaProvider desabilitado');
-      return <>{children}</>;
-    }
-    
-    return (
-      <GoogleReCaptchaProvider 
-        reCaptchaKey={recaptchaSiteKey}
-        scriptProps={{
-          async: true,
-          defer: true,
-          appendTo: 'head'
-        }}
-      >
-        {children}
-      </GoogleReCaptchaProvider>
-    );
-  };
-
   return (
     <QueryClientProvider client={queryClient}>
-      <RecaptchaWrapper>
-        <CartProvider>
+      <CartProvider>
           <HelmetProvider>
             <TooltipProvider>
               <Toaster />
@@ -133,9 +103,8 @@ function App() {
               <GlobalWhatsAppButton />
             </BrowserRouter>
           </TooltipProvider>
-        </HelmetProvider>
-      </CartProvider>
-      </RecaptchaWrapper>
+          </HelmetProvider>
+        </CartProvider>
     </QueryClientProvider>
   );
 }
