@@ -3,6 +3,9 @@ project_id = "jhkxcplfempenoczcoep"
 [functions.send-auth-email]
 verify_jwt = false
 
+[functions.reject-proposal]
+verify_jwt = false
+
 [functions.create-auth-user]
 verify_jwt = false
 

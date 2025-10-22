@@ -50,3 +50,51 @@ const { data } = await supabase
 | `total_volume` | Tabela | Volume total em estoque |
 | `reserved_volume` | Calculado | Volume em propostas ativas |
 | `available_volume` | Calculado | Volume disponível para venda |
+
+## 🔄 Fluxo de Cancelamento de Propostas
+
+### Cancelamento Automático via Trigger
+
+Quando uma proposta tem seu status alterado para `rejected` ou `cancelled`:
+
+1. **Trigger `trigger_auto_cancel_reservations`** é acionado automaticamente
+2. Todas as reservas ativas (`status = 'active'`) da proposta são canceladas
+3. Campo `reservation_status` da proposta é atualizado para `'cancelled'`
+4. Volume é **liberado imediatamente** e volta a aparecer como disponível
+
+### Cancelamento via Edge Function
+
+A edge function `reject-proposal`:
+- Atualiza `proposals.status` para `'rejected'`
+- Trigger cancela as reservas automaticamente
+- RPC `cancel_inventory_reservation` é chamado como backup
+- Notificação é criada para o representante
+
+### Políticas de Expiração
+
+- **Reservas ativas**: Expiram após 48 horas automaticamente
+- **Propostas enviadas**: Sem expiração automática, devem ser aprovadas/rejeitadas pelo cliente
+- **Volume liberado**: Fica disponível imediatamente após cancelamento
+
+### Como Cancelar Manualmente (SQL)
+
+```sql
+-- Cancelar uma proposta específica
+SELECT cancel_inventory_reservation('proposal-uuid');
+
+-- Verificar volumes liberados
+SELECT product_sku, total_volume, reserved_volume, available_volume 
+FROM inventory_available 
+WHERE product_sku = 'SKU';
+```
+
+### Sincronização de Status
+
+| Ação | `proposals.status` | `inventory_reservations.status` | Volume Disponível |
+|------|-------------------|--------------------------------|-------------------|
+| Criar proposta | `draft` | `active` | ⬇️ Reduz |
+| Enviar proposta | `sent` | `active` | ⬇️ Mantém reduzido |
+| Aprovar | `approved` | `consumed` | ⬇️ Mantém reduzido |
+| Rejeitar | `rejected` | `cancelled` | ⬆️ Libera |
+| Cancelar | `cancelled` | `cancelled` | ⬆️ Libera |
+| Expirar (48h) | `sent` | `expired` | ⬆️ Libera |

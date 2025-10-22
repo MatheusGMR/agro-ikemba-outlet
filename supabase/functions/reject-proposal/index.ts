@@ -25,6 +25,8 @@ const handler = async (req: Request): Promise<Response> => {
 
     const { proposal_id, comments }: RejectionRequest = await req.json();
 
+    console.log('Processing proposal rejection:', { proposal_id, comments });
+
     // Update proposal status to rejected
     const { data: updatedProposal, error: updateError } = await supabase
       .from('proposals')
@@ -39,6 +41,24 @@ const handler = async (req: Request): Promise<Response> => {
     if (updateError) {
       console.error('Error updating proposal:', updateError);
       throw updateError;
+    }
+
+    console.log('Proposal updated to rejected, trigger will cancel reservations automatically');
+
+    // Optional: Explicitly cancel reservations via RPC (backup in case trigger fails)
+    try {
+      const { error: cancelError } = await supabase.rpc('cancel_inventory_reservation', {
+        p_proposal_id: proposal_id
+      });
+
+      if (cancelError) {
+        console.error('Error calling cancel_inventory_reservation RPC (non-blocking):', cancelError);
+        // Don't fail the rejection because of this - trigger should handle it
+      } else {
+        console.log('Successfully called cancel_inventory_reservation RPC');
+      }
+    } catch (rpcError) {
+      console.error('RPC call failed (non-blocking):', rpcError);
     }
 
     // Get representative data for notification
