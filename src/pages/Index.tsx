@@ -46,6 +46,11 @@ const Index = () => {
       }
     }
   }, [user, isRepresentative, isLoading, navigate]);
+
+  // Renderizar apenas loading em plataforma nativa
+  if (Capacitor.isNativePlatform()) {
+    return <LoadingFallback />;
+  }
   
   const structuredData = {
     "@context": "https://schema.org",
