@@ -2,6 +2,20 @@ import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+// Retry com backoff para resiliência
+const retryWithBackoff = async (fn: () => Promise<any>, maxRetries = 3) => {
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      return await fn();
+    } catch (error) {
+      if (i === maxRetries - 1) throw error;
+      const delay = Math.pow(2, i) * 1000; // 1s, 2s, 4s
+      console.log(`Retry attempt ${i + 1}/${maxRetries} after ${delay}ms`);
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  }
+};
+
 interface ApplicationData {
   nome: string;
   email: string;
@@ -35,12 +49,14 @@ export function useRepresentativeApplication() {
     setIsLoading(true);
     
     try {
-      // Submit application via Edge Function to bypass RLS issues
-      const { data: responseData, error } = await supabase.functions.invoke('submit-representative-application', {
-        body: {
-          applicationData: data
-        }
-      });
+      // Submit application via Edge Function com retry
+      const { data: responseData, error } = await retryWithBackoff(() =>
+        supabase.functions.invoke('submit-representative-application', {
+          body: {
+            applicationData: data
+          }
+        })
+      );
 
       if (error) {
         throw error;
@@ -67,15 +83,27 @@ export function useRepresentativeApplication() {
 
       toast.success('Inscrição enviada com sucesso! Nossa equipe entrará em contato em até 5 dias úteis.');
 
-    } catch (error) {
-      console.error('Erro ao submeter aplicação:', error);
+    } catch (error: any) {
+      console.error('=== ERROR SUBMITTING APPLICATION ===');
+      console.error('Error type:', typeof error);
+      console.error('Error message:', error?.message);
+      console.error('Error details:', error);
+      console.error('Application data:', JSON.stringify(data, null, 2));
       
-      // More specific error message
-      if (error.message?.includes('RLS')) {
-        toast.error('Erro de permissão. Por favor, tente novamente ou entre em contato conosco.');
-      } else {
-        toast.error('Erro ao enviar inscrição. Por favor, tente novamente.');
+      // Mensagens mais específicas
+      let errorMessage = 'Erro ao enviar inscrição. Por favor, tente novamente.';
+      
+      if (error?.message?.includes('RLS')) {
+        errorMessage = 'Erro de permissão. Entre em contato conosco.';
+      } else if (error?.message?.includes('duplicate')) {
+        errorMessage = 'Este email já foi cadastrado. Verifique seu email ou entre em contato.';
+      } else if (error?.message?.includes('invalid')) {
+        errorMessage = 'Dados inválidos detectados. Verifique CNPJ, email e telefone.';
+      } else if (error?.code) {
+        errorMessage = `Erro ${error.code}: ${error.message}`;
       }
+      
+      toast.error(errorMessage);
       
       throw error;
     } finally {

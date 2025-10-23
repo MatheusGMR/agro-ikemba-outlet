@@ -1384,7 +1384,7 @@ export type Database = {
           motivo_status: string | null
           nome: string
           possui_pj: boolean
-          produtos_lista: string
+          produtos_lista: string | null
           razao_social: string | null
           regioes: string[]
           segmentos: string[]
@@ -1416,7 +1416,7 @@ export type Database = {
           motivo_status?: string | null
           nome: string
           possui_pj: boolean
-          produtos_lista: string
+          produtos_lista?: string | null
           razao_social?: string | null
           regioes: string[]
           segmentos: string[]
@@ -1448,7 +1448,7 @@ export type Database = {
           motivo_status?: string | null
           nome?: string
           possui_pj?: boolean
-          produtos_lista?: string
+          produtos_lista?: string | null
           razao_social?: string | null
           regioes?: string[]
           segmentos?: string[]

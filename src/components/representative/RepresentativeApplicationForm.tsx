@@ -169,6 +169,42 @@ export function RepresentativeApplicationForm() {
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
+      // ===== Validação preventiva de dados críticos =====
+      console.log('=== PRE-SUBMIT VALIDATION ===');
+      console.log('Form data:', formData);
+      
+      if (!formData.nome?.trim()) {
+        toast.error('Nome é obrigatório');
+        setIsSubmitting(false);
+        return;
+      }
+      
+      if (!formData.email?.trim() || !validateEmail(formData.email)) {
+        toast.error('Email inválido');
+        setIsSubmitting(false);
+        return;
+      }
+      
+      if (!formData.whatsapp?.trim()) {
+        toast.error('WhatsApp é obrigatório');
+        setIsSubmitting(false);
+        return;
+      }
+      
+      if (formData.possui_pj && formData.cnpj && !validateCNPJ(formData.cnpj)) {
+        toast.error('CNPJ inválido. Use formato: 00.000.000/0000-00');
+        setIsSubmitting(false);
+        return;
+      }
+      
+      if (!formData.segmentos || formData.segmentos.length === 0) {
+        toast.error('Selecione pelo menos um segmento');
+        setIsSubmitting(false);
+        return;
+      }
+      
+      console.log('✅ Pre-submit validation passed');
+      
       // Validate bot protection
       const botValidation = await validateBotProtection();
       

@@ -20,7 +20,13 @@ serve(async (req) => {
 
     const { applicationData } = await req.json()
 
-    console.log('Received application data:', applicationData)
+    console.log('=== RECEIVED APPLICATION ===')
+    console.log('Email:', applicationData.email)
+    console.log('Nome:', applicationData.nome)
+    console.log('Possui PJ:', applicationData.possui_pj)
+    console.log('CNPJ:', applicationData.cnpj)
+    console.log('Status:', applicationData.status)
+    console.log('Full data:', JSON.stringify(applicationData, null, 2))
 
     // Prepare data for insertion
     // IMPORTANT: Mark all new submissions as interest-only since program is inactive
@@ -62,7 +68,10 @@ serve(async (req) => {
       .single()
 
     if (error) {
-      console.error('Database error:', error)
+      console.error('=== DATABASE ERROR ===')
+      console.error('Error code:', error.code)
+      console.error('Error message:', error.message)
+      console.error('Error details:', JSON.stringify(error, null, 2))
       throw error
     }
 
