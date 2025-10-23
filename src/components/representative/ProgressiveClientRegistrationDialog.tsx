@@ -3,7 +3,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { ProgressiveForm, ProgressiveFormStep } from '@/components/ui/progressive-form';
 import { ProgressiveInput } from '@/components/ui/progressive-input';
 import { ButtonGrid } from '@/components/ui/button-grid';
-import { Building, User, Users, Phone, Mail } from 'lucide-react';
+import { Building, User, Users, Phone, Mail, MapPin } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useCreateClient } from '@/hooks/useRepresentative';
 import { toast } from 'sonner';
 
@@ -20,6 +21,8 @@ interface ClientFormData {
   cnpj_cpf: string;
   phone: string;
   email: string;
+  city: string;
+  state: string;
 }
 
 const contactFunctionOptions = [
@@ -62,6 +65,8 @@ export default function ProgressiveClientRegistrationDialog({
     cnpj_cpf: '',
     phone: '',
     email: '',
+    city: '',
+    state: '',
   });
 
   const createClientMutation = useCreateClient();
@@ -93,6 +98,14 @@ export default function ProgressiveClientRegistrationDialog({
         const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email);
         if (!emailValid) return "Email inválido";
         return true;
+      case 6: // City and State
+        if (!formData.state || formData.state.length !== 2) {
+          return "Selecione o estado (UF)";
+        }
+        if (!formData.city || formData.city.length < 2) {
+          return "Cidade é obrigatória";
+        }
+        return true;
       default:
         return true;
     }
@@ -117,6 +130,8 @@ export default function ProgressiveClientRegistrationDialog({
         cnpj_cpf: formData.cnpj_cpf || undefined,
         phone: formData.phone || undefined,
         email: formData.email.trim() || undefined,
+        city: formData.city.trim().toUpperCase() || undefined,
+        state: formData.state.trim().toUpperCase() || undefined,
         credit_limit: 0
       });
 
@@ -130,6 +145,8 @@ export default function ProgressiveClientRegistrationDialog({
         cnpj_cpf: '',
         phone: '',
         email: '',
+        city: '',
+        state: '',
       });
       setCurrentStep(1);
       onOpenChange(false);
@@ -248,6 +265,67 @@ export default function ProgressiveClientRegistrationDialog({
       ),
       validate: () => validateStep(5),
     },
+    {
+      id: 'location',
+      title: 'Localização',
+      description: 'Onde a empresa está localizada?',
+      component: (
+        <div className="space-y-6">
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Estado (UF)</label>
+            <Select
+              value={formData.state}
+              onValueChange={(value) => updateFormData('state', value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione o estado" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="AC">Acre</SelectItem>
+                <SelectItem value="AL">Alagoas</SelectItem>
+                <SelectItem value="AP">Amapá</SelectItem>
+                <SelectItem value="AM">Amazonas</SelectItem>
+                <SelectItem value="BA">Bahia</SelectItem>
+                <SelectItem value="CE">Ceará</SelectItem>
+                <SelectItem value="DF">Distrito Federal</SelectItem>
+                <SelectItem value="ES">Espírito Santo</SelectItem>
+                <SelectItem value="GO">Goiás</SelectItem>
+                <SelectItem value="MA">Maranhão</SelectItem>
+                <SelectItem value="MT">Mato Grosso</SelectItem>
+                <SelectItem value="MS">Mato Grosso do Sul</SelectItem>
+                <SelectItem value="MG">Minas Gerais</SelectItem>
+                <SelectItem value="PA">Pará</SelectItem>
+                <SelectItem value="PB">Paraíba</SelectItem>
+                <SelectItem value="PR">Paraná</SelectItem>
+                <SelectItem value="PE">Pernambuco</SelectItem>
+                <SelectItem value="PI">Piauí</SelectItem>
+                <SelectItem value="RJ">Rio de Janeiro</SelectItem>
+                <SelectItem value="RN">Rio Grande do Norte</SelectItem>
+                <SelectItem value="RS">Rio Grande do Sul</SelectItem>
+                <SelectItem value="RO">Rondônia</SelectItem>
+                <SelectItem value="RR">Roraima</SelectItem>
+                <SelectItem value="SC">Santa Catarina</SelectItem>
+                <SelectItem value="SP">São Paulo</SelectItem>
+                <SelectItem value="SE">Sergipe</SelectItem>
+                <SelectItem value="TO">Tocantins</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <ProgressiveInput
+            label="Cidade"
+            placeholder="Digite o nome da cidade"
+            value={formData.city}
+            onChange={(value) => updateFormData('city', value.toUpperCase())}
+            icon={MapPin}
+            required
+            autoFocus
+            error={validateStep(6) !== true ? String(validateStep(6)) : undefined}
+          />
+        </div>
+      ),
+      validate: () => validateStep(6),
+    },
   ];
 
   const handleDialogClose = (open: boolean) => {
@@ -260,6 +338,8 @@ export default function ProgressiveClientRegistrationDialog({
         cnpj_cpf: '',
         phone: '',
         email: '',
+        city: '',
+        state: '',
       });
       setCurrentStep(1);
     }
