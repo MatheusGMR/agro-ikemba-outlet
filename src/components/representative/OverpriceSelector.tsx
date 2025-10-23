@@ -6,7 +6,6 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Slider } from '@/components/ui/slider';
 import { DollarSign, TrendingUp, AlertTriangle, Info } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { calculateRepresentativeGain, formatCurrency } from '@/utils/commissionCalculator';
@@ -30,9 +29,9 @@ export const OverpriceSelector = ({
   precoBase,
   estimatedVolume
 }: OverpriceSelectorProps) => {
-  const [mode, setMode] = useState<'percentage' | 'fixed'>('percentage');
+  const [mode, setMode] = useState<'percentage' | 'fixed'>('fixed');
   const [percentage, setPercentage] = useState(5);
-  const [fixedValue, setFixedValue] = useState(5.00);
+  const [fixedValue, setFixedValue] = useState(0.50);
 
   const maxOverpricePercentage = 30;
   const maxOverpriceAmount = precoAfiliado * (maxOverpricePercentage / 100);
@@ -145,14 +144,7 @@ export const OverpriceSelector = ({
             {mode === 'percentage' ? (
               <div className="space-y-3 mt-2">
                 <div className="flex items-center gap-4">
-                  <Slider
-                    value={[percentage]}
-                    onValueChange={(value) => setPercentage(value[0])}
-                    max={maxOverpricePercentage}
-                    step={0.5}
-                    className="flex-1"
-                  />
-                  <div className="w-20 text-right">
+                  <div className="w-32 text-right">
                     <Input
                       type="number"
                       value={percentage}
@@ -163,7 +155,7 @@ export const OverpriceSelector = ({
                       max={maxOverpricePercentage}
                     />
                   </div>
-                  <span className="text-lg font-semibold w-8">%</span>
+                  <span className="text-lg font-semibold">%</span>
                 </div>
                 <div className="text-sm text-muted-foreground">
                   = R$ {calculatedAmount.toFixed(2)} por litro
@@ -178,7 +170,7 @@ export const OverpriceSelector = ({
                     type="number"
                     value={fixedValue}
                     onChange={(e) => setFixedValue(Math.min(Number(e.target.value), maxOverpriceAmount))}
-                    step="0.50"
+                    step="0.10"
                     min="0"
                     max={maxOverpriceAmount}
                     className="flex-1"

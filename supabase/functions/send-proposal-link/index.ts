@@ -85,8 +85,8 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log('Proposta atualizada com sucesso:', proposal.proposal_number);
 
-    // Prepare proposal link - use APP_URL from environment for correct domain
-    const appUrl = Deno.env.get('APP_URL') || new URL(req.url).origin;
+    // Prepare proposal link - use APP_URL from environment or construct from request
+    const appUrl = Deno.env.get('APP_URL') || 'https://agroikemba.lovable.app';
     const proposalUrl = `${appUrl}/proposta/${publicLink}`;
     
     console.log('📧 Gerando URL da proposta:', proposalUrl);
