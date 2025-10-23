@@ -149,15 +149,22 @@ export default function ProductLocationSelector({
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <MapPin className="h-4 w-4 text-muted-foreground" />
-                          <span className="font-medium">{locationGroup.location}</span>
-                          <LocationDistanceBadge
-                            productCity={locationGroup.city}
-                            productState={locationGroup.state}
-                            clientCity={client?.city}
-                            clientState={client?.state}
-                          />
+                        <div className="space-y-2 mb-2">
+                          <div className="flex items-center gap-2">
+                            <MapPin className="h-4 w-4 text-muted-foreground" />
+                            <span className="font-medium">{locationGroup.location}</span>
+                          </div>
+                          {client && (
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs text-muted-foreground">Distância:</span>
+                              <LocationDistanceBadge
+                                productCity={locationGroup.city}
+                                productState={locationGroup.state}
+                                clientCity={client?.city}
+                                clientState={client?.state}
+                              />
+                            </div>
+                          )}
                         </div>
                         
                         <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground mb-3">

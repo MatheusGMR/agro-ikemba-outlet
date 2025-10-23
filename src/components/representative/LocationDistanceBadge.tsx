@@ -1,4 +1,5 @@
 import { Badge } from '@/components/ui/badge';
+import { MapPin } from 'lucide-react';
 import { useCityCoordinates } from '@/hooks/useCityCoordinates';
 import { calculateDistanceKm, formatDistance, getProximityFromDistance } from '@/utils/distanceCalculator';
 
@@ -15,14 +16,24 @@ export function LocationDistanceBadge({
   clientCity,
   clientState,
 }: LocationDistanceBadgeProps) {
-  const { data: clientCoords } = useCityCoordinates(clientCity, clientState);
-  const { data: productCoords } = useCityCoordinates(productCity, productState);
+  const { data: clientCoords, isLoading: loadingClient } = useCityCoordinates(clientCity, clientState);
+  const { data: productCoords, isLoading: loadingProduct } = useCityCoordinates(productCity, productState);
 
-  // Calcular distância se ambas coordenadas estiverem disponíveis
   let distanceKm: number | null = null;
   let proximity = 'distant';
   let label = 'Distante';
 
+  // Se está carregando coordenadas
+  if ((loadingClient || loadingProduct) && clientCity && clientState) {
+    return (
+      <Badge className="bg-gray-100 text-gray-600 flex items-center gap-1">
+        <MapPin className="h-3 w-3 animate-pulse" />
+        Calculando...
+      </Badge>
+    );
+  }
+
+  // Se tem ambas as coordenadas, calcular distância real
   if (clientCity && clientState && clientCoords && productCoords) {
     distanceKm = calculateDistanceKm(
       clientCoords.latitude,
@@ -32,15 +43,22 @@ export function LocationDistanceBadge({
     );
     proximity = getProximityFromDistance(distanceKm);
     label = formatDistance(distanceKm);
-  } else if (clientCity && clientState) {
-    // Fallback para lógica antiga se coordenadas não disponíveis
+  } 
+  // Fallback se coordenadas não disponíveis (com indicador)
+  else if (clientCity && clientState) {
     if (productCity === clientCity && productState === clientState) {
       proximity = 'same_city';
       label = 'Mesma cidade';
     } else if (productState === clientState) {
       proximity = 'same_state';
       label = 'Mesmo estado';
+    } else {
+      label = 'Outro estado';
     }
+  }
+  // Se não tem dados do cliente
+  else {
+    return null; // Não mostrar badge se não tem cliente selecionado
   }
 
   const getProximityColor = (prox: string) => {
@@ -55,7 +73,8 @@ export function LocationDistanceBadge({
   };
 
   return (
-    <Badge className={getProximityColor(proximity)}>
+    <Badge className={`${getProximityColor(proximity)} flex items-center gap-1`}>
+      <MapPin className="h-3 w-3" />
       {label}
     </Badge>
   );
