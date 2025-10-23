@@ -7,18 +7,18 @@ import { Opportunity } from '@/types/representative';
 import { ChevronRight, Calendar, DollarSign } from 'lucide-react';
 
 const STAGE_LABELS = {
-  com_oportunidade: 'Com Oportunidade',
-  proposta_apresentada: 'Proposta Apresentada', 
-  em_negociacao: 'Em Negociação',
-  em_aprovacao: 'Em Aprovação',
+  proposta_criada: 'Proposta Criada',
+  proposta_enviada: 'Proposta Enviada',
+  em_faturamento: 'Em Faturamento',
+  em_pagamento: 'Em Pagamento',
   em_entrega: 'Em Entrega'
 };
 
 const STAGE_COLORS = {
-  com_oportunidade: 'bg-slate-100 text-slate-800',
-  proposta_apresentada: 'bg-blue-100 text-blue-800',
-  em_negociacao: 'bg-yellow-100 text-yellow-800',
-  em_aprovacao: 'bg-orange-100 text-orange-800',
+  proposta_criada: 'bg-blue-100 text-blue-800',
+  proposta_enviada: 'bg-purple-100 text-purple-800',
+  em_faturamento: 'bg-orange-100 text-orange-800',
+  em_pagamento: 'bg-yellow-100 text-yellow-800',
   em_entrega: 'bg-green-100 text-green-800'
 };
 
@@ -29,6 +29,16 @@ interface OpportunityCardProps {
 
 function OpportunityCard({ opportunity, onStageChange }: OpportunityCardProps) {
   const stageKeys = Object.keys(STAGE_LABELS) as Array<keyof typeof STAGE_LABELS>;
+  
+  // Type guard: only handle new stages
+  const isNewStage = (stage: string): stage is keyof typeof STAGE_LABELS => {
+    return stage in STAGE_LABELS;
+  };
+  
+  if (!isNewStage(opportunity.stage)) {
+    return null; // Don't render opportunities with old stages
+  }
+  
   const currentStageIndex = stageKeys.indexOf(opportunity.stage);
   const nextStage = currentStageIndex < stageKeys.length - 1 ? stageKeys[currentStageIndex + 1] : null;
 

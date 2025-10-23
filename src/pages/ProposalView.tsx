@@ -12,12 +12,31 @@ import { toast } from '@/hooks/use-toast';
 import { CheckCircle, XCircle, FileText, Building, User, Phone, Mail, Calendar, DollarSign, Loader2, AlertTriangle } from 'lucide-react';
 import { ReservationExpiryAlert } from '@/components/representative/ReservationExpiryAlert';
 import { RepresentativeService } from '@/services/representativeService';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function ProposalView() {
   const { publicLink } = useParams<{ publicLink: string }>();
   const { data: proposal, isLoading, error } = useProposalPublic(publicLink || '');
   const approveProposal = useApproveProposal();
   const rejectProposal = useRejectProposal();
+
+  // Track proposal view automatically
+  React.useEffect(() => {
+    if (proposal && proposal.status === 'sent') {
+      // Update to 'viewed' status automatically
+      supabase
+        .from('proposals')
+        .update({ status: 'viewed' })
+        .eq('id', proposal.id)
+        .then(({ error }) => {
+          if (error) {
+            console.error('Error updating proposal status to viewed:', error);
+          } else {
+            console.log('Proposal marked as viewed:', proposal.id);
+          }
+        });
+    }
+  }, [proposal]);
 
   const [approvalData, setApprovalData] = useState({
     client_name: '',

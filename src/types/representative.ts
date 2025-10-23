@@ -50,7 +50,7 @@ export interface Opportunity {
   client_id: string;
   title: string;
   description?: string;
-  stage: 'com_oportunidade' | 'proposta_apresentada' | 'em_negociacao' | 'em_aprovacao' | 'em_entrega';
+  stage: 'proposta_criada' | 'proposta_enviada' | 'em_faturamento' | 'em_pagamento' | 'em_entrega' | 'com_oportunidade' | 'proposta_apresentada' | 'em_negociacao' | 'em_aprovacao';
   estimated_value: number;
   estimated_commission: number;
   probability: number;

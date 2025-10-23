@@ -21,6 +21,7 @@ import { calculateRepresentativeGain } from '@/utils/commissionCalculator';
 import type { RepClient } from '@/types/representative';
 import type { GroupedProduct } from '@/types/inventory';
 import { MapPin, Package, DollarSign, FileText, Plus, Minus, Info, CheckCircle, Copy, Loader2, User, WifiOff, TrendingDown, TrendingUp } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface CreateOpportunityDialogProps {
   onClose: () => void;
@@ -464,7 +465,7 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
           estimated_value: totalValue,
           estimated_commission: totalCommission,
           probability: parseInt(formData.probability),
-          stage: 'proposta_apresentada' as const,
+          stage: 'proposta_criada' as const,
           status: 'active' as const
         };
 
@@ -1296,29 +1297,54 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
             <CardContent className="space-y-4">
               <div className="text-center">
                 <p className="text-sm text-muted-foreground mb-2">
-                  Proposta <strong>{proposalResult.proposal_number}</strong> enviada com sucesso!
+                  Proposta <strong>{proposalResult.proposal_number}</strong> criada com sucesso!
                 </p>
                 <p className="text-sm">
-                  O cliente receberá um link para revisar e aprovar a proposta.
+                  Envie a proposta para o cliente através do WhatsApp.
                 </p>
-              </div>
-              
-              <div className="bg-muted p-3 rounded">
-                <p className="text-xs text-muted-foreground mb-1">Link da Proposta:</p>
-                <p className="text-sm font-mono break-all">{proposalResult.proposal_url}</p>
               </div>
 
               <div className="flex flex-col gap-2">
                 <Button
                   variant="default"
                   size="sm"
-                  onClick={() => {
-                    const clientPhone = selectedClient?.phone?.replace(/\D/g, '');
+                  onClick={async () => {
+                    // Normalizar telefone removendo caracteres especiais
+                    let cleanPhone = selectedClient?.phone?.replace(/\D/g, '') || '';
+                    
+                    // Adicionar código do país se não existir
+                    if (!cleanPhone.startsWith('55')) {
+                      cleanPhone = '55' + cleanPhone;
+                    }
+                    
                     const message = encodeURIComponent(
-                      `Olá ${selectedClient?.contact_name || 'Cliente'}, para concluir a compra confirme seu pedido aqui: ${proposalResult.proposal_url}`
+                      `Cliente, para concluir a compra confirme seu pedido aqui: ${proposalResult.proposal_url}`
                     );
-                    const whatsappUrl = `https://wa.me/55${clientPhone}?text=${message}`;
+                    const whatsappUrl = `https://wa.me/${cleanPhone}?text=${message}`;
                     window.open(whatsappUrl, '_blank');
+                    
+                    // Atualizar stage da oportunidade para 'proposta_enviada'
+                    try {
+                      const { data } = await supabase
+                        .from('proposals')
+                        .select('opportunity_id')
+                        .eq('proposal_number', proposalResult.proposal_number)
+                        .single();
+                      
+                      if (data?.opportunity_id) {
+                        await supabase
+                          .from('opportunities')
+                          .update({ stage: 'proposta_enviada' })
+                          .eq('id', data.opportunity_id);
+                        
+                        toast({
+                          title: "Proposta enviada!",
+                          description: "O estágio da oportunidade foi atualizado.",
+                        });
+                      }
+                    } catch (error) {
+                      console.error('Erro ao atualizar stage:', error);
+                    }
                   }}
                   className="w-full bg-green-600 hover:bg-green-700"
                 >

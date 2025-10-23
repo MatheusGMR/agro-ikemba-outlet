@@ -41,12 +41,22 @@ const handler = async (req: Request): Promise<Response> => {
         client_comments: `Aprovado por: ${approval_data.client_name} (${approval_data.client_position})${approval_data.client_email ? ` - ${approval_data.client_email}` : ''}${approval_data.client_phone ? ` - ${approval_data.client_phone}` : ''}${approval_data.comments ? `\nComentários: ${approval_data.comments}` : ''}`
       })
       .eq('id', proposal_id)
-      .select('*, opportunity:opportunities!inner(representative_id)')
+      .select('*, opportunity:opportunities!inner(id, representative_id)')
       .single();
 
     if (updateError) {
       console.error('Error updating proposal:', updateError);
       throw updateError;
+    }
+
+    // Update opportunity stage to 'em_faturamento'
+    const { error: oppError } = await supabase
+      .from('opportunities')
+      .update({ stage: 'em_faturamento' })
+      .eq('id', updatedProposal.opportunity.id);
+
+    if (oppError) {
+      console.error('Error updating opportunity stage:', oppError);
     }
 
     // Get representative data for notification

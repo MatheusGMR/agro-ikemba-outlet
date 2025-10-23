@@ -110,6 +110,12 @@ export function useApproveProposal() {
       queryClient.invalidateQueries({ 
         queryKey: ['proposal', 'public', variables.proposalId] 
       });
+      queryClient.invalidateQueries({ 
+        queryKey: ['opportunities'] 
+      });
+      queryClient.invalidateQueries({ 
+        queryKey: ['representative-stats'] 
+      });
     }
   });
 }
