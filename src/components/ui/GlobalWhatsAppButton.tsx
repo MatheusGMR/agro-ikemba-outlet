@@ -4,8 +4,8 @@ import WhatsAppButton from './WhatsAppButton';
 export default function GlobalWhatsAppButton() {
   const location = useLocation();
   
-  // Don't show WhatsApp button on landing page
-  if (location.pathname === '/landing') {
+  // Don't show WhatsApp button on landing page or representative page
+  if (location.pathname === '/landing' || location.pathname === '/representative') {
     return null;
   }
 

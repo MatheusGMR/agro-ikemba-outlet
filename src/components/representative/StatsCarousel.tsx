@@ -1,9 +1,9 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, Target, TrendingUp } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Target, TrendingUp, Wallet } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 import { RepDashboardStats } from '@/types/representative';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 
 interface StatsCarouselProps {
   stats: RepDashboardStats;
@@ -11,6 +11,8 @@ interface StatsCarouselProps {
 
 export default function StatsCarousel({ stats }: StatsCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const touchStartX = useRef(0);
+  const touchEndX = useRef(0);
 
   // Calculate total value of active opportunities
   const activeOpportunitiesValue = stats.pipeline_stages.reduce(
@@ -19,17 +21,24 @@ export default function StatsCarousel({ stats }: StatsCarouselProps) {
 
   const indicators = [
     {
+      title: "Potencial de Ganho Total",
+      value: formatCurrency(stats.potential_total_gain || 0),
+      description: `Comissão: ${formatCurrency(stats.potential_commission || 0)} + Margem: ${formatCurrency(stats.potential_overprice || 0)}`,
+      icon: <Wallet className="h-8 w-8 text-white" />,
+      color: "bg-gradient-to-br from-green-500 to-emerald-600"
+    },
+    {
       title: "Oportunidades Ativas",
       value: formatCurrency(activeOpportunitiesValue),
       description: "Valor total das negociações em andamento",
-      icon: <Target className="h-8 w-8 text-primary" />,
+      icon: <Target className="h-8 w-8 text-white" />,
       color: "bg-gradient-to-br from-blue-500 to-blue-600"
     },
     {
       title: "Comissão Este Mês",
       value: formatCurrency(stats.total_commission_this_month),
       description: "Valor já conquistado",
-      icon: <TrendingUp className="h-8 w-8 text-primary" />,
+      icon: <TrendingUp className="h-8 w-8 text-white" />,
       color: "bg-gradient-to-br from-purple-500 to-purple-600"
     }
   ];
@@ -42,9 +51,35 @@ export default function StatsCarousel({ stats }: StatsCarouselProps) {
     setCurrentIndex((prev) => (prev - 1 + indicators.length) % indicators.length);
   };
 
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    touchEndX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    const diff = touchStartX.current - touchEndX.current;
+    const threshold = 50;
+
+    if (Math.abs(diff) > threshold) {
+      if (diff > 0) {
+        nextSlide();
+      } else {
+        prevSlide();
+      }
+    }
+  };
+
   return (
     <div className="relative">
-      <div className="overflow-hidden">
+      <div 
+        className="overflow-hidden"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
         <div 
           className="flex transition-transform duration-300 ease-in-out"
           style={{ transform: `translateX(-${currentIndex * 100}%)` }}

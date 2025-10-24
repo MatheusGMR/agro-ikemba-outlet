@@ -154,53 +154,41 @@ export default function RepresentativeHeader() {
             </DropdownMenu>
           </div>
 
-          {/* Mobile menu button */}
-          <button className="block md:hidden p-2" onClick={toggleMenu}>
-            {isMenuOpen ? <X /> : <Menu />}
-          </button>
-        </div>
-
-        {/* Mobile menu */}
-        {isMenuOpen && (
-          <div className="fixed inset-0 z-50 bg-background backdrop-blur-md md:hidden pt-16 border-r border-border/40">
-            <nav className="container-custom py-4 h-full bg-background border-t border-border/20">
-              <div className="space-y-4">
-                {actionButtons.map((action, index) => {
-                  if (action.component) {
-                    const Component = action.component;
-                    return (
-                      <Component key={index}>
-                        <Button
-                          variant="outline"
-                          className="w-full justify-start"
-                          onClick={() => setIsMenuOpen(false)}
-                        >
-                          <action.icon className="h-4 w-4 mr-2" />
-                          {action.label}
-                        </Button>
-                      </Component>
-                    );
-                  }
-
-                  return (
-                    <Button
-                      key={index}
-                      variant="outline" 
-                      className="w-full justify-start"
-                      onClick={() => {
-                        action.onClick?.();
-                        setIsMenuOpen(false);
-                      }}
-                    >
-                      <action.icon className="h-4 w-4 mr-2" />
-                      {action.label}
-                    </Button>
-                  );
-                })}
-              </div>
-            </nav>
+          {/* Mobile User Avatar */}
+          <div className="block md:hidden">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                  <Avatar className="h-8 w-8">
+                    <AvatarFallback>
+                      {representative?.name?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56" align="end" forceMount>
+                <div className="flex items-center justify-start gap-2 p-2">
+                  <div className="flex flex-col space-y-1 leading-none">
+                    <p className="font-medium">{representative?.name || 'Representante'}</p>
+                    <p className="w-[200px] truncate text-sm text-muted-foreground">
+                      {user?.email}
+                    </p>
+                  </div>
+                </div>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>
+                  <User className="mr-2 h-4 w-4" />
+                  <span>Perfil</span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogout}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Sair</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
-        )}
+        </div>
       </header>
 
       {/* Create Opportunity Dialog */}
