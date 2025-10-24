@@ -332,6 +332,102 @@ export type Database = {
         }
         Relationships: []
       }
+      delivery_simulations: {
+        Row: {
+          cargo_value: number
+          cargo_volume: number
+          created_at: string | null
+          delivery_type: string
+          destination_city: string
+          destination_lat: number | null
+          destination_lon: number | null
+          destination_state: string
+          distance_km: number
+          freight_per_liter: number
+          freight_rate_per_km: number
+          freight_subtotal: number
+          id: string
+          insurance_amount: number
+          insurance_percentage: number
+          opportunity_id: string | null
+          origin_city: string
+          origin_lat: number | null
+          origin_lon: number | null
+          origin_state: string
+          proposal_id: string | null
+          round_trip_km: number
+          total_freight_cost: number
+          updated_at: string | null
+        }
+        Insert: {
+          cargo_value: number
+          cargo_volume: number
+          created_at?: string | null
+          delivery_type: string
+          destination_city: string
+          destination_lat?: number | null
+          destination_lon?: number | null
+          destination_state: string
+          distance_km: number
+          freight_per_liter: number
+          freight_rate_per_km: number
+          freight_subtotal: number
+          id?: string
+          insurance_amount: number
+          insurance_percentage: number
+          opportunity_id?: string | null
+          origin_city: string
+          origin_lat?: number | null
+          origin_lon?: number | null
+          origin_state: string
+          proposal_id?: string | null
+          round_trip_km: number
+          total_freight_cost: number
+          updated_at?: string | null
+        }
+        Update: {
+          cargo_value?: number
+          cargo_volume?: number
+          created_at?: string | null
+          delivery_type?: string
+          destination_city?: string
+          destination_lat?: number | null
+          destination_lon?: number | null
+          destination_state?: string
+          distance_km?: number
+          freight_per_liter?: number
+          freight_rate_per_km?: number
+          freight_subtotal?: number
+          id?: string
+          insurance_amount?: number
+          insurance_percentage?: number
+          opportunity_id?: string | null
+          origin_city?: string
+          origin_lat?: number | null
+          origin_lon?: number | null
+          origin_state?: string
+          proposal_id?: string | null
+          round_trip_km?: number
+          total_freight_cost?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "delivery_simulations_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "opportunities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "delivery_simulations_proposal_id_fkey"
+            columns: ["proposal_id"]
+            isOneToOne: false
+            referencedRelation: "proposals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       inventory: {
         Row: {
           active_ingredient: string | null
@@ -687,6 +783,8 @@ export type Database = {
           created_at: string
           id: string
           opportunity_id: string
+          origin_city: string | null
+          origin_state: string | null
           overprice_amount: number | null
           overprice_percentage: number | null
           product_name: string
@@ -701,6 +799,8 @@ export type Database = {
           created_at?: string
           id?: string
           opportunity_id: string
+          origin_city?: string | null
+          origin_state?: string | null
           overprice_amount?: number | null
           overprice_percentage?: number | null
           product_name: string
@@ -715,6 +815,8 @@ export type Database = {
           created_at?: string
           id?: string
           opportunity_id?: string
+          origin_city?: string | null
+          origin_state?: string | null
           overprice_amount?: number | null
           overprice_percentage?: number | null
           product_name?: string
@@ -1041,7 +1143,11 @@ export type Database = {
           client_approved_at: string | null
           client_comments: string | null
           created_at: string
+          delivery_simulation_id: string | null
           delivery_terms: string | null
+          delivery_type: string | null
+          freight_cost: number | null
+          freight_per_liter: number | null
           id: string
           observations: string | null
           opportunity_id: string
@@ -1066,7 +1172,11 @@ export type Database = {
           client_approved_at?: string | null
           client_comments?: string | null
           created_at?: string
+          delivery_simulation_id?: string | null
           delivery_terms?: string | null
+          delivery_type?: string | null
+          freight_cost?: number | null
+          freight_per_liter?: number | null
           id?: string
           observations?: string | null
           opportunity_id: string
@@ -1091,7 +1201,11 @@ export type Database = {
           client_approved_at?: string | null
           client_comments?: string | null
           created_at?: string
+          delivery_simulation_id?: string | null
           delivery_terms?: string | null
+          delivery_type?: string | null
+          freight_cost?: number | null
+          freight_per_liter?: number | null
           id?: string
           observations?: string | null
           opportunity_id?: string
@@ -1113,6 +1227,13 @@ export type Database = {
           validity_date?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "proposals_delivery_simulation_id_fkey"
+            columns: ["delivery_simulation_id"]
+            isOneToOne: false
+            referencedRelation: "delivery_simulations"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "proposals_opportunity_id_fkey"
             columns: ["opportunity_id"]

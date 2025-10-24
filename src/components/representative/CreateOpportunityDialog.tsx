@@ -15,6 +15,7 @@ import { useNetworkStatus } from '@/hooks/useNetworkStatus';
 import { operationQueue } from '@/utils/offlineStorage';
 import ProductLocationSelector from './ProductLocationSelector';
 import { OverpriceSelector } from './OverpriceSelector';
+import DeliveryMethodSelector from './DeliveryMethodSelector';
 import { PDFGenerator } from '@/utils/pdfGenerator';
 import { RepresentativeService } from '@/services/representativeService';
 import { calculateRepresentativeGain } from '@/utils/commissionCalculator';
@@ -79,7 +80,7 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
 
   const [selectedClient, setSelectedClient] = useState<RepClient | null>(null);
   const [selectedProducts, setSelectedProducts] = useState<OpportunityProduct[]>([]);
-  const [currentStep, setCurrentStep] = useState<'basic' | 'products' | 'conditions' | 'responsible' | 'review'>('basic');
+  const [currentStep, setCurrentStep] = useState<'basic' | 'products' | 'delivery' | 'conditions' | 'responsible' | 'review'>('basic');
   const [showLocationSelector, setShowLocationSelector] = useState(false);
   const [selectedProductForLocation, setSelectedProductForLocation] = useState<GroupedProduct | null>(null);
   const [showOverpriceSelector, setShowOverpriceSelector] = useState(false);
@@ -94,6 +95,14 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
     proposal_url: string;
     public_link: string;
   } | null>(null);
+  
+  const [deliveryData, setDeliveryData] = useState<{
+    delivery_type: 'retirada' | 'entrega_nacional' | 'entrega_internacional';
+    freight_calculation: any | null;
+  }>({
+    delivery_type: 'retirada',
+    freight_calculation: null
+  });
 
   const handleClientChange = (clientId: string) => {
     const client = clients.find(c => c.id === clientId);
@@ -312,13 +321,23 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
     
     const totalGain = totalCommissionFixed + totalOverpriceGain;
     
+    const totalVolume = selectedProducts.reduce((sum, item) => {
+      return sum + item.selectedLocations.reduce((locSum, loc) => locSum + loc.quantity, 0);
+    }, 0);
+    
+    const freightCost = deliveryData.freight_calculation?.total_freight_cost || 0;
+    const totalValueWithFreight = totalValue + freightCost;
+    
     return { 
       totalValue, 
       totalCommission: totalCommissionFixed,
       totalOverpriceGain,
-      totalGain
+      totalGain,
+      totalVolume,
+      freightCost,
+      totalValueWithFreight
     };
-  }, [selectedProducts]);
+  }, [selectedProducts, deliveryData]);
 
   const generatePDF = async () => {
     if (!selectedClient) return null;
@@ -358,6 +377,8 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
     if (currentStep === 'basic') {
       setCurrentStep('products');
     } else if (currentStep === 'products') {
+      setCurrentStep('delivery');
+    } else if (currentStep === 'delivery') {
       setCurrentStep('conditions');
     } else if (currentStep === 'conditions') {
       setCurrentStep('responsible');
@@ -607,6 +628,8 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
         return selectedProducts.length > 0 && selectedProducts.every(p => 
           p.selectedLocations.length > 0 && p.selectedLocations.every(l => l.quantity > 0)
         );
+      case 'delivery':
+        return true; // Delivery type is optional (defaults to retirada)
       case 'conditions':
         return formData.payment_method && formData.delivery_method;
       case 'responsible':
@@ -767,6 +790,45 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
       </div>
     </div>
   );
+
+  const renderDeliveryStep = () => {
+    const totalCargoValue = selectedProducts.reduce((sum, item) => {
+      const itemTotal = item.selectedLocations.reduce((itemSum, loc) => 
+        itemSum + (loc.quantity * item.preco_final), 0);
+      return sum + itemTotal;
+    }, 0);
+    
+    const totalVolume = selectedProducts.reduce((sum, item) => {
+      return sum + item.selectedLocations.reduce((locSum, loc) => locSum + loc.quantity, 0);
+    }, 0);
+    
+    // Map locations to match DeliveryMethodSelector interface
+    const allLocations = selectedProducts.flatMap(p => 
+      p.selectedLocations.map(loc => ({
+        city: loc.city,
+        state: loc.state,
+        volume: loc.quantity,
+        available_volume: loc.available_volume
+      }))
+    );
+    
+    return (
+      <DeliveryMethodSelector
+        selectedLocations={allLocations}
+        clientCity={selectedClient?.city || ''}
+        clientState={selectedClient?.state || ''}
+        totalCargoValue={totalCargoValue}
+        totalVolume={totalVolume}
+        currentDeliveryType={deliveryData.delivery_type}
+        onDeliveryTypeChange={(type, freightData) => {
+          setDeliveryData({
+            delivery_type: type,
+            freight_calculation: freightData
+          });
+        }}
+      />
+    );
+  };
 
   const renderConditionsStep = () => (
     <div className="space-y-4">
@@ -1191,8 +1253,8 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
 
       {/* Progress Steps */}
       <div className="flex items-center justify-between text-sm">
-        {['Básico', 'Produtos', 'Condições', 'Responsável', 'Resumo'].map((step, index) => {
-          const stepKeys = ['basic', 'products', 'conditions', 'responsible', 'review'];
+        {['Básico', 'Produtos', 'Entrega', 'Condições', 'Responsável', 'Resumo'].map((step, index) => {
+          const stepKeys = ['basic', 'products', 'delivery', 'conditions', 'responsible', 'review'];
           const isActive = stepKeys[index] === currentStep;
           const isCompleted = stepKeys.indexOf(currentStep) > index;
           
@@ -1218,6 +1280,7 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
       {/* Step Content */}
       {currentStep === 'basic' && renderBasicStep()}
       {currentStep === 'products' && renderProductsStep()}
+      {currentStep === 'delivery' && renderDeliveryStep()}
       {currentStep === 'conditions' && renderConditionsStep()}
       {currentStep === 'responsible' && renderResponsibleStep()}
       {currentStep === 'review' && renderReviewStep()}
@@ -1231,7 +1294,7 @@ export default function CreateOpportunityDialog({ onClose }: CreateOpportunityDi
             if (currentStep === 'basic') {
               onClose();
             } else {
-              const steps = ['basic', 'products', 'conditions', 'responsible', 'review'];
+              const steps = ['basic', 'products', 'delivery', 'conditions', 'responsible', 'review'];
               const currentIndex = steps.indexOf(currentStep);
               if (currentIndex > 0) {
                 setCurrentStep(steps[currentIndex - 1] as any);
