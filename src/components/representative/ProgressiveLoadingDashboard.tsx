@@ -179,7 +179,7 @@ export default function ProgressiveLoadingDashboard() {
       <OpportunityKanban />
 
         {/* Mobile Fixed Footer */}
-        <div className="sm:hidden fixed bottom-0 left-0 right-0 z-50 bg-background border-t shadow-lg">
+        <div className="sm:hidden fixed bottom-0 left-0 right-0 z-50 bg-background border-t shadow-lg pb-safe">
           <div className="flex items-center justify-evenly py-3 px-4 w-full">
             <div className="flex flex-col items-center gap-1 flex-1">
               <Button

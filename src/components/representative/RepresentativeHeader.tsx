@@ -64,8 +64,9 @@ export default function RepresentativeHeader() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container-custom flex h-16 items-center justify-between">
+      <header className="sticky top-0 z-40 w-full border-b border-border/40 bg-primary/10 backdrop-blur supports-[backdrop-filter]:bg-primary/5 safe-top">
+        <div className="bg-background/95 supports-[backdrop-filter]:bg-background/60">
+          <div className="container-custom flex min-h-16 items-center justify-between pt-safe">
           {/* Logo */}
           <div className="flex items-center gap-2">
             <Link to="/" className="flex items-center gap-2">
@@ -188,6 +189,7 @@ export default function RepresentativeHeader() {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
+        </div>
         </div>
       </header>
 
