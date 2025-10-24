@@ -11,6 +11,8 @@ import OpportunityKanban from './OpportunityKanban';
 import InventoryConsultation from './InventoryConsultation';
 import CreateOpportunityDialog from './CreateOpportunityDialog';
 import { ClientRegistrationDialog } from './ClientRegistrationDialog';
+import OpportunityTypeSelector from './OpportunityTypeSelector';
+import SimulationDialog from './SimulationDialog';
 import { toast } from 'sonner';
 
 export default function ProgressiveLoadingDashboard() {
@@ -19,6 +21,8 @@ export default function ProgressiveLoadingDashboard() {
   const { data: stats, isLoading: statsLoading, error, refetch } = useDashboardStats(representative?.id || '');
   const isMobile = useIsMobile();
   const [hasShownStats, setHasShownStats] = useState(false);
+  const [showTypeSelector, setShowTypeSelector] = useState(false);
+  const [showSimulation, setShowSimulation] = useState(false);
   const [showCreateOpportunity, setShowCreateOpportunity] = useState(false);
   const [showClientRegistration, setShowClientRegistration] = useState(false);
 
@@ -186,7 +190,7 @@ export default function ProgressiveLoadingDashboard() {
                 size="sm"
                 variant="ghost"
                 className="h-12 w-12 rounded-full p-0 bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-md"
-                onClick={() => setShowCreateOpportunity(true)}
+                onClick={() => setShowTypeSelector(true)}
               >
                 <Plus className="h-5 w-5" />
               </Button>
@@ -221,6 +225,28 @@ export default function ProgressiveLoadingDashboard() {
         </div>
 
       {/* Dialogs */}
+      <OpportunityTypeSelector
+        open={showTypeSelector}
+        onClose={() => setShowTypeSelector(false)}
+        onSelectSimulation={() => {
+          setShowTypeSelector(false);
+          setShowSimulation(true);
+        }}
+        onSelectProposal={() => {
+          setShowTypeSelector(false);
+          setShowCreateOpportunity(true);
+        }}
+      />
+
+      <SimulationDialog
+        open={showSimulation}
+        onClose={() => setShowSimulation(false)}
+        onConvertToProposal={() => {
+          setShowSimulation(false);
+          setShowCreateOpportunity(true);
+        }}
+      />
+
       <Dialog open={showCreateOpportunity} onOpenChange={setShowCreateOpportunity}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
