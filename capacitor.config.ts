@@ -5,9 +5,11 @@ const config: CapacitorConfig = {
   appName: 'AgroIkemba Reps',
   webDir: 'dist',
   
-  // Hot-reload desabilitado para build nativo
+  // Hot-reload para desenvolvimento
   server: {
-    url: undefined, // Build local - app carrega bundle nativo
+    url: process.env.NODE_ENV === 'development' 
+      ? 'https://c3fd88f5-deed-4c49-874f-a30ae9501862.lovableproject.com?forceHideBadge=true'
+      : undefined,
     cleartext: true,
     androidScheme: 'https'
   },

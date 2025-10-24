@@ -1,5 +1,6 @@
 import { Suspense } from 'react';
 import { Helmet } from 'react-helmet-async';
+import { Capacitor } from '@capacitor/core';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import Hero from '@/components/home/Hero';
@@ -12,13 +13,10 @@ import { LoadingFallback } from '@/components/ui/LoadingFallback';
 import { MobileRedirect } from '@/components/mobile/MobileRedirect';
 import { logger } from '@/utils/logger';
 import { usePageAnalytics } from '@/hooks/useAnalytics';
-import { useIsNativePlatform } from '@/hooks/useIsNativePlatform';
 
 const Index = () => {
   // PRIMEIRO: Verificar se é mobile ANTES de qualquer hook ou lógica
-  const isNative = useIsNativePlatform();
-  
-  if (isNative) {
+  if (Capacitor.isNativePlatform()) {
     return <MobileRedirect />;
   }
 
