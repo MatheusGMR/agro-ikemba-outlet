@@ -110,6 +110,12 @@ export class DomainMonitor {
    * Initialize domain monitoring
    */
   init(): void {
+    // Não executar em plataformas nativas
+    if (typeof window !== 'undefined' && (window as any).Capacitor) {
+      console.log('[Domain Monitor] Skipping on native platform');
+      return;
+    }
+
     // Log initial access
     this.logAccess();
 
