@@ -110,11 +110,19 @@ export class DomainMonitor {
    * Initialize domain monitoring
    */
   init(): void {
-    // Não executar em plataformas nativas
-    if (typeof window !== 'undefined' && (window as any).Capacitor) {
-      console.log('[Domain Monitor] Skipping on native platform');
+    // Proteção 1: Verificar protocolo (mais rápido e confiável)
+    if (window.location.protocol === 'capacitor:') {
+      console.log('[Domain Monitor] Skipping - capacitor:// protocol detected');
       return;
     }
+
+    // Proteção 2: Verificar objeto Capacitor global
+    if (typeof window !== 'undefined' && (window as any).Capacitor?.isNativePlatform?.()) {
+      console.log('[Domain Monitor] Skipping - Capacitor native detected');
+      return;
+    }
+
+    console.log('[Domain Monitor] Initializing for web platform');
 
     // Log initial access
     this.logAccess();

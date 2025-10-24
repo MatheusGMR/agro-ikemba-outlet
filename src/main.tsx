@@ -1,12 +1,14 @@
 
 import { createRoot } from 'react-dom/client'
-import { Capacitor } from '@capacitor/core'
 import App from './App.tsx'
 import './index.css'
 import { domainMonitor } from './utils/domainMonitor'
 
+// Detecção INSTANTÂNEA via protocolo (funciona antes do Capacitor carregar)
+const isNative = window.location.protocol === 'capacitor:';
+
 // Initialize domain monitoring APENAS EM WEB
-if (!Capacitor.isNativePlatform()) {
+if (!isNative) {
   domainMonitor.init();
 }
 
