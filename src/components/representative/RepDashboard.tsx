@@ -192,36 +192,45 @@ export default function RepDashboard() {
       {/* Opportunity Kanban */}
       <OpportunityKanban />
 
-      {/* Mobile Floating Action Buttons */}
-      <div className="sm:hidden fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
-        <div className="flex items-center justify-center gap-6 bg-background/95 backdrop-blur-sm rounded-full px-8 py-4 shadow-lg border">
-          <Button
-            size="sm"
-            variant="ghost"
-            className="h-12 w-12 rounded-full p-0 bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-md"
-            onClick={() => setShowCreateOpportunity(true)}
-          >
-            <Plus className="h-5 w-5" />
-          </Button>
-          
-          <InventoryConsultation>
+      {/* Mobile Fixed Footer */}
+      <div className="sm:hidden fixed bottom-0 left-0 right-0 z-50 bg-background border-t shadow-lg">
+        <div className="flex items-center justify-around py-3 px-4 max-w-md mx-auto">
+          <div className="flex flex-col items-center gap-1">
             <Button
               size="sm"
               variant="ghost"
-              className="h-12 w-12 rounded-full p-0 bg-blue-500 text-white hover:bg-blue-600 transition-colors shadow-md"
+              className="h-12 w-12 rounded-full p-0 bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-md"
+              onClick={() => setShowCreateOpportunity(true)}
             >
-              <Package className="h-5 w-5" />
+              <Plus className="h-5 w-5" />
             </Button>
+            <span className="text-xs text-muted-foreground">Nova</span>
+          </div>
+          
+          <InventoryConsultation>
+            <div className="flex flex-col items-center gap-1">
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-12 w-12 rounded-full p-0 bg-blue-500 text-white hover:bg-blue-600 transition-colors shadow-md"
+              >
+                <Package className="h-5 w-5" />
+              </Button>
+              <span className="text-xs text-muted-foreground">Estoque</span>
+            </div>
           </InventoryConsultation>
           
-          <Button
-            size="sm"
-            variant="ghost"
-            className="h-12 w-12 rounded-full p-0 bg-green-500 text-white hover:bg-green-600 transition-colors shadow-md"
-            onClick={() => setShowClientRegistration(true)}
-          >
-            <Users className="h-5 w-5" />
-          </Button>
+          <div className="flex flex-col items-center gap-1">
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-12 w-12 rounded-full p-0 bg-green-500 text-white hover:bg-green-600 transition-colors shadow-md"
+              onClick={() => setShowClientRegistration(true)}
+            >
+              <Users className="h-5 w-5" />
+            </Button>
+            <span className="text-xs text-muted-foreground">Cliente</span>
+          </div>
         </div>
       </div>
 
