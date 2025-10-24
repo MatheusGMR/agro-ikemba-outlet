@@ -9,7 +9,7 @@ import {
   Phone, 
   FileText, 
   List,
-  Kanban,
+  TrendingUp,
   ChevronRight,
   XCircle,
   CheckCircle,
@@ -217,15 +217,6 @@ export default function OpportunityKanban() {
 
   console.info('🎯 OpportunityKanban - representative:', representative?.id, 'opportunities:', opportunities.length, 'loading:', isLoading, 'error:', error);
 
-  // Auto-switch to list view on mobile
-  useEffect(() => {
-    if (isMobile) {
-      setViewMode('list');
-    } else {
-      setViewMode('kanban');
-    }
-  }, [isMobile]);
-
   const handleAdvanceStage = async (opportunityId: string, newStage: string) => {
     try {
       await updateOpportunity.mutateAsync({
@@ -352,7 +343,22 @@ export default function OpportunityKanban() {
   }
 
   // Agrupar oportunidades por estágio (apenas oportunidades ativas)
-  const activeOpportunities = opportunities.filter(opp => opp.status === 'active');
+  // Ordenar por prioridade: data de criação (mais antiga = maior prioridade)
+  // Se datas forem próximas (< 24h), desempatar por valor (maior = maior prioridade)
+  const activeOpportunities = opportunities
+    .filter(opp => opp.status === 'active')
+    .sort((a, b) => {
+      const dateA = new Date(a.created_at).getTime();
+      const dateB = new Date(b.created_at).getTime();
+      const dateDiff = dateA - dateB;
+      
+      // Se a diferença for menor que 24h, ordenar por valor
+      if (Math.abs(dateDiff) < 86400000) {
+        return b.estimated_value - a.estimated_value;
+      }
+      return dateDiff;
+    });
+  
   const opportunitiesByStage = activeOpportunities.reduce((acc, opp) => {
     if (!acc[opp.stage]) {
       acc[opp.stage] = [];
@@ -376,8 +382,8 @@ export default function OpportunityKanban() {
                 size="sm"
                 onClick={() => setViewMode('kanban')}
               >
-                <Kanban className="h-4 w-4 mr-2" />
-                Kanban
+                <TrendingUp className="h-4 w-4 mr-2" />
+                Evolução
               </Button>
             )}
           </div>
