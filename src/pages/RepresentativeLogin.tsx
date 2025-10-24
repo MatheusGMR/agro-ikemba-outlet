@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Lock, Mail, AlertCircle, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -21,10 +22,22 @@ export default function RepresentativeLogin() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
+  const [savedEmail, setSavedEmail] = useState('');
   const navigate = useNavigate();
   const { signIn, user } = useAuth();
   const { data: representative, isFetched } = useCurrentRepresentative();
   const { validateBotProtection } = useBotProtection();
+
+  // Carregar email salvo do localStorage
+  useEffect(() => {
+    const storedEmail = localStorage.getItem('rep_remembered_email');
+    if (storedEmail) {
+      setEmail(storedEmail);
+      setSavedEmail(storedEmail);
+      setRememberMe(true);
+    }
+  }, []);
 
   // Redirect if already logged in as representative
   // Só redirecionar automaticamente se estiver na web
@@ -99,6 +112,14 @@ export default function RepresentativeLogin() {
             
           if (repData) {
             console.log('Representative found, navigating to dashboard');
+            
+            // Salvar email se "Lembrar-me" estiver marcado
+            if (rememberMe) {
+              localStorage.setItem('rep_remembered_email', email);
+            } else {
+              localStorage.removeItem('rep_remembered_email');
+            }
+            
             navigate('/representative');
             toast.success('Login realizado com sucesso!');
           } else {
@@ -142,6 +163,14 @@ export default function RepresentativeLogin() {
               <p className="text-muted-foreground">Entre com suas credenciais de representante</p>
             </CardHeader>
             <CardContent>
+              {savedEmail && (
+                <Alert className="mb-4">
+                  <AlertDescription>
+                    👋 Bem-vindo de volta! Digite sua senha para continuar.
+                  </AlertDescription>
+                </Alert>
+              )}
+              
               {error && (
                 <Alert className="mb-4" variant="destructive">
                   <AlertCircle className="h-4 w-4" />
@@ -182,6 +211,17 @@ export default function RepresentativeLogin() {
                       disabled={isLoading}
                     />
                   </div>
+                </div>
+                
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    id="remember" 
+                    checked={rememberMe}
+                    onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+                  />
+                  <Label htmlFor="remember" className="text-sm font-normal cursor-pointer">
+                    Lembrar meu email
+                  </Label>
                 </div>
                 
                 <Button 
