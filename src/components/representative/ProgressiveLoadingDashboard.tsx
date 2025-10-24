@@ -1,12 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useDashboardStats, useCurrentRepresentative } from '@/hooks/useRepresentative';
-import { Loader2, AlertCircle, RefreshCw } from 'lucide-react';
+import { Loader2, AlertCircle, RefreshCw, Plus, Package, Users } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import StatsCarousel from './StatsCarousel';
 import StatsGrid from './StatsGrid';
 import OpportunityKanban from './OpportunityKanban';
+import InventoryConsultation from './InventoryConsultation';
+import CreateOpportunityDialog from './CreateOpportunityDialog';
+import { ClientRegistrationDialog } from './ClientRegistrationDialog';
 import { toast } from 'sonner';
 
 export default function ProgressiveLoadingDashboard() {
@@ -15,6 +19,8 @@ export default function ProgressiveLoadingDashboard() {
   const { data: stats, isLoading: statsLoading, error, refetch } = useDashboardStats(representative?.id || '');
   const isMobile = useIsMobile();
   const [hasShownStats, setHasShownStats] = useState(false);
+  const [showCreateOpportunity, setShowCreateOpportunity] = useState(false);
+  const [showClientRegistration, setShowClientRegistration] = useState(false);
 
   // Progressive loading stages
   const [loadingStage, setLoadingStage] = useState<'representative' | 'stats' | 'complete'>('representative');
@@ -172,7 +178,63 @@ export default function ProgressiveLoadingDashboard() {
       {/* Opportunity Kanban */}
       <OpportunityKanban />
 
+      {/* Mobile Fixed Footer */}
+      <div className="sm:hidden fixed bottom-0 left-0 right-0 z-50 bg-background border-t shadow-lg">
+        <div className="flex items-center justify-around py-3 px-4 max-w-md mx-auto">
+          <div className="flex flex-col items-center gap-1">
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-12 w-12 rounded-full p-0 bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-md"
+              onClick={() => setShowCreateOpportunity(true)}
+            >
+              <Plus className="h-5 w-5" />
+            </Button>
+            <span className="text-xs text-muted-foreground">Nova</span>
+          </div>
+          
+          <InventoryConsultation>
+            <div className="flex flex-col items-center gap-1">
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-12 w-12 rounded-full p-0 bg-blue-500 text-white hover:bg-blue-600 transition-colors shadow-md"
+              >
+                <Package className="h-5 w-5" />
+              </Button>
+              <span className="text-xs text-muted-foreground">Estoque</span>
+            </div>
+          </InventoryConsultation>
+          
+          <div className="flex flex-col items-center gap-1">
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-12 w-12 rounded-full p-0 bg-green-500 text-white hover:bg-green-600 transition-colors shadow-md"
+              onClick={() => setShowClientRegistration(true)}
+            >
+              <Users className="h-5 w-5" />
+            </Button>
+            <span className="text-xs text-muted-foreground">Cliente</span>
+          </div>
+        </div>
+      </div>
 
+      {/* Dialogs */}
+      <Dialog open={showCreateOpportunity} onOpenChange={setShowCreateOpportunity}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Nova Oportunidade</DialogTitle>
+          </DialogHeader>
+          <CreateOpportunityDialog onClose={() => setShowCreateOpportunity(false)} />
+        </DialogContent>
+      </Dialog>
+
+      <ClientRegistrationDialog 
+        open={showClientRegistration}
+        onOpenChange={setShowClientRegistration}
+        representativeId={representative?.id || ''}
+      />
     </div>
   );
 }

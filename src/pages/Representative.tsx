@@ -21,7 +21,7 @@ export default function Representative() {
       <div className="min-h-screen bg-background">
         <RepresentativeHeader />
         <OfflineIndicator />
-        <div className="container mx-auto p-6">
+        <div className="container mx-auto p-6 pb-24 sm:pb-6">
           <ProgressiveLoadingDashboard />
         </div>
         
