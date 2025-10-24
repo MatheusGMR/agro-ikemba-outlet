@@ -1,6 +1,5 @@
-import { Suspense, useEffect } from 'react';
+import { Suspense } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { useNavigate } from 'react-router-dom';
 import { Capacitor } from '@capacitor/core';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
@@ -11,46 +10,24 @@ import LogisticsPartners from '@/components/home/LogisticsPartners';
 import CallToAction from '@/components/home/CallToAction';
 import PreRegistration from '@/components/home/PreRegistration';
 import { LoadingFallback } from '@/components/ui/LoadingFallback';
+import { MobileRedirect } from '@/components/mobile/MobileRedirect';
 import { logger } from '@/utils/logger';
 import { usePageAnalytics } from '@/hooks/useAnalytics';
-import { useAuth } from '@/hooks/useAuth';
 
 const Index = () => {
+  // PRIMEIRO: Verificar se é mobile ANTES de qualquer hook ou lógica
+  if (Capacitor.isNativePlatform()) {
+    return <MobileRedirect />;
+  }
+
   logger.log('Index page rendering');
   
-  const navigate = useNavigate();
-  const { user, isRepresentative, isLoading } = useAuth();
-  
-  // Track landing page analytics
+  // Track landing page analytics (apenas web)
   usePageAnalytics({
     pagePath: '/',
     pageTitle: 'Home - AgroIkemba',
     enableTimeTracking: true
   });
-
-  // Redirecionamento inteligente para app mobile
-  useEffect(() => {
-    // Aguardar carregamento da sessão antes de redirecionar
-    if (Capacitor.isNativePlatform() && !isLoading) {
-      console.log('[Index] Mobile redirect decision:', { user: !!user, isRepresentative, isLoading });
-      
-      if (user && isRepresentative) {
-        console.log('[Index] Redirecting to /representative');
-        navigate('/representative', { replace: true });
-      } else if (user && !isRepresentative) {
-        console.log('[Index] User authenticated but not representative, redirecting to /products');
-        navigate('/products', { replace: true });
-      } else {
-        console.log('[Index] User not authenticated, redirecting to /representative/login');
-        navigate('/representative/login', { replace: true });
-      }
-    }
-  }, [user, isRepresentative, isLoading, navigate]);
-
-  // Renderizar apenas loading em plataforma nativa
-  if (Capacitor.isNativePlatform()) {
-    return <LoadingFallback />;
-  }
   
   const structuredData = {
     "@context": "https://schema.org",

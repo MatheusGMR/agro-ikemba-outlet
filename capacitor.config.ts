@@ -10,7 +10,8 @@ const config: CapacitorConfig = {
     url: process.env.NODE_ENV === 'development' 
       ? 'https://c3fd88f5-deed-4c49-874f-a30ae9501862.lovableproject.com?forceHideBadge=true'
       : undefined,
-    cleartext: true
+    cleartext: true,
+    androidScheme: 'https'
   },
   
   plugins: {
